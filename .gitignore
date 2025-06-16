@@ -1,0 +1,19 @@
+# Ignore all executable files
+*.exe
+
+# Ignore binary files
+*.bin
+
+# Ignore object files
+*.o
+*.obj
+
+# Ignore backup files
+*~
+*.bak
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore output files
+*.out
