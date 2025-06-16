@@ -47,7 +47,7 @@ int runMenuLoop();
 // ### BACKEND ###
 void calculatePayroll();
 int saveEmployeeDataToFile();
-int loadEmployeeDataFromFile();
+EmployeeNode* loadEmployeeDataFromFile();
 
 EmployeeNode* createEmployeeNode();
 

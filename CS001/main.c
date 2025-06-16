@@ -4,22 +4,20 @@
 
 #include "include/employee.h"
 
-void testFunctions ();
+EmployeeNode *employeeList = NULL;
+const char* dataFile = "data/record.bin";
 
 int main (void)
 {
-    // testFunctions();
-}
+    employeeList = loadEmployeeDataFromFile(dataFile);
+    
+    if (employeeList == NULL) {
+        printf("No previous records found or file error. Starting fresh.\n\n");
+    } else {
+        printf("Employee records loaded successfully.\n\n");
+    }
 
-void testFunctions ()
-{
-    // ### FRONTEND ###
-    getEmployeeDataFromUser();
-    displayReportHeader();
-    displayEmployeeRecord();
+    runMenuLoop();
 
-    // ### BACKEND ###
-    calculatePayroll();
-    saveEmployeeDataToFile();
-    loadEmployeeDataFromFile();
+    return 0;
 }
