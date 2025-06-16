@@ -4,10 +4,10 @@ EmployeeNode* getEmployeeDataFromUser() {
     printf("getEmployeeDataFromUser() called!\n");
 }
 
-void displayReportHeader() {
+void displayReportHeader () {
     printf("displayReportHeader() called!\n");
 }
 
-void displayEmployeeRecord() {
+void displayEmployeeRecord () {
     printf("displayEmployeeRecord() called!\n");
 }

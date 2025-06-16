@@ -41,6 +41,9 @@ EmployeeNode* getEmployeeDataFromUser();
 void displayReportHeader();
 void displayEmployeeRecord();
 
+void printMenu();
+int runMenuLoop();
+
 // ### BACKEND ###
 void calculatePayroll();
 int saveEmployeeDataToFile();

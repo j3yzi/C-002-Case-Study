@@ -8,7 +8,7 @@ void testFunctions ();
 
 int main (void)
 {
-    testFunctions();
+    // testFunctions();
 }
 
 void testFunctions ()
