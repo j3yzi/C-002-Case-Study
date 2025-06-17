@@ -150,9 +150,73 @@ typedef struct EmployeeNode {
 The project is compiled using the provided `compile.bat` script which handles all dependencies and produces the final executable.
 
 ## Testing
-Each module has corresponding test files in the `src/tests/` directory:
-- `frontend_test.c`: Tests for UI components
-- `backend_test.c`: Tests for business logic components
+The project includes a comprehensive testing framework located in the `src/tests/` directory. Each module has corresponding test files and compilation scripts to ensure code quality and functionality.
+
+### Test Files
+- `frontend_test.c`: Tests for UI components (menu_io.c and employee_io.c)
+- `backend_test.c`: Tests for business logic components (list_manager.c, file_handler.c, and payroll_logic.c)
+
+### Running Tests
+
+#### Windows Users
+Three batch files are provided for testing different components:
+
+1. **Frontend Tests**:
+   ```
+   cd src/tests
+   compile_frontend_test.bat
+   ```
+   
+   This tests the menu interface and employee I/O functionality.
+
+2. **Backend Tests**:
+   ```
+   cd src/tests
+   compile_backend_test.bat
+   ```
+   
+   This tests the linked list operations, file handling, and payroll calculations.
+
+3. **System Tests**:
+   ```
+   cd src/tests
+   compile_system_test.bat
+   ```
+   
+   This tests the entire system with all modules integrated.
+
+#### Unix/Linux/macOS Users
+Shell scripts with equivalent functionality are provided:
+
+```bash
+cd src/tests
+chmod +x compile_frontend_test.sh
+./compile_frontend_test.sh
+```
+
+### Understanding Test Results
+After running a test script, you should see output indicating test status:
+- A successful test will display "Test COMPLETE" with specific test results
+- Failed tests will show error messages indicating what went wrong
+
+### Writing New Tests
+When adding new functionality, consider adding corresponding tests:
+
+1. Add test functions to the appropriate test file (frontend_test.c or backend_test.c)
+2. Follow the existing pattern of test functions
+3. Add your test to the main() function in the test file
+
+Example test function structure:
+```c
+void test_newFeature() {
+    printf("Testing new feature...\n");
+    // Test code here
+    if (expected == actual) {
+        printf("PASS\n");
+    } else {
+        printf("FAIL\n");
+    }
+}
 
 ---
 
