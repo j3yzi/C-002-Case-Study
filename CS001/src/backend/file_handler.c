@@ -1,6 +1,6 @@
 #include "../../include/employee.h"
 
-int saveEmployeeDataToFile(EmployeeNode* head, const char *filename) {
+int exportEmployeeDataToFile(EmployeeNode* head, const char *filename) {
     FILE *file = fopen(filename, "wb");
     if (file == NULL) {
         perror("Error opening file for writing");

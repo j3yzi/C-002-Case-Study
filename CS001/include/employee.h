@@ -33,11 +33,24 @@ typedef struct EmployeeNode {
     struct EmployeeNode *next;
 } EmployeeNode;
 
+/**
+ * Global variables for managing the employee linked list.
+ * 
+ * The 'extern' keyword indicates that these variables are declared here,
+ * but their memory allocation and definition are in another source file.
+ * This allows multiple source files to access the same global variables.
+ */
+// Global variables for the employee linked list
+extern EmployeeNode* empHead;
+extern EmployeeNode* empCurr;
+extern EmployeeNode* empTail;
+
+
 // FUNCTIONS PROTOTYPES HERE
 // -- START --
 
 // ### FRONTEND ###
-EmployeeNode* getEmployeeDataFromUser();
+EmployeeNode* getEmployeeDataFromUser(EmployeeNode** newEmployee);
 void displayReportHeader();
 void displayEmployeeRecord();
 
@@ -46,13 +59,19 @@ int runMenuLoop();
 
 // ### BACKEND ###
 void calculatePayroll();
-int saveEmployeeDataToFile();
-EmployeeNode* loadEmployeeDataFromFile();
+int exportEmployeeDataToFile(EmployeeNode* head, const char *filename);
+EmployeeNode* loadEmployeeDataFromFile(const char* filename);
 
 EmployeeNode* createEmployeeNode();
-
+int createEmployeeList();
 void addEmployeeNode();
 void freeEmployeeList();
+
+// Payroll calculation functions
+void calculateNetPay();
+void calculateBasicPay();
+void calculateDeductions();
+void calculateOvertimePay();
 
 // (optional)
 // int getEmployeeCount();

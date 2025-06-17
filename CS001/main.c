@@ -4,20 +4,30 @@
 
 #include "include/employee.h"
 
-EmployeeNode *employeeList = NULL;
 const char* dataFile = "data/record.bin";
 
-int main (void)
+int main(void)
 {
-    employeeList = loadEmployeeDataFromFile(dataFile);
+    // Try to load existing data
+    empHead = loadEmployeeDataFromFile(dataFile);
     
-    if (employeeList == NULL) {
+    if (empHead == NULL) {
         printf("No previous records found or file error. Starting fresh.\n\n");
     } else {
         printf("Employee records loaded successfully.\n\n");
+        
+        // Set tail pointer to the last node in the list
+        empTail = empHead;
+        while (empTail->next != NULL) {
+            empTail = empTail->next;
+        }
     }
 
+    // Run the main menu loop
     runMenuLoop();
-
+    
+    // Clean up before exiting
+    freeEmployeeList();
+    
     return 0;
 }
