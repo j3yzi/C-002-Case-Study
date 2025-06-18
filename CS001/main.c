@@ -5,7 +5,6 @@
 #include "include/employee.h"
 #include "include/appctxt.h"
 
-
 int main(void)
 {
     // Initialize context
@@ -21,7 +20,7 @@ int main(void)
     runMenuLoop(&appContext);
     
     // Clean up before exiting
-    freeEmployeeList();
+    freeEmployeeList(&appContext);
     
     return 0;
 }

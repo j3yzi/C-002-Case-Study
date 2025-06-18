@@ -7,19 +7,19 @@ int exportEmployeeDataToFile(EmployeeNode* head, const char *filename) {
         perror("Error opening file for writing");
         return 0; 
     }
-    
-    EmployeeNode *current = head;
+      EmployeeNode *current = head;
     while (current != NULL) {
-    
-        size_t written = fwrite(current, sizeof(EmployeeNode), 1, file);
+        // This writes all data fields but stops before the 'next' pointer.
+        // This is correct, assuming 'next' is the last member and there's no padding.
+        size_t written = fwrite(current, sizeof(EmployeeNode) - sizeof(EmployeeNode*), 1, file);
 
         if (written != 1) {
-            perror("Error writing to file");
+            perror("Error writing record to file");
             fclose(file);
-            return 0; 
+            return 0;
         }
-
-        current = current->next;
+        
+        current = current->next; // Advance to next node
     }
 
     fclose(file);
@@ -36,10 +36,12 @@ EmployeeNode* loadEmployeeDataFromFile (const char* filename) {
     }
 
     EmployeeNode *head = NULL;
-    EmployeeNode *current = NULL;
+    EmployeeNode *tail = NULL;
     EmployeeNode tempNode;
 
-    while (fread(&tempNode, sizeof(EmployeeNode), 1, file) == 1) {
+    while (fread(&tempNode, sizeof(EmployeeNode) - sizeof(EmployeeNode*), 1, file) == 1) {
+        
+        tempNode.next = NULL;
         EmployeeNode* newNode = (EmployeeNode*)malloc(sizeof(EmployeeNode));
 
         if (newNode == NULL) {
@@ -49,14 +51,13 @@ EmployeeNode* loadEmployeeDataFromFile (const char* filename) {
         }
 
         *newNode = tempNode;
-        newNode->next = NULL;
 
         if (head == NULL) {
             head = newNode;
-            current = newNode;
+            tail = newNode;
         } else {
-            current->next = newNode;
-            current = newNode; 
+            tail->next = newNode;
+            tail = newNode; 
         }
     }
 

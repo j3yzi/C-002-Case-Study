@@ -7,7 +7,7 @@ int createEmployeeList(AppContext** appContext) {
     for (int i = 0; i < MAX_EMPLOYEE_CREATION_COUNT; i++) {
         createEmployeeNode(appContext);
     }
-
+    
     (*appContext)->isInitialList = false;
 
     return 0; // success
@@ -72,8 +72,22 @@ void deleteEmployeeNode() {
      */
 }
 
-void freeEmployeeList() {
-    
+void freeEmployeeList(AppContext** appContext) {
+    EmployeeNode* current = (*appContext)->head;
+    EmployeeNode* next;
+
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+
+    // Reset the context to a clean state
+    (*appContext)->head = NULL;
+    (*appContext)->tail = NULL;
+    (*appContext)->count = 0;
+    (*appContext)->isInitialList = true;
+
     /* NOTE TO DEVELOPERS:
      * This function frees all dynamically allocated memory for employee nodes.
      * It should be called before program termination or when reloading data.

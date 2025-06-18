@@ -13,6 +13,13 @@ void calculateBasicPay(EmployeeNode* employee) {
 void calculateOvertimePay(EmployeeNode* employee) {
     if (employee == NULL) return;
     
+    if (employee->hoursWorked > 160) {
+        int overtimeHours = employee->hoursWorked - 160;
+        employee->overtimePay = overtimeHours * (employee->basicRate * 0.5f);
+    } else {
+        employee->overtimePay = 0.0f; // No overtime pay if hours worked is 160 or less
+    }
+
     /* NOTE TO DEVELOPERS:
      * Overtime pay calculation: Only applies to hours worked beyond 160 hours
      */
@@ -31,6 +38,9 @@ void calculateDeductions(EmployeeNode* employee) {
 void calculateNetPay(EmployeeNode* employee) {
     if (employee == NULL) return;
     
+    calculateOvertimePay(employee);
+    employee->netPay = employee->basicPay + employee->overtimePay - employee->deductions;
+
     /* NOTE TO DEVELOPERS:
      * Net pay is the final amount after all calculations:
      * Net Pay = Basic Pay + Overtime Pay - Deductions

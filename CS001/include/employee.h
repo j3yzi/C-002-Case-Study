@@ -13,70 +13,43 @@ typedef struct AppContext AppContext;
 
 #define EMPLOYEE_NUMBER_LEN 11
 #define EMPLOYEE_NAME_LEN 16
+
 #define MAX_EMPLOYEE_CREATION_COUNT 2
 #define MAX_EMPLOYEE_RECORDS 50
 
+#define PAYROLL_FILE_NAME "payroll.dat"
+#define REGULAR_HOURS 160.0f
+#define OVERTIME_RATE 0.5f
+
+typedef struct {
+    char employeeNumber[EMPLOYEE_NUMBER_LEN];
+    char employeeName[EMPLOYEE_NAME_LEN];
+} PersonalInfo;
 typedef enum {
     STATUS_REGULAR, // R
     STATUS_CASUAL // C
-} EmployeeStatusCode;
+} EmployeeStatus;
 
-typedef struct EmployeeNode {
-    char employeeNumber[EMPLOYEE_NUMBER_LEN]; // 10 characters 
-    char employeeName[EMPLOYEE_NAME_LEN];     // 15 characters 
-    
-    EmployeeStatusCode statusCode;            // R or C 
-    
-    int hoursWorked;                          // max 99 
-    
-    float basicPay;                           // max 999999.99 
-    float basicRate;                          // max 999.99 
-    float deductions;                         // max 99999.99 
-    float overtimePay;                        // Computed.]
-    float netPay;                             // Computed.]
-    
-    struct EmployeeNode *next;
-} EmployeeNode;
+typedef struct {
+    EmployeeStatus status;
+    int hoursWorked;
+    float basicRate;
+} EmploymentInfo;
+
+typedef struct {
+    float basicPay;
+    float overtimePay;
+    float deductions;
+    float netPay;
+} PayrollInfo;
+
+typedef struct {
+    PersonalInfo personal;
+    EmploymentInfo employment;
+    PayrollInfo payroll;
+} Employee;
 
 
-// FUNCTIONS PROTOTYPES HERE
-// -- START --
-
-// ### FRONTEND ###
-
-// employee_io.c
-EmployeeNode* getEmployeeDataFromUser(EmployeeNode** newEmployee, AppContext* appContext);
-void displayReportHeader();
-int displayEmployeeRecord(AppContext* appContext);
-
-// menu_io.c
-void printMenu();
-int runMenuLoop(AppContext* appContext);
-
-// ### BACKEND ###
-
-// file_handler.c
-int exportEmployeeDataToFile(EmployeeNode* head, const char *filename);
-EmployeeNode* loadEmployeeDataFromFile(const char* filename);
-
-// list_manager.c
-int createEmployeeList(AppContext** appContext);
-EmployeeNode* createEmployeeNode(AppContext** appContext);
-void editEmployeeNode();
-void deleteEmployeeNode();
-void freeEmployeeList();
-int getEmployeeCount();
-
-// payroll_logic.c
-void calculateBasicPay(EmployeeNode* employee);
-void calculateOvertimePay(EmployeeNode* employee);
-void calculateDeductions(EmployeeNode* employee);
-void calculateNetPay(EmployeeNode* employee);
-
-// (optional)
-// int getEmployeeCount();
-// EmployeeNode* findEmployeeByNumber();
-// void deleteEmployeeNode();
 
 // -- END --
 
