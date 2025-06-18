@@ -12,6 +12,7 @@ int main(void)
     appContext.head = NULL;
     appContext.tail = NULL;
     appContext.current = NULL;
+    // haha
     appContext.count = 0;
     appContext.dataFile = "data/record.bin";
     appContext.isInitialList = true;
