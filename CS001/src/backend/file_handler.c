@@ -1,4 +1,5 @@
 #include "../../include/employee.h"
+#include "../../include/appctxt.h"
 
 int exportEmployeeDataToFile(EmployeeNode* head, const char *filename) {
     FILE *file = fopen(filename, "wb");

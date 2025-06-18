@@ -3,28 +3,22 @@
 #include <string.h>
 
 #include "include/employee.h"
+#include "include/appctxt.h"
 
-const char* dataFile = "data/record.bin";
 
 int main(void)
 {
-    // Try to load existing data
-    empHead = loadEmployeeDataFromFile(dataFile);
-    
-    if (empHead == NULL) {
-        printf("No previous records found or file error. Starting fresh.\n\n");
-    } else {
-        printf("Employee records loaded successfully.\n\n");
-        
-        // Set tail pointer to the last node in the list
-        empTail = empHead;
-        while (empTail->next != NULL) {
-            empTail = empTail->next;
-        }
-    }
+    // Initialize context
+    AppContext appContext;
+    appContext.head = NULL;
+    appContext.tail = NULL;
+    appContext.current = NULL;
+    appContext.count = 0;
+    appContext.dataFile = "data/record.bin";
+    appContext.isInitialList = true;
 
     // Run the main menu loop
-    runMenuLoop();
+    runMenuLoop(&appContext);
     
     // Clean up before exiting
     freeEmployeeList();

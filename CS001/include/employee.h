@@ -6,10 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+// Forward declaration to avoid circular dependency
+typedef struct AppContext AppContext;
 
 #define EMPLOYEE_NUMBER_LEN 11
 #define EMPLOYEE_NAME_LEN 16
-#define MAX_EMPLOYEES 5
+#define MAX_EMPLOYEE_CREATION_COUNT 2
+#define MAX_EMPLOYEE_RECORDS 50
 
 typedef enum {
     STATUS_REGULAR, // R
@@ -33,45 +38,40 @@ typedef struct EmployeeNode {
     struct EmployeeNode *next;
 } EmployeeNode;
 
-/**
- * Global variables for managing the employee linked list.
- * 
- * The 'extern' keyword indicates that these variables are declared here,
- * but their memory allocation and definition are in another source file.
- * This allows multiple source files to access the same global variables.
- */
-// Global variables for the employee linked list
-extern EmployeeNode* empHead;
-extern EmployeeNode* empCurr;
-extern EmployeeNode* empTail;
-
 
 // FUNCTIONS PROTOTYPES HERE
 // -- START --
 
 // ### FRONTEND ###
-EmployeeNode* getEmployeeDataFromUser(EmployeeNode** newEmployee);
-void displayReportHeader();
-void displayEmployeeRecord();
 
+// employee_io.c
+EmployeeNode* getEmployeeDataFromUser(EmployeeNode** newEmployee, AppContext* appContext);
+void displayReportHeader();
+int displayEmployeeRecord(AppContext* appContext);
+
+// menu_io.c
 void printMenu();
-int runMenuLoop();
+int runMenuLoop(AppContext* appContext);
 
 // ### BACKEND ###
-void calculatePayroll();
+
+// file_handler.c
 int exportEmployeeDataToFile(EmployeeNode* head, const char *filename);
 EmployeeNode* loadEmployeeDataFromFile(const char* filename);
 
-EmployeeNode* createEmployeeNode();
-int createEmployeeList();
-void addEmployeeNode();
+// list_manager.c
+int createEmployeeList(AppContext** appContext);
+EmployeeNode* createEmployeeNode(AppContext** appContext);
+void editEmployeeNode();
+void deleteEmployeeNode();
 void freeEmployeeList();
+int getEmployeeCount();
 
-// Payroll calculation functions
-void calculateNetPay();
-void calculateBasicPay();
-void calculateDeductions();
-void calculateOvertimePay();
+// payroll_logic.c
+void calculateBasicPay(EmployeeNode* employee);
+void calculateOvertimePay(EmployeeNode* employee);
+void calculateDeductions(EmployeeNode* employee);
+void calculateNetPay(EmployeeNode* employee);
 
 // (optional)
 // int getEmployeeCount();

@@ -1,86 +1,54 @@
 #include "../../include/employee.h"
+#include "../../include/appctxt.h"
 
 // Creates and initializes a list of employee nodes (up to MAX_EMPLOYEES)
-int createEmployeeList() {
-    for (int i = 0; i < MAX_EMPLOYEES; i++) {
-        EmployeeNode* newEmployee = (EmployeeNode*)malloc(sizeof(EmployeeNode));
-        if (newEmployee == NULL) {
-            perror("Failed to allocate memory for employee");
-            return -1; // memory allocation failure
-        }
-        
-        // memset(newEmployee->employeeNumber, 0, EMPLOYEE_NUMBER_LEN);
-        // memset(newEmployee->employeeName, 0, EMPLOYEE_NAME_LEN);
-
-        
-        // ! DAPAT MAYROONG CODE HERE NA NAGI-INITIALIZE MUNA NG DATA NUNG STRUCT ! 
-
-        // Get user input data for this employee
-        getEmployeeDataFromUser(&newEmployee); // Ipapasa na sa frontend toh
-        
-        // Add to the linked list
-        if (empHead == NULL) {
-            empHead = newEmployee;
-            empTail = newEmployee;
-        } else {
-            empTail->next = newEmployee;
-            empTail = newEmployee;
-        }
+int createEmployeeList(AppContext** appContext) {
+    
+    for (int i = 0; i < MAX_EMPLOYEE_CREATION_COUNT; i++) {
+        createEmployeeNode(appContext);
     }
 
+    (*appContext)->isInitialList = false;
+
     return 0; // success
-    
-    /* NOTE TO DEVELOPERS:
-     * This function creates MAX_EMPLOYEES number of nodes.
-     * Each node is initialized and then filled with user data.
-     * The nodes are linked together in a singly-linked list.
-     */
 }
 
 // Creates and initializes a single employee node
-EmployeeNode* createEmployeeNode() {
+EmployeeNode* createEmployeeNode(AppContext** appContext) {
     EmployeeNode* newEmployee = (EmployeeNode*)malloc(sizeof(EmployeeNode));
+        
     if (newEmployee == NULL) {
         perror("Failed to allocate memory for employee");
-        return NULL;
+        return NULL; // memory allocation failure
     }
+        
+    memset(newEmployee->employeeNumber, 0, EMPLOYEE_NUMBER_LEN);
+    memset(newEmployee->employeeName, 0, EMPLOYEE_NAME_LEN);
     
-    /* NOTE TO DEVELOPERS:
-     * This function creates a single employee node with default values.
-     * After creation, you should populate it with actual employee data.
-     * Don't forget to link it to the list if needed.
-     */
-    
-    return newEmployee;
-}
+    newEmployee->statusCode = STATUS_REGULAR;
+    newEmployee->hoursWorked = 0;
+    newEmployee->basicPay = 0;
+    newEmployee->basicRate = 0;
+    newEmployee->deductions = 0;
+    newEmployee->overtimePay = 0;
+    newEmployee->netPay = 0;
+    newEmployee->next = NULL;
 
-// Ito yung single node lang ia-add pero dapat may laman nang lima yung list
-void addEmployeeNode() {
-    // Create a new employee node
-    EmployeeNode* newEmployee = createEmployeeNode();
-    if (newEmployee == NULL) {
-        return;  // Failed to create node
-    }
-    
-    // Get user input for the new employee
-    getEmployeeDataFromUser(&newEmployee);
+    // Get user input data for this employee
+    getEmployeeDataFromUser(&newEmployee, *appContext); // Ipapasa na sa frontend toh
     
     // Add to the linked list
-    if (empHead == NULL) {
-        // Empty list case
-        empHead = newEmployee;
-        empTail = newEmployee;
+    if ((*appContext)->head == NULL) {
+        (*appContext)->head = newEmployee;
+        (*appContext)->tail = newEmployee;
     } else {
-        // Add to the end of the list
-        empTail->next = newEmployee;
-        empTail = newEmployee;
+        (*appContext)->tail->next = newEmployee;
+        (*appContext)->tail = newEmployee;
     }
     
-    /* NOTE TO DEVELOPERS:
-     * This function adds a new employee to the end of the list.
-     * Make sure to update the tail pointer correctly.
-     * Consider adding a check for MAX_EMPLOYEES limit if needed.
-     */
+    (*appContext)->count++;
+
+    return newEmployee;
 }
 
 void editEmployeeNode() {
