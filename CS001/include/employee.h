@@ -16,7 +16,7 @@ typedef struct AppContext AppContext;
 #define EMPLOYEE_NUMBER_LEN 11
 #define EMPLOYEE_NAME_LEN 16
 
-#define MAX_EMPLOYEE_CREATION_COUNT 2
+#define MAX_EMPLOYEE_CREATION_COUNT 5
 #define MAX_EMPLOYEE_RECORDS 50
 
 #define PAYROLL_FILE_NAME "payroll.dat"

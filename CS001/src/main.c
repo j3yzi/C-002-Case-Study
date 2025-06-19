@@ -4,7 +4,7 @@
 
 #include "../include/employee.h"
 #include "../include/apctxt.h"
-
+#include "../include/list.h"
 
 // Initialize configuration
 AppConfig config;
@@ -24,12 +24,18 @@ int main(void)
 
     // appClearScreen();
 
+    
+
     appFormField employeeForm[] = {
         {"Employee Number: ", employee.personal.employeeNumber, EMPLOYEE_NUMBER_LEN, IV_NONE, {0}},
+
         {"Employee Name: ", employee.personal.employeeName, EMPLOYEE_NAME_LEN, IV_NONE, {0}},
+
         // Corrected fields to use string buffers and appropriate validation
         {"Employee Status (0 for Regular, 1 for Casual): ", statusStr, sizeof(statusStr), IV_CHOICES, {.choices = {.choices = (const char*[]){"0", "1"}, .count = 2}}},
+
         {"Hours Worked: ", hoursStr, sizeof(hoursStr), IV_RANGE_INT, {.rangeInt = {0, 99}}},
+
         {"Basic Rate: ", rateStr, sizeof(rateStr), IV_RANGE_FLT, {.rangeFloat = {0.0f, 999.99f}}}
     };
 

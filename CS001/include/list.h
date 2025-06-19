@@ -20,6 +20,8 @@ typedef struct LinkedList {
     int size;
 } list;
 
+
+
 void addNode(list** l, void* data);
 void removeNode(list* l, void* data);
 void* getNodeData(list* l, int index);

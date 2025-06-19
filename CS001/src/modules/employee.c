@@ -14,14 +14,16 @@ void addInitialEmployees() {
     }
 }
 
-static void createEmployee(Employee* newEmployeeData, list** l) {
+void createEmployee(Employee* newEmployeeData, list** l) {
     addNode(l, newEmployeeData);
 }
 
-void updateEmployee(Employee* employee, void* data) {
+// void updateEmployee(Employee* employee, void* data) {
 
-}
+// }
 
 void deleteEmployee(Employee* employee) {
-
+    if (employee != NULL) {
+        free(employee);
+    }
 }
