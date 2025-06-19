@@ -1,7 +1,21 @@
 #include "../../include/employee.h"
 
-Employee* createEmployee(void* data) {
+void addInitialEmployees() {
+    list *employeeList = (list*)malloc(sizeof(list));
+    employeeList = createList(SINGLY);
 
+    for (int i = 0; i < MAX_EMPLOYEE_CREATION_COUNT; i++)
+    {
+        Employee* newEmployeeData = (Employee*)malloc(sizeof(Employee)); 
+        
+        getEmployeeDataFromUser(&newEmployeeData);
+
+        createEmployee(newEmployeeData, &employeeList);    
+    }
+}
+
+static void createEmployee(Employee* newEmployeeData, list** l) {
+    addNode(l, newEmployeeData);
 }
 
 void updateEmployee(Employee* employee, void* data) {

@@ -53,6 +53,9 @@ typedef struct {
 
 int exportEmployeeDataToFile(list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
+
+int getEmployeeDataFromUser(Employee** employee);
+
 // -- END --
 
 #endif
