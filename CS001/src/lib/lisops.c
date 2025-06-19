@@ -1,4 +1,4 @@
-#include "list.h"
+#include "../../include/list.h"
 
 void linkNodeSingly(list** l, node* newNode) {
     if ((*l)->head == NULL) {

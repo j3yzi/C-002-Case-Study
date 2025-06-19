@@ -1,4 +1,4 @@
-#include "list.h"
+#include "../../include/list.h"
 
 void addNode(list** l, void* data) {
     node* newNode = (node*)malloc(sizeof(node));

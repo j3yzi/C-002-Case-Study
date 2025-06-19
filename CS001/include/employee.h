@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "list.h"
+
 // Forward declaration to avoid circular dependency
 typedef struct AppContext AppContext;
 
@@ -49,8 +51,8 @@ typedef struct {
     PayrollInfo payroll;
 } Employee;
 
-
-
+int exportEmployeeDataToFile(list* employeeList, const char *filename);
+list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 // -- END --
 
 #endif
