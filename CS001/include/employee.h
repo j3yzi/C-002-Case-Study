@@ -6,78 +6,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+#include "list.h"
+
+// Forward declaration to avoid circular dependency
+typedef struct AppContext AppContext;
 
 #define EMPLOYEE_NUMBER_LEN 11
 #define EMPLOYEE_NAME_LEN 16
-#define MAX_EMPLOYEES 5
 
+#define MAX_EMPLOYEE_CREATION_COUNT 2
+#define MAX_EMPLOYEE_RECORDS 50
+
+#define PAYROLL_FILE_NAME "payroll.dat"
+#define REGULAR_HOURS 160.0f
+#define OVERTIME_RATE 0.5f
+
+typedef struct {
+    char employeeNumber[EMPLOYEE_NUMBER_LEN];
+    char employeeName[EMPLOYEE_NAME_LEN];
+} PersonalInfo;
 typedef enum {
     STATUS_REGULAR, // R
     STATUS_CASUAL // C
-} EmployeeStatusCode;
+} EmployeeStatus;
 
-typedef struct EmployeeNode {
-    char employeeNumber[EMPLOYEE_NUMBER_LEN]; // 10 characters 
-    char employeeName[EMPLOYEE_NAME_LEN];     // 15 characters 
-    
-    EmployeeStatusCode statusCode;            // R or C 
-    
-    int hoursWorked;                          // max 99 
-    
-    float basicPay;                           // max 999999.99 
-    float basicRate;                          // max 999.99 
-    float deductions;                         // max 99999.99 
-    float overtimePay;                        // Computed.]
-    float netPay;                             // Computed.]
-    
-    struct EmployeeNode *next;
-} EmployeeNode;
+typedef struct {
+    EmployeeStatus status;
+    int hoursWorked;
+    float basicRate;
+} EmploymentInfo;
 
-/**
- * Global variables for managing the employee linked list.
- * 
- * The 'extern' keyword indicates that these variables are declared here,
- * but their memory allocation and definition are in another source file.
- * This allows multiple source files to access the same global variables.
- */
-// Global variables for the employee linked list
-extern EmployeeNode* empHead;
-extern EmployeeNode* empCurr;
-extern EmployeeNode* empTail;
+typedef struct {
+    float basicPay;
+    float overtimePay;
+    float deductions;
+    float netPay;
+} PayrollInfo;
 
+typedef struct {
+    PersonalInfo personal;
+    EmploymentInfo employment;
+    PayrollInfo payroll;
+} Employee;
 
-// FUNCTIONS PROTOTYPES HERE
-// -- START --
-
-// ### FRONTEND ###
-EmployeeNode* getEmployeeDataFromUser(EmployeeNode** newEmployee);
-void displayReportHeader();
-void displayEmployeeRecord();
-
-void printMenu();
-int runMenuLoop();
-
-// ### BACKEND ###
-void calculatePayroll();
-int exportEmployeeDataToFile(EmployeeNode* head, const char *filename);
-EmployeeNode* loadEmployeeDataFromFile(const char* filename);
-
-EmployeeNode* createEmployeeNode();
-int createEmployeeList();
-void addEmployeeNode();
-void freeEmployeeList();
-
-// Payroll calculation functions
-void calculateNetPay();
-void calculateBasicPay();
-void calculateDeductions();
-void calculateOvertimePay();
-
-// (optional)
-// int getEmployeeCount();
-// EmployeeNode* findEmployeeByNumber();
-// void deleteEmployeeNode();
-
+int exportEmployeeDataToFile(list* employeeList, const char *filename);
+list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 // -- END --
 
 #endif
