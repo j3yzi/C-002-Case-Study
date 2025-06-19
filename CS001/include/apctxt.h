@@ -59,9 +59,11 @@ typedef struct {
     IValidationParams validationParams;
 } appFormField;
 
+
 void appClearScreen();
 void appPrintHeader(const Header* header);
 
+// Validation functions
 static void read_line(char* buffer, int size);
 static bool is_valid(char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);

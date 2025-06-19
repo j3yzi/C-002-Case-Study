@@ -47,6 +47,35 @@ static bool is_valid(char* input, IValidationType type, IValidationParams params
             }
             printf("\n");
             return false;
+
+            case IV_RANGE_FLT:
+                {
+                char* end;
+                double val = strtod(input, &end);
+                if (end == input || *end != '\0') { // Check if conversion was successful
+                    printf("   [Error] Invalid float format.\n");
+                    return false;
+                }
+                if (val < params.rangeFloat.min || val > params.rangeFloat.max) {
+                    printf("   [Error] Value out of range. Must be between %.2f and %.2f.\n", params.rangeFloat.min, params.rangeFloat.max);
+                    return false;
+                }
+                return true;
+            }
+
+        case IV_RANGE_INT:
+                char* end;
+                long val = strtol(input, &end, 10);
+                if (end == input || *end != '\0') { // Check if conversion was successful
+                    printf("   [Error] Invalid integer format.\n");
+                    return false;
+                }
+                if (val < params.rangeInt.min || val > params.rangeInt.max) {
+                    printf("   [Error] Value out of range. Must be between %ld and %ld.\n", params.rangeInt.min, params.rangeInt.max);
+                    return false;
+                }
+                return true;
+            return false;
         default:
             return true;
     }

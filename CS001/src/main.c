@@ -13,6 +13,13 @@ int main(void)
 {   
     Employee employee;
 
+    config.appName = "Payroll Management System";
+    config.appVersion = "1.0.0";
+    config.license = "MIT License";
+    config.creator = "GROUP 1 - BSIT 1-2";
+
+    // appClearScreen();
+
     appFormField employeeForm[] = {
         {"Employee Number: ", employee.personal.employeeNumber, EMPLOYEE_NUMBER_LEN, IV_NONE, {0}},
         {"Employee Name: ", employee.personal.employeeName, EMPLOYEE_NAME_LEN, IV_NONE, {0}},
