@@ -51,10 +51,13 @@ typedef struct {
     PayrollInfo payroll;
 } Employee;
 
+// Function declarations
 int exportEmployeeDataToFile(list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
-
 int getEmployeeDataFromUser(Employee** employee);
+void addInitialEmployees();
+void createEmployee(Employee* newEmployeeData, list** l);
+void deleteEmployee(Employee* employee);
 
 // -- END --
 

@@ -30,7 +30,8 @@ typedef enum {
     IV_CHOICES,
     IV_RANGE_INT,
     IV_RANGE_FLT,
-    IV_MAX_LEN
+    IV_MAX_LEN,
+    IV_MAX_LEN_CHARS,
 } IValidationType;
 
 typedef union {
@@ -49,6 +50,9 @@ typedef union {
         double min;
         double max;
     } rangeFloat;
+    struct {
+        int maxLength;
+    } maxLengthChars;
 } IValidationParams;
 
 typedef struct {

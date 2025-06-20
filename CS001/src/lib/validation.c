@@ -1,9 +1,21 @@
 #include "../../include/apctxt.h"
 
+// Enable ANSI escape sequences for Windows
+static void enableAnsiSupport() {
+    #ifdef _WIN32
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (hOut != INVALID_HANDLE_VALUE) {
+            DWORD dwMode = 0;
+            if (GetConsoleMode(hOut, &dwMode)) {
+                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                SetConsoleMode(hOut, dwMode);
+            }
+        }
+    #endif
+}
 
 static void read_line(char* buffer, int size) {
     memset(buffer, 0, size);
-    
     if (fgets(buffer, size, stdin)) {
         char* newline = strchr(buffer, '\n');
         if (newline) {
@@ -48,8 +60,8 @@ static bool is_valid(char* input, IValidationType type, IValidationParams params
             printf("\n");
             return false;
 
-            case IV_RANGE_FLT:
-                {
+        case IV_RANGE_FLT:
+            {
                 char* end;
                 double val = strtod(input, &end);
                 if (end == input || *end != '\0') { // Check if conversion was successful
@@ -64,6 +76,7 @@ static bool is_valid(char* input, IValidationType type, IValidationParams params
             }
 
         case IV_RANGE_INT:
+            {
                 char* end;
                 long val = strtol(input, &end, 10);
                 if (end == input || *end != '\0') { // Check if conversion was successful
@@ -75,28 +88,37 @@ static bool is_valid(char* input, IValidationType type, IValidationParams params
                     return false;
                 }
                 return true;
-            return false;
+            }
+
+        case IV_MAX_LEN_CHARS:
+            if (strlen(input) > params.maxLengthChars.maxLength) {
+                printf("   [Error] Input too long. Maximum length is %d characters.\n", params.maxLengthChars.maxLength);
+                return false;
+            }
+            return true;
         default:
             return true;
     }
 }
 
 void appGetValidatedInput(appFormField* fields, int fieldCount) {
+    static bool ansiEnabled = false;
+    if (!ansiEnabled) {
+        enableAnsiSupport();
+        ansiEnabled = true;
+    }
+    char tempBuffer[256];
     for (int i = 0; i < fieldCount; i++) {
         bool valid_input = false;
-        int attempts = 0;
-        
         while (!valid_input) {
-            if (attempts > 0) {
-                printf("\n");
-            }
             printf("%s", fields[i].prompt);
-            
-            read_line(fields[i].buffer, fields[i].bufferSize);
-            
-            valid_input = is_valid(fields[i].buffer, fields[i].validationType, fields[i].validationParams);
-            
-            attempts++;
+            read_line(tempBuffer, sizeof(tempBuffer));
+            valid_input = is_valid(tempBuffer, fields[i].validationType, fields[i].validationParams);
+            if (valid_input) {
+                // Copy up to bufferSize-1 chars to the actual field buffer
+                strncpy(fields[i].buffer, tempBuffer, fields[i].bufferSize - 1);
+                fields[i].buffer[fields[i].bufferSize - 1] = '\0';
+            }
         }
     }
 }

@@ -27,16 +27,20 @@ int main(void)
     
 
     appFormField employeeForm[] = {
-        {"Employee Number: ", employee.personal.employeeNumber, EMPLOYEE_NUMBER_LEN, IV_NONE, {0}},
+        {"\033[36mEmployee Number: \033[0m", employee.personal.employeeNumber, EMPLOYEE_NUMBER_LEN, IV_MAX_LEN_CHARS, {
+            .maxLengthChars = {.maxLength = EMPLOYEE_NUMBER_LEN - 1}
+        }},
 
-        {"Employee Name: ", employee.personal.employeeName, EMPLOYEE_NAME_LEN, IV_NONE, {0}},
+        {"\033[36mEmployee Name: \033[0m", employee.personal.employeeName, EMPLOYEE_NAME_LEN, IV_MAX_LEN_CHARS, {
+            .maxLengthChars = {.maxLength = EMPLOYEE_NAME_LEN - 1}
+        }},
 
         // Corrected fields to use string buffers and appropriate validation
-        {"Employee Status (0 for Regular, 1 for Casual): ", statusStr, sizeof(statusStr), IV_CHOICES, {.choices = {.choices = (const char*[]){"0", "1"}, .count = 2}}},
+        {"\033[36mEmployee Status (0 for Regular, 1 for Casual): \033[0m", statusStr, sizeof(statusStr), IV_CHOICES, {.choices = {.choices = (const char*[]){"0", "1"}, .count = 2}}},
 
-        {"Hours Worked: ", hoursStr, sizeof(hoursStr), IV_RANGE_INT, {.rangeInt = {0, 99}}},
+        {"\033[36mHours Worked: \033[0m", hoursStr, sizeof(hoursStr), IV_RANGE_INT, {.rangeInt = {0, 99}}},
 
-        {"Basic Rate: ", rateStr, sizeof(rateStr), IV_RANGE_FLT, {.rangeFloat = {0.0f, 999.99f}}}
+        {"\033[36mBasic Rate: \033[0m", rateStr, sizeof(rateStr), IV_RANGE_FLT, {.rangeFloat = {0.0f, 999.99f}}}
     };
 
     appGetValidatedInput(employeeForm, 5);

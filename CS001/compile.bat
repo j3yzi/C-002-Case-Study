@@ -19,9 +19,10 @@ REM Define include directory
 set INCLUDE_DIR=include
 
 REM Define source files individually
-set FRONTEND_SRCS=src\frontend\employee_io.c src\frontend\menu_io.c
-set BACKEND_SRCS=src\backend\file_handler.c src\backend\list_manager.c src\backend\payroll_logic.c
-set MAIN_SRC=main.c
+set UI_SRCS=src\ui\empio.c
+set MODULE_SRCS=src\modules\data.c src\modules\employee.c src\modules\payroll.c
+set LIB_SRCS=src\lib\lismgr.c src\lib\lisops.c src\lib\validation.c
+set MAIN_SRC=src\main.c
 
 REM Define output executable name
 set TARGET=project_payroll.exe
@@ -32,16 +33,18 @@ echo.
 echo.
 %YELLOW% "Main source: "
 echo %MAIN_SRC%
-%YELLOW% "Frontend sources: "
-echo %FRONTEND_SRCS%
-%YELLOW% "Backend sources: "
-echo %BACKEND_SRCS%
+%YELLOW% "UI sources: "
+echo %UI_SRCS%
+%YELLOW% "Module sources: "
+echo %MODULE_SRCS%
+%YELLOW% "Library sources: "
+echo %LIB_SRCS%
 echo.
 
 REM --- Compilation Command ---
 %CYAN% "Running compilation command..."
 echo.
-%CC% %CFLAGS% %MAIN_SRC% %FRONTEND_SRCS% %BACKEND_SRCS% -I%INCLUDE_DIR% -o %TARGET%
+%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %LIB_SRCS% -I%INCLUDE_DIR% -o %TARGET%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo.

@@ -1,5 +1,8 @@
 #include "../../include/employee.h"
 
+// Forward declaration
+void createEmployee(Employee* newEmployeeData, list** l);
+
 void addInitialEmployees() {
     list *employeeList = (list*)malloc(sizeof(list));
     employeeList = createList(SINGLY);
