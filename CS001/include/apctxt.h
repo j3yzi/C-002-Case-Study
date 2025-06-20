@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
+#include <conio.h>
 #include <windows.h>
 
 typedef struct {
@@ -75,4 +75,10 @@ void appGetValidatedInput(appFormField* fields, int fieldCount);
 char appDisplayMenu(MenuOption options[], int optionCount, const char* disabledOpts);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
+void setColor(int text, int bg);
+void addMenu ();
+void printMenu(int selected);
+int runMenuLoop();
+
 #endif
+
