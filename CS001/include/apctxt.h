@@ -23,7 +23,23 @@ typedef struct {
 typedef struct {
     char key;
     const char* text;
+    bool isDisabled;
+    bool isSelected;
+    int highlightTextColor; // Color for highlighting the option
+    int highlightBgColor;   // Background color for highlighting the option
+    int textColor;      // Color for the text of the option
+    int bgColor;       // Background color for the option
+    int disabledTextColor; // Color for disabled options
+    int disabledBgColor; // Background Color for disabled options
+    void (*onSelect)(void);
 } MenuOption;
+
+typedef struct {
+    int id;
+    const char* name;
+    MenuOption* options;
+    int optionCount;
+} Menu;
 
 typedef enum {
     IV_NONE,
@@ -63,22 +79,16 @@ typedef struct {
     IValidationParams validationParams;
 } appFormField;
 
-
-void appClearScreen();
-void appPrintHeader(const Header* header);
+// Menu functions
+static void appMenuSetColor(int textColor, int bgColor);
+static void appDisplayMenu(Menu menu);
+void appInitMenu(Menu m);
 
 // Validation functions
-static void read_line(char* buffer, int size);
-static bool is_valid(char* input, IValidationType type, IValidationParams params);
+static void enableAnsiSupport();
+static void readLine(char* buffer, int size);
+static bool isValid(char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
-char appDisplayMenu(MenuOption options[], int optionCount, const char* disabledOpts);
-void appGetValidatedInput(appFormField* fields, int fieldCount);
-
-void setColor(int text, int bg);
-void addMenu ();
-void printMenu(int selected);
-int runMenuLoop();
-
-#endif
+#endif // APCTXT_H
 

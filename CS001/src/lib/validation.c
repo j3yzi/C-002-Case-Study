@@ -1,5 +1,10 @@
 #include "../../include/apctxt.h"
 
+static void enableAnsiSupport();
+static void readLine(char* buffer, int size);
+static bool isValid(char* input, IValidationType type, IValidationParams params);
+void appGetValidatedInput(appFormField* fields, int fieldCount);
+
 // Enable ANSI escape sequences for Windows
 static void enableAnsiSupport() {
     #ifdef _WIN32
@@ -14,7 +19,7 @@ static void enableAnsiSupport() {
     #endif
 }
 
-static void read_line(char* buffer, int size) {
+static void readLine(char* buffer, int size) {
     memset(buffer, 0, size);
     if (fgets(buffer, size, stdin)) {
         char* newline = strchr(buffer, '\n');
@@ -27,7 +32,7 @@ static void read_line(char* buffer, int size) {
     }
 }
 
-static bool is_valid(char* input, IValidationType type, IValidationParams params) {
+static bool isValid(char* input, IValidationType type, IValidationParams params) {
     if (input[0] == '\0') {
         printf("   [Error] Empty input. Please enter a value.\n");
         return false;
@@ -38,7 +43,7 @@ static bool is_valid(char* input, IValidationType type, IValidationParams params
             return true;
 
         case IV_MAX_LEN:
-            if (strlen(input) > params.rangeInt.max) {
+            if (strlen(input) > (size_t)params.rangeInt.max) {
                 printf("   [Error] Input too long. Maximum length is %ld characters.\n", params.rangeInt.max);
                 return false;
             }
@@ -112,8 +117,8 @@ void appGetValidatedInput(appFormField* fields, int fieldCount) {
         bool valid_input = false;
         while (!valid_input) {
             printf("%s", fields[i].prompt);
-            read_line(tempBuffer, sizeof(tempBuffer));
-            valid_input = is_valid(tempBuffer, fields[i].validationType, fields[i].validationParams);
+            readLine(tempBuffer, sizeof(tempBuffer));
+            valid_input = isValid(tempBuffer, fields[i].validationType, fields[i].validationParams);
             if (valid_input) {
                 // Copy up to bufferSize-1 chars to the actual field buffer
                 strncpy(fields[i].buffer, tempBuffer, fields[i].bufferSize - 1);
