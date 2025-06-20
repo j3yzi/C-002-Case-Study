@@ -1,65 +1,109 @@
 #include "../../include/apctxt.h"
+#include "../../include/employee.h"
+#include "../../include/state.h"
 
-// Forward declarations of functions
-void displayMenu(Menu menu);
-void initMenu(Menu m);
-void addEmployeeMenu(void);
-void backToMainMenu(void);
-void exitProgram(void);
+// Define colors for the menu options for better readability
+#define HIGHLIGHT_TEXT_COLOR 9 // Bright Blue
+#define HIGHLIGHT_BG_COLOR 0   // Black
+#define TEXT_COLOR 7           // White
+#define BG_COLOR 0             // Black
+#define DISABLED_TEXT_COLOR 8  // Gray
+#define DISABLED_BG_COLOR 0    // Black
 
-#define HIGHLIGHT_TEXT_COLOR 9 // Green
-#define HIGHLIGHT_BG_COLOR 0 // Black
-#define TEXT_COLOR 7 // White
-#define BG_COLOR 0 // Black
-#define DISABLED_TEXT_COLOR 8 // Gray
-#define DISABLED_BG_COLOR 0 // Black
+// In your real application, these would be in other files like 'employee.c'
+void handleCreateEmployeeList() {
+    system("cls");
+    printf("--- Action: Create Employee List selected ---\n");
+    printf("Press any key to continue...");
+    _getch();
+}
 
+void handleAddEmployee() {
+    system("cls");
+    printf("--- Action: Add Employee selected ---\n");
+    printf("Press any key to continue...");
+    _getch();
+}
+
+// Definition for the main menu
 Menu mainMenu = {
     1,
     "Main Menu",
     (MenuOption[]){
-        {'1', "Add Employees", FALSE, TRUE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, &addEmployeeMenu},
+        {'1', "Add/Create Employee Options", FALSE, TRUE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
         {'2', "Edit Employee Data", TRUE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'3', "Search Employee", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'4', "Delete Employee", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
+        {'3', "Search Employee", TRUE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
+        {'4', "Delete Employee", TRUE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
         {'5', "Load Employee From File", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'6', "Export Employee Data From To CSV", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'7', "Display Payroll Report", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'8', "Exit", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, &exitProgram}
+        {'6', "Export Employee Data To CSV", TRUE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
+        {'7', "Display Payroll Report", TRUE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
+        {'8', "Exit", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL}
     },
     8
 };
 
+// Definition for the sub-menu
 Menu addEmployeeSubMenu = {
     2,
     "Add Employee Sub Menu",
     (MenuOption[]){
-        {'1', "Create Employee List", FALSE, TRUE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'2', "Add Employee", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL},
-        {'3', "Back", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, &backToMainMenu}
+        // Assign the actual functions to the onSelect callback
+        {'1', "Create Employee List", FALSE, TRUE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, &handleCreateEmployeeList},
+        {'2', "Add an Employee", TRUE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, &handleAddEmployee},
+        // For the 'Back' option, the key is what matters. The onSelect callback should be NULL.
+        {'3', "Back to Main Menu", FALSE, FALSE, HIGHLIGHT_TEXT_COLOR, HIGHLIGHT_BG_COLOR, TEXT_COLOR, BG_COLOR, DISABLED_TEXT_COLOR, DISABLED_BG_COLOR, NULL}
     },
     3
 };
 
-void addEmployeeMenu(void) {
-    // Switch to the add employee submenu
-    appInitMenu(addEmployeeSubMenu);
+void checkStates() {
+    if (employeeListCreated.isEnabled) {
+        addEmployeeSubMenu.options[1].isDisabled = false; // Enable "Add an Employee" option
+        mainMenu.options[1].isDisabled = false; // Enable "Edit Employee Data" option
+        mainMenu.options[2].isDisabled = false; // Enable "Search Employee" option
+        mainMenu.options[3].isDisabled = false; // Enable "Delete Employee" option
+        mainMenu.options[5].isDisabled = false; // Enable "Export Employee Data To CSV" option
+        mainMenu.options[6].isDisabled = false; // Enable "Display Payroll Report" option
+    } 
 }
 
-void backToMainMenu(void) {
-    // Return to the main menu
-    appInitMenu(mainMenu);
-}
+int menuLoop() {
+    char mainMenuChoice;    
+    do {
+        checkStates();
+        mainMenuChoice = initMenu(&mainMenu);
 
-void exitProgram(void) {
-    system("cls");
-    printf("Thank you for using the program!\n");
-    exit(0);
-}
+        switch (mainMenuChoice) {
+            case '1': { // "Add/Create Employee Options" was selected
+                char subMenuChoice;
+                  do {
+                    checkStates();
+                    subMenuChoice = initMenu(&addEmployeeSubMenu);
+                    switch (subMenuChoice) {
+                        case '1': // "Create Employee List"
+                            employeeListCreated.isEnabled = true; // Enable the state
+                    }
+                } while (subMenuChoice != '3');
+                break; 
+            }
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+                system("cls");
+                printf("--- Action for option '%c' is not implemented yet. ---\n", mainMenuChoice);
+                printf("Press any key to continue...");
+                _getch();
+                break;
+            case '8':
+                break;
+            default:
+                break;
+        }
 
-int main(){
-    // Main program loop
-    appInitMenu(mainMenu);
+    } while (mainMenuChoice != '8');
     
     return 0;
 }

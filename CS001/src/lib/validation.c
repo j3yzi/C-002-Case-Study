@@ -93,10 +93,8 @@ static bool isValid(char* input, IValidationType type, IValidationParams params)
                     return false;
                 }
                 return true;
-            }
-
-        case IV_MAX_LEN_CHARS:
-            if (strlen(input) > params.maxLengthChars.maxLength) {
+            }        case IV_MAX_LEN_CHARS:
+            if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
                 printf("   [Error] Input too long. Maximum length is %d characters.\n", params.maxLengthChars.maxLength);
                 return false;
             }

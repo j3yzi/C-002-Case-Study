@@ -79,10 +79,15 @@ typedef struct {
     IValidationParams validationParams;
 } appFormField;
 
+typedef struct {
+    char* globalStateName;
+    bool isEnabled;
+} appState;
+
 // Menu functions
 static void appMenuSetColor(int textColor, int bgColor);
-static void appDisplayMenu(Menu menu);
-void appInitMenu(Menu m);
+static void appDisplayMenu(Menu* menu);
+char initMenu(Menu* m);
 
 // Validation functions
 static void enableAnsiSupport();

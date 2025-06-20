@@ -54,10 +54,19 @@ typedef struct {
 // Function declarations
 int exportEmployeeDataToFile(list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
-int getEmployeeDataFromUser(Employee** employee);
+
+
 void addInitialEmployees();
 void createEmployee(Employee* newEmployeeData, list** l);
 void deleteEmployee(Employee* employee);
+
+// empio.c
+int getEmployeeDataFromUser(Employee** employee);
+// menuio.c
+void handleCreateEmployeeList();
+void handleAddEmployee();
+int menuLoop();
+void checkStates();
 
 // -- END --
 
