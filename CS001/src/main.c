@@ -56,6 +56,7 @@ int main(void)
     // printf("Basic Rate: %.2f\n", employee.employment.basicRate);
     // // ---------------------
     
+    appInitWinTerm(config.appName);
     int initializeMenuLoop = menuLoop();
 
     system("cls");

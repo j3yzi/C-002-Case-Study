@@ -80,7 +80,6 @@ typedef struct {
 } appFormField;
 
 typedef struct {
-    char* globalStateName;
     bool isEnabled;
 } appState;
 
@@ -94,6 +93,27 @@ static void enableAnsiSupport();
 static void readLine(char* buffer, int size);
 static bool isValid(char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
+
+typedef struct {
+    int height;
+    int width;
+} winTermSize;
+
+typedef struct {
+    int x;
+    int y;
+} winTermCursorPos;
+
+// Window Terminal functions
+void appInitWinTerm(const char* title);
+void winTermSetCursor(int x, int y);
+void winTermClearLine();
+void winTermClearScreen();
+void winTermGetCursorPosition(winTermCursorPos* position);
+void winTermResetColors();
+
+// void winTermPrintLine(char ch, int width);
+// void winTermPrintCentered(const char* text, int width);
 
 #endif // APCTXT_H
 

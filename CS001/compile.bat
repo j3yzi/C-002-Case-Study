@@ -21,7 +21,7 @@ set INCLUDE_DIR=include
 REM Define source files individually
 set UI_SRCS=src\ui\empio.c src\ui\menuio.c
 set MODULE_SRCS=src\modules\data.c src\modules\employee.c src\modules\payroll.c 
-set LIB_SRCS=src\lib\lismgr.c src\lib\lisops.c src\lib\validation.c src\lib\menu.c
+set LIB_SRCS=src\lib\lismgr.c src\lib\lisops.c src\lib\validation.c src\lib\menu.c src\lib\appwnd.c
 set MAIN_SRC=src\main.c
 
 REM Define output executable name

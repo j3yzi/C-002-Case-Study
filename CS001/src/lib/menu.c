@@ -2,6 +2,8 @@
 
 static void appMenuSetColor(int textColor, int bgColor);
 static void appDisplayMenu(Menu* menu);
+static void appDisplayMenuOption(Menu* menu, int optionIndex, int x, int y);
+static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection);
 char initMenu(Menu* m);
 
 static void appMenuSetColor(int textColor, int bgColor) {
@@ -9,10 +11,14 @@ static void appMenuSetColor(int textColor, int bgColor) {
 }
 
 static void appDisplayMenu(Menu* menu) {
-    system("cls");  // Clear screen
-    printf("%s\n", menu->name);
+    winTermClearScreen();
+
     printf("====================================\n");
+    printf("%s\n", menu->name);
+    printf("====================================\n\n");
     
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
     for (int i = 0; i < menu->optionCount; i++) {
         if (menu->options[i].isDisabled) {
             appMenuSetColor(menu->options[i].disabledTextColor, menu->options[i].disabledBgColor); // Gray for disabled options
@@ -26,8 +32,53 @@ static void appDisplayMenu(Menu* menu) {
             printf(" %s\n", menu->options[i].text);
         }
     }
-    appMenuSetColor(7, 0); // Reset color
+    
+    winTermResetColors(); // Reset colors to default
 
+}
+
+static void appDisplayMenuOption(Menu* menu, int optionIndex, int x, int y) {
+    if (optionIndex < 0 || optionIndex >= menu->optionCount) return;
+    
+    winTermSetCursor(x, y);
+    winTermClearLine();
+    
+    MenuOption* option = &menu->options[optionIndex];
+    
+    if (option->isDisabled) {
+        appMenuSetColor(option->disabledTextColor, option->disabledBgColor);
+        printf(" %s (Disabled)", option->text);
+    } else if (option->isSelected) {
+        appMenuSetColor(option->highlightTextColor, option->highlightBgColor);
+        printf(">> %s", option->text);
+    } else {
+        appMenuSetColor(option->textColor, option->bgColor);
+        printf(" %s", option->text);
+    }
+    
+    // Reset to default colors
+    winTermResetColors();
+}
+
+static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection) {
+    winTermCursorPos pos;
+    winTermGetCursorPosition(&pos);
+    
+    // Calculate the Y positions of the old and new selections
+    // Assuming menu header takes 2 lines (title + separator)
+    int oldY = 2 + oldSelection;
+    int newY = 2 + newSelection;
+    
+    // Update the old selection (removing the selection indicator)
+    menu->options[oldSelection].isSelected = false;
+    appDisplayMenuOption(menu, oldSelection, 0, oldY);
+    
+    // Update the new selection (adding the selection indicator)
+    menu->options[newSelection].isSelected = true;
+    appDisplayMenuOption(menu, newSelection, 0, newY);
+    
+    // Restore cursor position
+    winTermSetCursor(pos.x, pos.y);
 }
 
 char initMenu(Menu* m) {
@@ -66,6 +117,7 @@ char initMenu(Menu* m) {
             key = _getch(); // Get the actual key code
             
             if (key == 72 || key == 75) { // Up/Left arrow
+                int oldSelected = selected; 
                 selected--;
                 if (selected < 0) selected = m->optionCount - 1;
                 if (m->options[selected].isDisabled) {
@@ -74,9 +126,11 @@ char initMenu(Menu* m) {
                         if (selected < 0) selected = m->optionCount - 1;
                     } while (m->options[selected].isDisabled);
                 }
+                appUpdateMenuSelection(m, oldSelected, selected);
             }
             
             if (key == 80 || key == 77) { // Down/Right arrow
+                int oldSelected = selected;
                 selected++;
                 if (selected >= m->optionCount) selected = 0;
                 if (m->options[selected].isDisabled) {
@@ -85,14 +139,8 @@ char initMenu(Menu* m) {
                         if (selected >= m->optionCount) selected = 0;
                     } while (m->options[selected].isDisabled);
                 }
+                appUpdateMenuSelection(m, oldSelected, selected);
             }
-            // Reset all selections
-            for (int i = 0; i < m->optionCount; i++) {
-                m->options[i].isSelected = false;
-            }
-            
-            // Mark the current selection
-            m->options[selected].isSelected = true;
         }
 
         // Process Enter key
