@@ -1,16 +1,16 @@
 #include "../headers/apctxt.h"
 
-static void appMenuSetColor(int textColor, int bgColor);
-static void appDisplayMenu(Menu* menu);
+void appMenuSetColor(int textColor, int bgColor);
+void appDisplayMenu(Menu* menu);
 static void appDisplayMenuOption(Menu* menu, int optionIndex, int x, int y);
 static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection);
 char initMenu(Menu* m);
 
-static void appMenuSetColor(int textColor, int bgColor) {
+void appMenuSetColor(int textColor, int bgColor) {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), textColor + (bgColor * 16));
 }
 
-static void appDisplayMenu(Menu* menu) {
+void appDisplayMenu(Menu* menu) {
     winTermClearScreen();
 
     printf("====================================\n");

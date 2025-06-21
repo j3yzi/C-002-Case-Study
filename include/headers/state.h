@@ -1,5 +1,9 @@
+#ifndef STATE_H
+#define STATE_H
+
 #include "apctxt.h"
 
-appState employeeListCreated = {
-    .isEnabled = false
-};
+/* Declare the state variable (not define) */
+extern appState employeeListCreated;
+
+#endif /* STATE_H */

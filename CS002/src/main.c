@@ -8,8 +8,6 @@
 
 int main(void)
 {   
-
-    int runMenu = runMenuLoop();
     
 
     return 0;

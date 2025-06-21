@@ -1,12 +1,12 @@
 #include "../headers/apctxt.h"
 
-static void enableAnsiSupport();
-static void readLine(char* buffer, int size);
-static bool isValid(char* input, IValidationType type, IValidationParams params);
+void enableAnsiSupport();
+void readLine(char* buffer, int size);
+bool isValid(char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
 // Enable ANSI escape sequences for Windows
-static void enableAnsiSupport() {
+void enableAnsiSupport() {
     #ifdef _WIN32
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         if (hOut != INVALID_HANDLE_VALUE) {
@@ -19,7 +19,7 @@ static void enableAnsiSupport() {
     #endif
 }
 
-static void readLine(char* buffer, int size) {
+void readLine(char* buffer, int size) {
     memset(buffer, 0, size);
     if (fgets(buffer, size, stdin)) {
         char* newline = strchr(buffer, '\n');
@@ -32,7 +32,7 @@ static void readLine(char* buffer, int size) {
     }
 }
 
-static bool isValid(char* input, IValidationType type, IValidationParams params) {
+bool isValid(char* input, IValidationType type, IValidationParams params) {
     if (input[0] == '\0') {
         printf("   [Error] Empty input. Please enter a value.\n");
         return false;

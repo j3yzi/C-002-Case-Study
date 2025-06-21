@@ -15,17 +15,47 @@ REM Define compiler and flags
 set CC=gcc
 set CFLAGS=-Wall -Wextra -std=c11 -g
 
-REM Define include directory
-set INCLUDE_DIR=include
+REM Create bin directory if it doesn't exist
+if not exist bin mkdir bin
 
-REM Define source files individually
-set UI_SRCS=src\ui\empio.c src\ui\menuio.c
-set MODULE_SRCS=src\modules\data.c src\modules\employee.c src\modules\payroll.c 
-set LIB_SRCS=src\lib\lismgr.c src\lib\lisops.c src\lib\validation.c src\lib\menu.c src\lib\appwnd.c
-set MAIN_SRC=src\main.c
+REM Define include directory
+set INCLUDE_DIR=..\include\headers
+
+REM Dynamically scan for source files
+set "MAIN_SRC=src\main.c"
+set "UI_SRCS="
+set "MODULE_SRCS="
+set "LIB_SRCS="
+
+REM Scan UI sources
+for %%F in (src\ui\*.c) do (
+    if not defined UI_SRCS (
+        set "UI_SRCS=%%F"
+    ) else (
+        set "UI_SRCS=!UI_SRCS! %%F"
+    )
+)
+
+REM Scan module sources
+for %%F in (src\modules\*.c) do (
+    if not defined MODULE_SRCS (
+        set "MODULE_SRCS=%%F"
+    ) else (
+        set "MODULE_SRCS=!MODULE_SRCS! %%F"
+    )
+)
+
+REM Scan library sources
+for %%F in (..\include\src\*.c) do (
+    if not defined LIB_SRCS (
+        set "LIB_SRCS=%%F"
+    ) else (
+        set "LIB_SRCS=!LIB_SRCS! %%F"
+    )
+)
 
 REM Define output executable name
-set TARGET=project_payroll.exe
+set TARGET=bin\project_payroll.exe
 
 REM Display source files that will be compiled
 echo.
@@ -33,12 +63,27 @@ echo.
 echo.
 %YELLOW% "Main source: "
 echo %MAIN_SRC%
+
 %YELLOW% "UI sources: "
-echo %UI_SRCS%
+if defined UI_SRCS (
+    echo %UI_SRCS%
+) else (
+    echo No UI sources found.
+)
+
 %YELLOW% "Module sources: "
-echo %MODULE_SRCS%
+if defined MODULE_SRCS (
+    echo %MODULE_SRCS%
+) else (
+    echo No module sources found.
+)
+
 %YELLOW% "Library sources: "
-echo %LIB_SRCS%
+if defined LIB_SRCS (
+    echo %LIB_SRCS%
+) else (
+    echo No library sources found.
+)
 echo.
 
 REM --- Compilation Command ---

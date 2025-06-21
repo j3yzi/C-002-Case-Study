@@ -84,14 +84,14 @@ typedef struct {
 } appState;
 
 // Menu functions
-static void appMenuSetColor(int textColor, int bgColor);
-static void appDisplayMenu(Menu* menu);
+void appMenuSetColor(int textColor, int bgColor);
+void appDisplayMenu(Menu* menu);
 char initMenu(Menu* m);
 
 // Validation functions
-static void enableAnsiSupport();
-static void readLine(char* buffer, int size);
-static bool isValid(char* input, IValidationType type, IValidationParams params);
+void enableAnsiSupport();
+void readLine(char* buffer, int size);
+bool isValid(char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
 typedef struct {
