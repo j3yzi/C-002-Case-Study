@@ -1,6 +1,6 @@
-#include "../../include/apctxt.h"
-#include "../../include/employee.h"
-#include "../../include/state.h"
+#include "../../../include/headers/apctxt.h"
+#include "../../../include/headers/employee.h"
+#include "../../../include/headers/state.h"
 
 // Define colors for the menu options for better readability
 #define HIGHLIGHT_TEXT_COLOR 9 // Bright Blue

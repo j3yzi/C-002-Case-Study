@@ -1,5 +1,5 @@
-#include "../../include/employee.h"
-#include "../../include/list.h"
+#include "../../../include/headers/employee.h"
+#include "../../../include/headers/list.h"
 
 int saveEmployeeDataFromFile(list* employeeList, const char *filename) {
     

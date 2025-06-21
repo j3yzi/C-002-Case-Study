@@ -1,4 +1,4 @@
-#include "../../include/apctxt.h"
+#include "../headers/apctxt.h"
 
 static void appMenuSetColor(int textColor, int bgColor);
 static void appDisplayMenu(Menu* menu);
