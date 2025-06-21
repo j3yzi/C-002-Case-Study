@@ -116,4 +116,3 @@ void winTermResetColors();
 // void winTermPrintCentered(const char* text, int width);
 
 #endif // APCTXT_H
-

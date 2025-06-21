@@ -3,9 +3,16 @@
 // Forward declaration
 void createEmployee(Employee* newEmployeeData, list** l);
 
-void addInitialEmployees() {
+list* createEmployeeList() {
     list *employeeList = (list*)malloc(sizeof(list));
     employeeList = createList(SINGLY);
+
+    return employeeList;
+}
+
+void addInitialEmployees() {
+    
+    list* employeeList = createEmployeeList();
 
     for (int i = 0; i < MAX_EMPLOYEE_CREATION_COUNT; i++)
     {

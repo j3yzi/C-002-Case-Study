@@ -52,13 +52,15 @@ typedef struct {
 } Employee;
 
 // Function declarations
-int exportEmployeeDataToFile(list* employeeList, const char *filename);
+int saveEmployeeDataToFile(list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 
 
 void addInitialEmployees();
 void createEmployee(Employee* newEmployeeData, list** l);
 void deleteEmployee(Employee* employee);
+list* createEmployeeList();
+
 
 // empio.c
 int getEmployeeDataFromUser(Employee** employee);

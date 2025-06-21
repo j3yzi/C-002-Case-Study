@@ -12,12 +12,12 @@
 
 // In your real application, these would be in other files like 'employee.c'
 void handleCreateEmployeeList() {
+    employeeListCreated.isEnabled = true; // Enable the state
     system("cls");
     printf("--- Action: Create Employee List selected ---\n");
     printf("Press any key to continue...");
     _getch();
 }
-
 void handleAddEmployee() {
     system("cls");
     printf("--- Action: Add Employee selected ---\n");
@@ -81,7 +81,7 @@ int menuLoop() {
                     subMenuChoice = initMenu(&addEmployeeSubMenu);
                     switch (subMenuChoice) {
                         case '1': // "Create Employee List"
-                            employeeListCreated.isEnabled = true; // Enable the state
+                        
                     }
                 } while (subMenuChoice != '3');
                 break; 
@@ -91,6 +91,7 @@ int menuLoop() {
             case '4':
             case '5':
             case '6':
+                //exportEmployeeDataToFile(&employeeList, "../../data/record.bin");
             case '7':
                 system("cls");
                 printf("--- Action for option '%c' is not implemented yet. ---\n", mainMenuChoice);
