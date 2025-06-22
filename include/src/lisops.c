@@ -1,5 +1,10 @@
 #include "../headers/list.h"
 
+/**
+ * @brief Links a new node into a singly linked list.
+ * @param l A double pointer to the list structure.
+ * @param newNode The new node to be linked into the list.
+ */
 void linkNodeSingly(list** l, node* newNode) {
     if ((*l)->head == NULL) {
         (*l)->head = newNode;
@@ -10,6 +15,11 @@ void linkNodeSingly(list** l, node* newNode) {
     }
 }
 
+/**
+ * @brief Links a new node into a doubly linked list.
+ * @param l A double pointer to the list structure.
+ * @param newNode The new node to be linked into the list.
+ */
 void linkNodeDoubly(list** l, node* newNode) {
     if ((*l)->head == NULL) {
         (*l)->head = newNode;
@@ -21,6 +31,11 @@ void linkNodeDoubly(list** l, node* newNode) {
     }
 }
 
+/**
+ * @brief Links a new node into a singly circular linked list.
+ * @param l A double pointer to the list structure.
+ * @param newNode The new node to be linked into the list.
+ */
 void linkNodeSinglyCircular(list** l, node* newNode) {
     if ((*l)->head == NULL) {
         (*l)->head = newNode;
@@ -33,6 +48,11 @@ void linkNodeSinglyCircular(list** l, node* newNode) {
     }
 }
 
+/**
+ * @brief Links a new node into a doubly circular linked list.
+ * @param l A double pointer to the list structure.
+ * @param newNode The new node to be linked into the list.
+ */
 void linkNodeDoublyCircular(list** l, node* newNode) {
     if ((*l)->head == NULL) {
         (*l)->head = newNode;

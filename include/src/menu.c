@@ -6,10 +6,21 @@ static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y
 static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection);
 char initMenu(Menu* m);
 
+/**
+ * @brief Sets the text and background colors for the console.
+ * @param textColor The desired text color (0-15).
+ * @param bgColor The desired background color (0-15).
+ */
 void appMenuSetColor(int textColor, int bgColor) {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), textColor + (bgColor * 16));
 }
 
+/**
+ * @brief Displays a complete menu on the screen.
+ * @brief This function clears the screen and then iterates through all menu options,
+ * @brief printing them with appropriate highlighting or disabled status.
+ * @param menu A const pointer to the Menu struct to be displayed.
+ */
 void appDisplayMenu(const Menu* menu) {
     winTermClearScreen();
 
@@ -37,6 +48,13 @@ void appDisplayMenu(const Menu* menu) {
 
 }
 
+/**
+ * @brief Displays a single menu option at a specific screen location.
+ * @param menu A const pointer to the Menu struct containing the option.
+ * @param optionIndex The index of the option to display.
+ * @param x The x-coordinate (column) where the option should be displayed.
+ * @param y The y-coordinate (row) where the option should be displayed.
+ */
 static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y) {
     if (optionIndex < 0 || optionIndex >= menu->optionCount) return;
     
@@ -60,6 +78,13 @@ static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y
     winTermResetColors();
 }
 
+/**
+ * @brief Updates the visual selection of the menu, highlighting the new option.
+ * @brief This is used for interactive menus where the user can navigate with arrow keys.
+ * @param menu A pointer to the Menu struct being updated.
+ * @param oldSelection The index of the previously selected option.
+ * @param newSelection The index of the newly selected option.
+ */
 static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection) {
     winTermCursorPos pos;
     winTermGetCursorPosition(&pos);
@@ -81,6 +106,13 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     winTermSetCursor(pos.x, pos.y);
 }
 
+/**
+ * @brief Initializes and runs an interactive menu.
+ * @brief This function handles user input (arrow keys, enter, character keys) to navigate
+ * @brief and select options from the given menu. It calls the `onSelect` callback for the chosen option.
+ * @param m A pointer to the Menu struct to be initialized.
+ * @return The character key of the selected menu option.
+ */
 char initMenu(Menu* m) {
     // Find the currently selected option, or default to 0
     int selected = 0;

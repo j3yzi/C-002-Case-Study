@@ -1,7 +1,12 @@
 #include "../headers/auth.h"
 #include <time.h>
 
-// Initialize random seed for salt generation
+/**
+ * @brief Initializes the random number generator seed.
+ * @brief This function should be called once at the start of the application to ensure that
+ * @brief generated salts for password hashing are sufficiently random. It uses a static
+ * @brief flag to ensure it only runs once.
+ */
 static void initRandom() {
     static bool initialized = false;
     if (!initialized) {
@@ -10,6 +15,12 @@ static void initRandom() {
     }
 }
 
+/**
+ * @brief Checks if a user exists in the user data file.
+ * @param username The username to search for.
+ * @param filename The path to the user data file.
+ * @return Returns true if the user is found, false otherwise or if an error occurs.
+ */
 bool doesUserExist(const char* username, const char* filename) {
     // Check for NULL username or filename
     if (username == NULL || filename == NULL) {
@@ -50,6 +61,13 @@ bool doesUserExist(const char* username, const char* filename) {
     return false;
 }
 
+/**
+ * @brief Creates a new user and appends their details to the user data file.
+ * @param username The username for the new user.
+ * @param role The role assigned to the new user.
+ * @param hashedPassword The pre-hashed password for the new user.
+ * @param filename The path to the user data file.
+ */
 void createUser(const char* username, const char* role, const char* hashedPassword, const char* filename) {
     // Check for NULL parameters
     if (username == NULL || role == NULL || hashedPassword == NULL || filename == NULL) {
@@ -71,6 +89,13 @@ void createUser(const char* username, const char* role, const char* hashedPasswo
     printf("User created successfully!\n");
 }
 
+/**
+ * @brief Deletes a user from the user data file.
+ * @brief This function works by creating a temporary file, copying all users except the
+ * @brief one to be deleted, and then replacing the original file with the temporary one.
+ * @param username The username of the user to delete.
+ * @param filename The path to the user data file.
+ */
 void deleteUser(const char* username, const char* filename) {
     // Check for NULL parameters
     if (username == NULL || filename == NULL) {
@@ -133,6 +158,15 @@ void deleteUser(const char* username, const char* filename) {
     }
 }
 
+/**
+ * @brief Updates a user's role and/or password in the data file.
+ * @brief Similar to deleteUser, this function uses a temporary file to rewrite the user data,
+ * @brief applying the new role and password to the specified user.
+ * @param username The username of the user to update.
+ * @param newRole The new role to assign to the user.
+ * @param newHashedPassword The new pre-hashed password for the user.
+ * @param filename The path to the user data file.
+ */
 void updateUser(const char* username, const char* newRole, const char* newHashedPassword, const char* filename) {
     // Check for NULL parameters
     if (username == NULL || newRole == NULL || newHashedPassword == NULL || filename == NULL) {
@@ -195,6 +229,13 @@ void updateUser(const char* username, const char* newRole, const char* newHashed
     }
 }
 
+/**
+ * @brief Hashes a password using a custom Caesar cipher-based algorithm.
+ * @param password The plaintext password to hash.
+ * @param buffer The buffer where the resulting hashed password will be stored.
+ * @param buffer_size The size of the output buffer.
+ * @return Returns 0 on success, -1 on failure (e.g., invalid arguments).
+ */
 int hashPassword(const char* password, char* buffer, size_t buffer_size) {
     if (password == NULL || buffer == NULL || buffer_size == 0) {
         return -1; // Invalid arguments
@@ -230,6 +271,12 @@ int hashPassword(const char* password, char* buffer, size_t buffer_size) {
     return 0; // Success
 }
 
+/**
+ * @brief Verifies a plaintext password against a stored hash.
+ * @param password The plaintext password to verify.
+ * @param hashedPassword The stored hash to compare against.
+ * @return Returns true if the password matches the hash, false otherwise.
+ */
 bool verifyPassword(const char* password, const char* hashedPassword) {
     if (password == NULL || hashedPassword == NULL) {
         return false;
@@ -243,6 +290,12 @@ bool verifyPassword(const char* password, const char* hashedPassword) {
     return strcmp(buffer, hashedPassword) == 0;
 }
 
+/**
+ * @brief Hashes a password string in place.
+ * @brief The original content of the password buffer will be overwritten with its hashed version.
+ * @param password A pointer to the string buffer to be hashed.
+ * @param buffer_size The size of the password buffer.
+ */
 void hashPasswordInPlace(char* password, size_t buffer_size) {
     if (password == NULL || buffer_size == 0) {
         return;
@@ -254,6 +307,17 @@ void hashPasswordInPlace(char* password, size_t buffer_size) {
     hashPassword(temp, password, buffer_size);
 }
 
+/**
+ * @brief Authenticates a user by checking their username and password against the data file.
+ * @brief If authentication is successful, this function allocates memory for a User struct
+ * @brief containing the user's details. The caller is responsible for freeing this memory
+ * @brief by calling freeUser().
+ * @param username The username to authenticate.
+ * @param password The plaintext password to verify.
+ * @param filename The path to the user data file.
+ * @param user_out A double pointer to a User struct that will be populated on success.
+ * @return Returns 0 on success, -1 on failure (e.g., user not found, password mismatch, file error).
+ */
 int authenticateUser(const char* username, const char* password, const char* filename, User** user_out) {
     if (username == NULL || password == NULL || filename == NULL || user_out == NULL) {
         return -1; // Invalid arguments

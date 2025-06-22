@@ -14,7 +14,11 @@
 #define DISABLED_TEXT_COLOR 8  // Gray
 #define DISABLED_BG_COLOR 0    // Black
 
-// In your real application, these would be in other files like 'employee.c'
+/**
+ * @brief Handles the action for creating a new employee list.
+ * @brief This function is intended to be used as a callback for a menu option. It sets a global state,
+ * @brief clears the screen, and displays a confirmation message to the user.
+ */
 void handleCreateEmployeeList() {
     employeeListCreated.isEnabled = true; // Enable the state
     system("cls");
@@ -22,6 +26,12 @@ void handleCreateEmployeeList() {
     printf("Press any key to continue...");
     _getch();
 }
+
+/**
+ * @brief Handles the action for adding a new employee.
+ * @brief This function is a placeholder callback for a menu option. It clears the screen
+ * @brief and displays a message indicating the selected action.
+ */
 void handleAddEmployee() {
     system("cls");
     printf("--- Action: Add Employee selected ---\n");
@@ -60,6 +70,11 @@ Menu addEmployeeSubMenu = {
     3
 };
 
+/**
+ * @brief Checks and updates the state of menu options based on application flags.
+ * @brief This function dynamically enables or disables menu options. For example, it enables
+ * @brief options like "Add an Employee" only after an employee list has been created.
+ */
 void checkStates() {
     if (employeeListCreated.isEnabled) {
         addEmployeeSubMenu.options[1].isDisabled = false; // Enable "Add an Employee" option
@@ -71,6 +86,12 @@ void checkStates() {
     } 
 }
 
+/**
+ * @brief The main loop for navigating the application's menu system.
+ * @brief This function displays the main menu, processes user input, and navigates to sub-menus
+ * @brief or executes actions as needed. It continues to loop until the user chooses to exit.
+ * @return Returns 0 upon successful exit of the menu loop.
+ */
 int menuLoop() {
     char mainMenuChoice;    
     do {

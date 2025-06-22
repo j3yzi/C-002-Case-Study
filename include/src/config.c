@@ -3,6 +3,16 @@
 #include <string.h>
 #include "../headers/apctxt.h"
 
+/**
+ * @brief Creates and allocates memory for an AppConfig structure.
+ * @brief This function dynamically allocates an AppConfig struct and populates it with copies of the provided strings.
+ * @param config A double pointer to the AppConfig struct to be created.
+ * @param appName The name of the application.
+ * @param appVersion The version of the application.
+ * @param license The license information for the application.
+ * @param creator The creator of the application.
+ * @return Returns 0 on success, -1 on memory allocation failure.
+ */
 static int createAppConfig(AppConfig** config, const char* appName, const char* appVersion, const char* license, const char* creator) {
     *config = (AppConfig*)malloc(sizeof(AppConfig));
     if (*config == NULL) {
@@ -28,6 +38,13 @@ static int createAppConfig(AppConfig** config, const char* appName, const char* 
     return 0;
 }
 
+/**
+ * @brief Loads application configuration from a file.
+ * @brief This function reads a key-value pair configuration file and populates an AppConfig struct.
+ * @param config A double pointer to the AppConfig struct to be created and populated.
+ * @param filePath The path to the configuration file.
+ * @return Returns 0 on success, -1 on failure (e.g., file not found, memory allocation error).
+ */
 static int loadAppConfig(AppConfig** config, const char* filePath) {
     FILE* file = fopen(filePath, "r");
     if (file == NULL) {

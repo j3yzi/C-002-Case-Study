@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include "../headers/list.h"
 
+/**
+ * @brief Adds a new node with the given data to the end of the list.
+ * @param l A double pointer to the list structure.
+ * @param data A void pointer to the data to be stored in the new node.
+ * @return Returns 0 on success, -1 on memory allocation failure.
+ */
 int addNode(list** l, void* data) {
     node* newNode = (node*)malloc(sizeof(node));
     
@@ -36,6 +42,12 @@ int addNode(list** l, void* data) {
     return 0;
 }
 
+/**
+ * @brief Removes the first node containing the specified data from the list.
+ * @param l A pointer to the list structure.
+ * @param data A pointer to the data of the node to be removed. The comparison is by pointer address.
+ * @param freeData A function pointer to a function that can free the data stored in the node. Can be NULL if data should not be freed.
+ */
 void removeNode(list* l, const void* data, void (*freeData)(void* data)) {
     if (l == NULL || l->head == NULL || data == NULL) {
         return;
@@ -145,6 +157,12 @@ void removeNode(list* l, const void* data, void (*freeData)(void* data)) {
     l->size--;
 }
 
+/**
+ * @brief Retrieves the data from a node at a specific index in the list.
+ * @param l A const pointer to the list structure.
+ * @param index The zero-based index of the node.
+ * @return A void pointer to the data of the node at the specified index, or NULL if the index is out of bounds.
+ */
 void* getNodeData(const list* l, int index) {
     if (l == NULL || l->head == NULL || index < 0 || index >= l->size) {
         return NULL;
@@ -161,6 +179,11 @@ void* getNodeData(const list* l, int index) {
     return current->data;
 }
 
+/**
+ * @brief Removes all nodes from the list, optionally freeing the data in each node.
+ * @param l A pointer to the list structure to be cleared.
+ * @param freeData A function pointer to a function that can free the data stored in each node. Can be NULL.
+ */
 void clearList(list* l, void (*freeData)(void* data)) {
     if (l == NULL || l->head == NULL) {
         return;
@@ -188,6 +211,11 @@ void clearList(list* l, void (*freeData)(void* data)) {
     l->size = 0;
 }
 
+/**
+ * @brief Prints the contents of the list to the console.
+ * @param l A const pointer to the list structure to be printed.
+ * @param printFunc A function pointer to a function that knows how to print the data stored in a node.
+ */
 void printList(const list* l, void (*printFunc)(const void* data)) {
     if (l == NULL || l->head == NULL || printFunc == NULL) {
         printf("Empty list or invalid function pointer\n");
@@ -218,6 +246,12 @@ void printList(const list* l, void (*printFunc)(const void* data)) {
     } while (current != NULL);
 }
 
+/**
+ * @brief Creates and initializes a new list of a specified type.
+ * @param l A double pointer to the list structure to be created.
+ * @param type The type of the list to create (e.g., SINGLY, DOUBLY_CIRCULAR).
+ * @return Returns 0 on success, -1 on memory allocation failure.
+ */
 int createList(list** l, ListType type) {
     *l = (list*)malloc(sizeof(list));
     if (!(*l)) {
@@ -231,6 +265,11 @@ int createList(list** l, ListType type) {
     return 0;
 }
 
+/**
+ * @brief Destroys a list, freeing all its nodes and optionally the data within them.
+ * @param l A double pointer to the list structure to be destroyed. The pointer will be set to NULL after destruction.
+ * @param freeData A function pointer to a function that can free the data stored in each node. Can be NULL.
+ */
 void destroyList(list** l, void (*freeData)(void* data)) {
     if (l == NULL || *l == NULL) {
         return;
