@@ -1,31 +1,23 @@
 #include "employee.h"
+#include "../headers/list.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 // Forward declaration
-void createEmployee(Employee* newEmployeeData, list** l);
+int createEmployee(Employee* newEmployeeData, list** l);
 
-list* createEmployeeList() {
-    list *employeeList = (list*)malloc(sizeof(list));
-    employeeList = createList(SINGLY);
-
-    return employeeList;
-}
-
-void addInitialEmployees() {
-    
-    list* employeeList = createEmployeeList();
-
-    for (int i = 0; i < MAX_EMPLOYEE_CREATION_COUNT; i++)
-    {
-        Employee* newEmployeeData = (Employee*)malloc(sizeof(Employee)); 
-        
-        getEmployeeDataFromUser(&newEmployeeData);
-
-        createEmployee(newEmployeeData, &employeeList);    
+int createEmployeeList(list** employeeList) {
+    if (createList(employeeList, SINGLY) != 0) {
+        return -1;
     }
+    return 0;
 }
 
-void createEmployee(Employee* newEmployeeData, list** l) {
-    addNode(l, newEmployeeData);
+int createEmployee(Employee* newEmployeeData, list** l) {
+    if (addNode(l, newEmployeeData) != 0) {
+        return -1;
+    }
+    return 0;
 }
 
 void deleteEmployee(Employee* employee) {

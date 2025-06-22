@@ -22,12 +22,12 @@ typedef struct LinkedList {
 
 
 
-void addNode(list** l, void* data);
+int addNode(list** l, void* data);
 void removeNode(list* l, void* data);
 void* getNodeData(list* l, int index);
 void clearList(list* l);
 void printList(list* l, void (*printFunc)(void*));
-list* createList(ListType type);
+int createList(list** l, ListType type);
 void destroyList(list* l);
 
 void linkNodeSingly(list** l, node* newNode);

@@ -56,10 +56,9 @@ int saveEmployeeDataToFile(list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 
 
-void addInitialEmployees();
-void createEmployee(Employee* newEmployeeData, list** l);
+int createEmployee(Employee* newEmployeeData, list** l);
 void deleteEmployee(Employee* employee);
-list* createEmployeeList();
+int createEmployeeList(list** employeeList);
 
 // -- END --
 

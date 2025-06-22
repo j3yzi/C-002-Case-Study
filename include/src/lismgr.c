@@ -1,11 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "../headers/list.h"
 
-void addNode(list** l, void* data) {
+int addNode(list** l, void* data) {
     node* newNode = (node*)malloc(sizeof(node));
     
     if (!newNode) {
         fprintf(stderr, "Memory allocation failed\n");
-        return;
+        return -1;
     }
 
     newNode->data = data;
@@ -31,6 +33,7 @@ void addNode(list** l, void* data) {
     }
 
     (*l)->size++;
+    return 0;
 }
 
 void removeNode(list* l, void* data) {
@@ -209,17 +212,17 @@ void printList(list* l, void (*printFunc)(void*)) {
     } while (current != NULL);
 }
 
-list* createList(ListType type) {
-    list* newList = (list*)malloc(sizeof(list));
-    if (!newList) {
+int createList(list** l, ListType type) {
+    *l = (list*)malloc(sizeof(list));
+    if (!(*l)) {
         fprintf(stderr, "Memory allocation failed\n");
-        return NULL;
+        return -1;
     }
-    newList->head = NULL;
-    newList->tail = NULL;
-    newList->type = type;
-    newList->size = 0;
-    return newList;
+    (*l)->head = NULL;
+    (*l)->tail = NULL;
+    (*l)->type = type;
+    (*l)->size = 0;
+    return 0;
 }
 
 void destroyList(list* l) {
