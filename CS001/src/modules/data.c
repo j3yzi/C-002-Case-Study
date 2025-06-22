@@ -4,14 +4,14 @@
 
 int saveEmployeeDataFromFile(list* employeeList, const char *filename) {
     // TODO: Implement file saving functionality
+
     return 0; // Return success for now
 }
 
 list* loadEmployeeDataFromFile(const char* filename, ListType listType) {
-    list* employeeList = NULL;
-    if (createEmployeeList(&employeeList) != 0) {
-        return NULL;
-    }
+    list* employeeList = createList(listType);
+
     // TODO: Implement file loading functionality
     return employeeList;
 }
+
