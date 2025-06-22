@@ -1,4 +1,4 @@
-#include "../../../include/headers/employee.h"
+#include "employee.h"
 
 // Forward declaration
 void createEmployee(Employee* newEmployeeData, list** l);
@@ -27,10 +27,6 @@ void addInitialEmployees() {
 void createEmployee(Employee* newEmployeeData, list** l) {
     addNode(l, newEmployeeData);
 }
-
-// void updateEmployee(Employee* employee, void* data) {
-
-// }
 
 void deleteEmployee(Employee* employee) {
     if (employee != NULL) {

@@ -1,5 +1,7 @@
 #include "../../../include/headers/apctxt.h"
-#include "../../../include/headers/employee.h"
+#include "../../../include/models/employee.h"
+
+#include "../include/link.h"
 
 int getEmployeeDataFromUser(Employee** employee) {
     

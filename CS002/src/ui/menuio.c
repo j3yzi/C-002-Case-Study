@@ -1,5 +1,13 @@
 #include "../../../include/headers/apctxt.h"
 
+// Define colors for the menu options for better readability
+#define HIGHLIGHT_TEXT_COLOR 9 // Bright Blue
+#define HIGHLIGHT_BG_COLOR 0   // Black
+#define TEXT_COLOR 7           // White
+#define BG_COLOR 0             // Black
+#define DISABLED_TEXT_COLOR 8  // Gray
+#define DISABLED_BG_COLOR 0    // Black
+
 Menu mainMenu = {
     1,
     "Main Menu",
