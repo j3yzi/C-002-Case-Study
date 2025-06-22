@@ -1,8 +1,8 @@
 #include "../headers/apctxt.h"
 
 void appMenuSetColor(int textColor, int bgColor);
-void appDisplayMenu(Menu* menu);
-static void appDisplayMenuOption(Menu* menu, int optionIndex, int x, int y);
+void appDisplayMenu(const Menu* menu);
+static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y);
 static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection);
 char initMenu(Menu* m);
 
@@ -10,7 +10,7 @@ void appMenuSetColor(int textColor, int bgColor) {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), textColor + (bgColor * 16));
 }
 
-void appDisplayMenu(Menu* menu) {
+void appDisplayMenu(const Menu* menu) {
     winTermClearScreen();
 
     printf("====================================\n");
@@ -37,7 +37,7 @@ void appDisplayMenu(Menu* menu) {
 
 }
 
-static void appDisplayMenuOption(Menu* menu, int optionIndex, int x, int y) {
+static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y) {
     if (optionIndex < 0 || optionIndex >= menu->optionCount) return;
     
     winTermSetCursor(x, y);

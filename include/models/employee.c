@@ -20,9 +20,10 @@ int createEmployee(Employee* newEmployeeData, list** l) {
     return 0;
 }
 
-void deleteEmployee(Employee* employee) {
-    if (employee != NULL) {
-        free(employee);
+void deleteEmployee(Employee** employee) {
+    if (employee != NULL && *employee != NULL) {
+        free(*employee);
+        *employee = NULL;
     }
 }
 

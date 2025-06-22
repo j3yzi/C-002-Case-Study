@@ -41,6 +41,8 @@ bool doesUserExist(const char* username, const char* filename) {
                 fclose(file);
                 return true;
             }
+        } else if (line[0] != '\n' && line[0] != '\r' && line[0] != '#') {
+            fprintf(stderr, "Warning: Malformed line in user file: %s", line);
         }
     }
     
@@ -78,8 +80,7 @@ void deleteUser(const char* username, const char* filename) {
     
     // Create temp filename in the same directory
     char tempFilename[256];
-    strcpy(tempFilename, filename);
-    strcat(tempFilename, ".temp");
+    snprintf(tempFilename, sizeof(tempFilename), "%s.temp", filename);
     
     FILE* file = fopen(filename, "r");
     FILE* tempFile = fopen(tempFilename, "w");
@@ -113,6 +114,7 @@ void deleteUser(const char* username, const char* filename) {
                 fprintf(tempFile, "%s", line);
             }
         } else {
+            // Keep malformed lines as they are
             fprintf(tempFile, "%s", line);
         }
     }
@@ -140,8 +142,7 @@ void updateUser(const char* username, const char* newRole, const char* newHashed
     
     // Create temp filename in the same directory
     char tempFilename[256];
-    strcpy(tempFilename, filename);
-    strcat(tempFilename, ".temp");
+    snprintf(tempFilename, sizeof(tempFilename), "%s.temp", filename);
     
     FILE* file = fopen(filename, "r");
     FILE* tempFile = fopen(tempFilename, "w");
@@ -295,6 +296,8 @@ int authenticateUser(const char* username, const char* password, const char* fil
                     return -1; // Password mismatch
                 }
             }
+        } else if (line[0] != '\n' && line[0] != '\r' && line[0] != '#') {
+            fprintf(stderr, "Warning: Malformed line in user file: %s", line);
         }
     }
 

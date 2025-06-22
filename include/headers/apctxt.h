@@ -85,13 +85,13 @@ typedef struct {
 
 // Menu functions
 void appMenuSetColor(int textColor, int bgColor);
-void appDisplayMenu(Menu* menu);
+void appDisplayMenu(const Menu* menu);
 char initMenu(Menu* m);
 
 // Validation functions
 void enableAnsiSupport();
 void readLine(char* buffer, int size);
-bool isValid(char* input, IValidationType type, IValidationParams params);
+bool isValid(const char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
 typedef struct {

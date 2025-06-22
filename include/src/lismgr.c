@@ -36,7 +36,7 @@ int addNode(list** l, void* data) {
     return 0;
 }
 
-void removeNode(list* l, void* data, void (*freeData)(void* data)) {
+void removeNode(list* l, const void* data, void (*freeData)(void* data)) {
     if (l == NULL || l->head == NULL || data == NULL) {
         return;
     }
@@ -145,7 +145,7 @@ void removeNode(list* l, void* data, void (*freeData)(void* data)) {
     l->size--;
 }
 
-void* getNodeData(list* l, int index) {
+void* getNodeData(const list* l, int index) {
     if (l == NULL || l->head == NULL || index < 0 || index >= l->size) {
         return NULL;
     }
@@ -188,7 +188,7 @@ void clearList(list* l, void (*freeData)(void* data)) {
     l->size = 0;
 }
 
-void printList(list* l, void (*printFunc)(void*)) {
+void printList(const list* l, void (*printFunc)(const void* data)) {
     if (l == NULL || l->head == NULL || printFunc == NULL) {
         printf("Empty list or invalid function pointer\n");
         return;

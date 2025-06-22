@@ -52,12 +52,12 @@ typedef struct {
 } Employee;
 
 // Function declarations
-int saveEmployeeDataToFile(list* employeeList, const char *filename);
+int saveEmployeeDataToFile(const list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 
 
 int createEmployee(Employee* newEmployeeData, list** l);
-void deleteEmployee(Employee* employee);
+void deleteEmployee(Employee** employee);
 int createEmployeeList(list** employeeList);
 void freeEmployee(void* employeeData);
 
