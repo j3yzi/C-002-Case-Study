@@ -194,144 +194,110 @@ void updateUser(const char* username, const char* newRole, const char* newHashed
     }
 }
 
-char* hashPassword(const char* password) {
-    // Check for NULL password
-    if (password == NULL) {
-        return NULL;
-    }
-    
-    // Allocate memory for the hashed password
-    char* hashedPassword = malloc(100 * sizeof(char));
-    if (hashedPassword == NULL) {
-        return NULL;
+int hashPassword(const char* password, char* buffer, size_t buffer_size) {
+    if (password == NULL || buffer == NULL || buffer_size == 0) {
+        return -1; // Invalid arguments
     }
     
     int len = strlen(password);
     int hashIndex = 0;
     
-    // Caesar cipher based hashing with variable shifts
-    for (int i = 0; i < len && hashIndex < 99; i++) {
+    for (int i = 0; i < len && hashIndex < buffer_size - 1; i++) {
         char c = password[i];
         
-        // Use position-based shift for Caesar cipher
-        int shift = (i + 1) * 3 + 7; // Variable shift based on position
+        int shift = (i + 1) * 3 + 7;
         
-        // Apply Caesar cipher shift
-        if (c >= 'a' && c <= 'z') {
-            c = ((c - 'a' + shift) % 26) + 'a';
-        } else if (c >= 'A' && c <= 'Z') {
-            c = ((c - 'A' + shift) % 26) + 'A';
-        } else if (c >= '0' && c <= '9') {
-            c = ((c - '0' + shift) % 10) + '0';
-        } else {
-            // For special characters, shift within printable ASCII range
-            c = ((c - 33 + shift) % 94) + 33;
-        }
+        if (c >= 'a' && c <= 'z') c = ((c - 'a' + shift) % 26) + 'a';
+        else if (c >= 'A' && c <= 'Z') c = ((c - 'A' + shift) % 26) + 'A';
+        else if (c >= '0' && c <= '9') c = ((c - '0' + shift) % 10) + '0';
+        else c = ((c - 33 + shift) % 94) + 33;
         
-        hashedPassword[hashIndex++] = c;
+        buffer[hashIndex++] = c;
         
-        // Add Caesar-shifted salt character
-        if (hashIndex < 99) {
+        if (hashIndex < buffer_size - 1) {
             char salt = 'A' + ((i * 5 + shift) % 26);
-            hashedPassword[hashIndex++] = salt;
+            buffer[hashIndex++] = salt;
         }
     }
     
-    // Add final Caesar-shifted characters based on password length
-    while (hashIndex < 99 && hashIndex < len * 2 + 8) {
+    while (hashIndex < buffer_size - 1 && hashIndex < len * 2 + 8) {
         char finalChar = 'a' + ((len + hashIndex) % 26);
-        hashedPassword[hashIndex++] = finalChar;
+        buffer[hashIndex++] = finalChar;
     }
     
-    hashedPassword[hashIndex] = '\0';
-    return hashedPassword;
+    buffer[hashIndex] = '\0';
+    return 0; // Success
 }
 
 bool verifyPassword(const char* password, const char* hashedPassword) {
-    // Check for NULL parameters
     if (password == NULL || hashedPassword == NULL) {
         return false;
     }
     
-    char* newHash = hashPassword(password);
-    if (newHash == NULL) {
+    char buffer[100];
+    if (hashPassword(password, buffer, sizeof(buffer)) != 0) {
         return false;
     }
     
-    bool result = (strcmp(newHash, hashedPassword) == 0);
-    free(newHash);
-    return result;
+    return strcmp(buffer, hashedPassword) == 0;
 }
 
-void hashPasswordInPlace(char* password) {
-    // Check for NULL password
-    if (password == NULL) {
+void hashPasswordInPlace(char* password, size_t buffer_size) {
+    if (password == NULL || buffer_size == 0) {
         return;
     }
     
-    char* hashed = hashPassword(password);
-    if (hashed != NULL) {
-        strncpy(password, hashed, 99);
-        password[99] = '\0';
-        free(hashed);
-    }
+    char temp[buffer_size];
+    strcpy(temp, password);
+    
+    hashPassword(temp, password, buffer_size);
 }
 
-User* authenticateUser(const char* username, const char* password, const char* filename) {
-    // Check for NULL parameters
-    if (username == NULL || password == NULL || filename == NULL) {
-        return NULL;
+int authenticateUser(const char* username, const char* password, const char* filename, User** user_out) {
+    if (username == NULL || password == NULL || filename == NULL || user_out == NULL) {
+        return -1; // Invalid arguments
     }
-    
-    // Check if user exists first
-    if (!doesUserExist(username, filename)) {
-        return NULL;
-    }
-    
+
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening user data file");
-        return NULL;
+        return -1; // File error
     }
-    
+
     char line[256];
     char fileUsername[50];
     char role[20];
-    char hashedPassword[100];
-    
-    // Search for the user and verify password
+    char fileHashedPassword[100];
+
     while (fgets(line, sizeof(line), file)) {
-        // Skip comment lines and empty lines
         if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') {
             continue;
         }
-        
-        // Parse the line: username|role|hashed_password
-        if (sscanf(line, "%49[^|]|%19[^|]|%99s", fileUsername, role, hashedPassword) == 3) {
+
+        if (sscanf(line, "%49[^|]|%19[^|]|%99s", fileUsername, role, fileHashedPassword) == 3) {
             if (strcmp(username, fileUsername) == 0) {
-                // Found the user, now verify password
-                if (verifyPassword(password, hashedPassword)) {
-                    // Password is correct, create and return User struct
-                    User* user = malloc(sizeof(User));
-                    if (user != NULL) {
-                        strncpy(user->username, fileUsername, sizeof(user->username) - 1);
-                        user->username[sizeof(user->username) - 1] = '\0';
-                        strncpy(user->role, role, sizeof(user->role) - 1);
-                        user->role[sizeof(user->role) - 1] = '\0';
-                        strncpy(user->hashedPassword, hashedPassword, sizeof(user->hashedPassword) - 1);
-                        user->hashedPassword[sizeof(user->hashedPassword) - 1] = '\0';
+                if (verifyPassword(password, fileHashedPassword)) {
+                    fclose(file);
+                    User* foundUser = (User*)malloc(sizeof(User));
+                    if (foundUser == NULL) {
+                        return -1; // Memory allocation failed
                     }
-                    fclose(file);
-                    return user;
+                    strcpy(foundUser->username, fileUsername);
+                    foundUser->role = strdup(role);
+                    if (foundUser->role == NULL) {
+                        free(foundUser);
+                        return -1;
+                    }
+                    strcpy(foundUser->hashedPassword, fileHashedPassword);
+                    *user_out = foundUser;
+                    return 0; // Success
                 } else {
-                    // Password is incorrect
                     fclose(file);
-                    return NULL;
+                    return -1; // Password mismatch
                 }
             }
         }
     }
-    
+
     fclose(file);
-    return NULL;
+    return -1; // User not found
 }
