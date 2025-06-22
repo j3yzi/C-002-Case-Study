@@ -1,7 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "empio.h"
 #include "../../../include/headers/apctxt.h"
 #include "../../../include/models/employee.h"
-
-#include "../include/link.h"
 
 int getEmployeeDataFromUser(Employee** employee) {
     

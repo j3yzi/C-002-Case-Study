@@ -3,8 +3,9 @@
 #include <string.h>
 
 #include "../../include/headers/apctxt.h"
-#include "../../include/headers/employee.h"
+#include "../../include/models/employee.h"
 #include "../../include/headers/state.h"
+#include "ui/menuio.h"
 
 // Initialize configuration
 
