@@ -9,6 +9,9 @@
 
 int main(void)
 {   
+    // Initialize the terminal
+    appInitWinTerm("Academic Management System");
+    
     runMenuLoop();
     return 0;
 }

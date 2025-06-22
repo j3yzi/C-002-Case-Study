@@ -12,6 +12,9 @@
 
 int main(void)
 {   
+    // Initialize the terminal
+    appInitWinTerm("Payroll System");
+    
     list* listOfEmplyoees = NULL;
     if (createList(&listOfEmplyoees, DOUBLY_CIRCULAR) != 0) {
         fprintf(stderr, "Failed to create list\n");
@@ -25,23 +28,20 @@ int main(void)
     }
 
     strcpy(employeeOne->personal.employeeName, "Marc Celis");
-    strcpy(employeeOne->personal.employeeNumber, "9213489");
-
-    if (addNode(&listOfEmplyoees, employeeOne) != 0) {
+    strcpy(employeeOne->personal.employeeNumber, "9213489");    if (addNode(&listOfEmplyoees, employeeOne) != 0) {
         fprintf(stderr, "Failed to add node\n");
         // It's important to free the allocated memory for employeeOne if addNode fails.
         free(employeeOne);
-        destroyList(listOfEmplyoees);
+        destroyList(&listOfEmplyoees, freeEmployee);
         return 1;
     }
 
     printf("%s\n", ((Employee*)(listOfEmplyoees->head->data))->personal.employeeName);
     printf("%s\n", ((Employee*)(listOfEmplyoees->head->next->data))->personal.employeeName);
-    printf("%s\n", ((Employee*)(listOfEmplyoees->head->prev->data))->personal.employeeName);
+    printf("%s\n", ((Employee*)(listOfEmplyoees->head->prev->data))->personal.employeeName);    printf("%s\n", ((Employee*)(listOfEmplyoees->tail->data))->personal.employeeName);
 
-    printf("%s\n", ((Employee*)(listOfEmplyoees->tail->data))->personal.employeeName);
-
-    int runMenu = menuLoop();
+    // Run the menu
+    menuLoop();
     
     // Clean up list
     destroyList(&listOfEmplyoees, freeEmployee);

@@ -149,22 +149,22 @@ char initMenu(Menu* m) {
                 printf("Option is disabled.\n");
                 continue;
             }
-            
-            // Execute the menu option's callback function if it exists
+              // Execute the menu option's callback function if it exists
             if (m->options[selected].onSelect != NULL) {
                 m->options[selected].onSelect();
             } 
             
-            
+            // Reset selection state for next time menu is shown
             for (int i = 0; i < m->optionCount; i++) {
-                m->options[i].isSelected = false;
-                if (m->options[0].isSelected == false && m->options[0].isDisabled != true) m->options[0].isSelected = true; //Ensure at least one option is selected
-                if (m->options[0].isSelected == false && m->options[0].isDisabled == true) {
-                    for (int j = 1; j < m->optionCount; j++) {
-                        if (m->options[j].isDisabled == false) {
-                            m->options[j].isSelected = true;
-                            break;
-                        }
+                m->options[i].isSelected = (i == 0 && !m->options[i].isDisabled);
+            }
+            
+            // If first option is disabled, find the first enabled option
+            if (m->options[0].isDisabled) {
+                for (int j = 1; j < m->optionCount; j++) {
+                    if (!m->options[j].isDisabled) {
+                        m->options[j].isSelected = true;
+                        break;
                     }
                 }
             }

@@ -80,29 +80,31 @@ int menuLoop() {
         switch (mainMenuChoice) {
             case '1': { // "Add/Create Employee Options" was selected
                 char subMenuChoice;
-                  do {
+                do {
                     checkStates();
                     subMenuChoice = initMenu(&addEmployeeSubMenu);
                     switch (subMenuChoice) {
                         case '1': // "Create Employee List"
-                        
+                            // Display a message and wait for user input before returning to menu
+                            break;
                     }
                 } while (subMenuChoice != '3');
                 break; 
-            }
-            case '2':
+            }            case '2':
             case '3':
             case '4':
             case '5':
             case '6':
                 //exportEmployeeDataToFile(&employeeList, "../../data/record.bin");
             case '7':
-                system("cls");
+                winTermClearScreen();
                 printf("--- Action for option '%c' is not implemented yet. ---\n", mainMenuChoice);
                 printf("Press any key to continue...");
                 _getch();
                 break;
             case '8':
+                winTermClearScreen();
+                printf("Exiting application...\n");
                 break;
             default:
                 break;

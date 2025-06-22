@@ -8,10 +8,8 @@ int getEmployeeDataFromUser(Employee** employee) {
     
     char statusStr[2];
     char hoursStr[4];
-    char rateStr[8];
-
-    appFormField employeeDataForm[] = {
-        {"Employee Number: ", (*employee)->personal.employeeNumber, sizeof((*employee)->personal.employeeNumber), IV_NONE, {0}},
+    char rateStr[8];    appFormField employeeDataForm[] = {
+        {"Employee Number: ", (*employee)->personal.employeeNumber, sizeof((*employee)->personal.employeeNumber), IV_NONE, {{0}}},
         
         {"Employee Name: ", (*employee)->personal.employeeName, sizeof((*employee)->personal.employeeName), IV_MAX_LEN, {
             .rangeInt = {

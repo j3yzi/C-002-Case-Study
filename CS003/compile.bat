@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableDelayedExpansion
-REM compile.bat - Batch script to compile the CS001 project
+REM compile.bat - Batch script to compile the CS003 project
 
 REM Define PowerShell commands for colored output
 set "CYAN=powershell write-host -foregroundcolor cyan -nonewline"
@@ -19,10 +19,7 @@ REM Create bin directory if it doesn't exist
 if not exist bin mkdir bin
 
 REM Define include directory
-set INCLUDE_DIR=..\include\headers
-
-REM Include model sources
-set MODEL_SRCS=..\include\models\employee.c
+set INCLUDE_DIR=..\include
 
 REM Dynamically scan for source files
 set "MAIN_SRC=src\main.c"
@@ -58,7 +55,7 @@ for %%F in (..\include\src\*.c) do (
 )
 
 REM Define output executable name
-set TARGET=bin\project_payroll.exe
+set TARGET=bin\project_student_records.exe
 
 REM Display source files that will be compiled
 echo.
@@ -92,8 +89,7 @@ echo.
 REM --- Compilation Command ---
 %CYAN% "Running compilation command..."
 echo.
-echo %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS%
-%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS% -I%INCLUDE_DIR% -o %TARGET%
+%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %LIB_SRCS% -I%INCLUDE_DIR%\headers -I%INCLUDE_DIR%\models -o %TARGET%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo.
@@ -106,4 +102,4 @@ IF %ERRORLEVEL% NEQ 0 (
     echo.
 )
 
-pause
+pause 

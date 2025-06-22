@@ -6,14 +6,24 @@
 static int createAppConfig(AppConfig** config, const char* appName, const char* appVersion, const char* license, const char* creator) {
     *config = (AppConfig*)malloc(sizeof(AppConfig));
     if (*config == NULL) {
-        fprintf(stderr, "Memory allocation failed for AppConfig\n");
         return -1;
     }
     
-    (*config)->appName = appName;
-    (*config)->appVersion = appVersion;
-    (*config)->license = license;
-    (*config)->creator = creator;
+    (*config)->appName = strdup(appName);
+    (*config)->appVersion = strdup(appVersion);
+    (*config)->license = strdup(license);
+    (*config)->creator = strdup(creator);
+
+    if (!(*config)->appName || !(*config)->appVersion || !(*config)->license || !(*config)->creator) {
+        // strdup failed, clean up allocated memory
+        free((*config)->appName);
+        free((*config)->appVersion);
+        free((*config)->license);
+        free((*config)->creator);
+        free(*config);
+        *config = NULL;
+        return -1;
+    }
 
     return 0;
 }

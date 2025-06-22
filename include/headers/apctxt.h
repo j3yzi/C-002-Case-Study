@@ -9,10 +9,10 @@
 #include <windows.h>
 
 typedef struct {
-    const char* appName;
-    const char* appVersion;
-    const char* license;
-    const char* creator;
+    char* appName;
+    char* appVersion;
+    char* license;
+    char* creator;
 } AppConfig;
 
 typedef struct {
