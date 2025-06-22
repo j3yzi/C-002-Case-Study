@@ -25,3 +25,9 @@ void deleteEmployee(Employee* employee) {
         free(employee);
     }
 }
+
+void freeEmployee(void* employeeData) {
+    if (employeeData != NULL) {
+        free(employeeData);
+    }
+}

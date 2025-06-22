@@ -36,7 +36,7 @@ int addNode(list** l, void* data) {
     return 0;
 }
 
-void removeNode(list* l, void* data) {
+void removeNode(list* l, void* data, void (*freeData)(void* data)) {
     if (l == NULL || l->head == NULL || data == NULL) {
         return;
     }
@@ -138,6 +138,9 @@ void removeNode(list* l, void* data) {
             break;
     }
     
+    if (freeData != NULL) {
+        freeData(current->data);
+    }
     free(current);
     l->size--;
 }
@@ -158,7 +161,7 @@ void* getNodeData(list* l, int index) {
     return current->data;
 }
 
-void clearList(list* l) {
+void clearList(list* l, void (*freeData)(void* data)) {
     if (l == NULL || l->head == NULL) {
         return;
     }
@@ -173,6 +176,9 @@ void clearList(list* l) {
     
     while (current != NULL) {
         next = current->next;
+        if (freeData != NULL) {
+            freeData(current->data);
+        }
         free(current);
         current = next;
     }
@@ -225,14 +231,15 @@ int createList(list** l, ListType type) {
     return 0;
 }
 
-void destroyList(list* l) {
-    if (l == NULL) {
+void destroyList(list** l, void (*freeData)(void* data)) {
+    if (l == NULL || *l == NULL) {
         return;
     }
     
-    // Clear all nodes
-    clearList(l);
+    // Clear all nodes and their data
+    clearList(*l, freeData);
     
     // Free the list structure itself
-    free(l);
+    free(*l);
+    *l = NULL; // Set the original pointer to NULL
 }

@@ -59,6 +59,7 @@ list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 int createEmployee(Employee* newEmployeeData, list** l);
 void deleteEmployee(Employee* employee);
 int createEmployeeList(list** employeeList);
+void freeEmployee(void* employeeData);
 
 // -- END --
 

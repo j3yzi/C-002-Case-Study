@@ -44,7 +44,7 @@ int main(void)
     int runMenu = menuLoop();
     
     // Clean up list
-    destroyList(listOfEmplyoees);
+    destroyList(&listOfEmplyoees, freeEmployee);
 
     return 0;
 }
