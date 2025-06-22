@@ -1,14 +1,15 @@
-#include "../../include/employee.h"
-#include "../../include/apctxt.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "empio.h"
+#include "../../../include/headers/apctxt.h"
+#include "../../../include/models/employee.h"
 
 int getEmployeeDataFromUser(Employee** employee) {
     
     char statusStr[2];
     char hoursStr[4];
-    char rateStr[8];
-
-    appFormField employeeDataForm[] = {
-        {"Employee Number: ", (*employee)->personal.employeeNumber, sizeof((*employee)->personal.employeeNumber), IV_NONE, {0}},
+    char rateStr[8];    appFormField employeeDataForm[] = {
+        {"Employee Number: ", (*employee)->personal.employeeNumber, sizeof((*employee)->personal.employeeNumber), IV_NONE, {{0}}},
         
         {"Employee Name: ", (*employee)->personal.employeeName, sizeof((*employee)->personal.employeeName), IV_MAX_LEN, {
             .rangeInt = {

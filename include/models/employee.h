@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "list.h"
+#include "../headers/list.h"
 
 // Forward declaration to avoid circular dependency
 typedef struct AppContext AppContext;
@@ -52,21 +52,14 @@ typedef struct {
 } Employee;
 
 // Function declarations
-int exportEmployeeDataToFile(list* employeeList, const char *filename);
+int saveEmployeeDataToFile(const list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 
 
-void addInitialEmployees();
-void createEmployee(Employee* newEmployeeData, list** l);
-void deleteEmployee(Employee* employee);
-
-// empio.c
-int getEmployeeDataFromUser(Employee** employee);
-// menuio.c
-void handleCreateEmployeeList();
-void handleAddEmployee();
-int menuLoop();
-void checkStates();
+int createEmployee(Employee* newEmployeeData, list** l);
+void deleteEmployee(Employee** employee);
+int createEmployeeList(list** employeeList);
+void freeEmployee(void* employeeData);
 
 // -- END --
 

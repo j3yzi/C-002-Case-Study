@@ -1,12 +1,15 @@
-#include "../../include/apctxt.h"
+#include "../headers/apctxt.h"
 
-static void enableAnsiSupport();
-static void readLine(char* buffer, int size);
-static bool isValid(char* input, IValidationType type, IValidationParams params);
+void enableAnsiSupport();
+void readLine(char* buffer, int size);
+bool isValid(const char* input, IValidationType type, IValidationParams params);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
-// Enable ANSI escape sequences for Windows
-static void enableAnsiSupport() {
+/**
+ * @brief Enables ANSI escape sequence processing on Windows consoles.
+ * @brief This allows for features like colored text. It has no effect on other platforms.
+ */
+void enableAnsiSupport() {
     #ifdef _WIN32
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         if (hOut != INVALID_HANDLE_VALUE) {
@@ -19,7 +22,12 @@ static void enableAnsiSupport() {
     #endif
 }
 
-static void readLine(char* buffer, int size) {
+/**
+ * @brief Reads a line of input from stdin, safely handling buffer size and trailing newline.
+ * @param buffer The character buffer to store the read line into.
+ * @param size The total size of the buffer.
+ */
+void readLine(char* buffer, int size) {
     memset(buffer, 0, size);
     if (fgets(buffer, size, stdin)) {
         char* newline = strchr(buffer, '\n');
@@ -32,7 +40,14 @@ static void readLine(char* buffer, int size) {
     }
 }
 
-static bool isValid(char* input, IValidationType type, IValidationParams params) {
+/**
+ * @brief Validates an input string against a specified validation type and parameters.
+ * @param input The input string to validate.
+ * @param type The type of validation to perform (e.g., integer range, choice from a list).
+ * @param params A union containing the specific parameters for the validation type.
+ * @return Returns true if the input is valid, false otherwise.
+ */
+bool isValid(const char* input, IValidationType type, IValidationParams params) {
     if (input[0] == '\0') {
         printf("   [Error] Empty input. Please enter a value.\n");
         return false;
@@ -104,6 +119,11 @@ static bool isValid(char* input, IValidationType type, IValidationParams params)
     }
 }
 
+/**
+ * @brief Prompts the user for input for a series of form fields and validates the input for each.
+ * @param fields An array of appFormField structs, each defining a prompt and validation criteria.
+ * @param fieldCount The number of fields in the array.
+ */
 void appGetValidatedInput(appFormField* fields, int fieldCount) {
     static bool ansiEnabled = false;
     if (!ansiEnabled) {
