@@ -1,7 +1,13 @@
 #include "payroll.h"
 #include "../../../include/models/employee.h"
 
+// Define constants for payroll calculations
+#define regularHours 160
+#define overtimeRate 0.5
+
 void calculatePayroll(Employee* employee) {
+    if (!employee) return;
+    
     calculateBasicPay(employee);
     calculateOvertimePay(employee);
     calculateDeductions(employee);
@@ -12,6 +18,8 @@ void calculatePayroll(Employee* employee) {
 }
 
 void calculateBasicPay(Employee* employee) {
+    if (!employee) return;
+    
     if (employee->employment.hoursWorked >= regularHours) {
         employee->payroll.basicPay = employee->employment.basicRate * regularHours;
     } else {
@@ -20,6 +28,8 @@ void calculateBasicPay(Employee* employee) {
 }
 
 void calculateOvertimePay(Employee* employee) {
+    if (!employee) return;
+    
     if (employee->employment.hoursWorked > regularHours) {
         float overtimeHours = employee->employment.hoursWorked - regularHours;
         employee->payroll.overtimePay = overtimeHours * (employee->employment.basicRate * (1.0 + overtimeRate));
@@ -29,6 +39,8 @@ void calculateOvertimePay(Employee* employee) {
 }
 
 void calculateDeductions(Employee* employee) {
+    if (!employee) return;
+    
     float deductionRate;
     
     if (employee->employment.status == statusRegular) {
