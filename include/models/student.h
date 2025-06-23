@@ -1,12 +1,17 @@
 #ifndef STUDENT_H
 #define STUDENT_H
 
-#define STUDENT_NUMBER_LEN 11 // 10 chars + null terminator
-#define STUDENT_NAME_LEN 31   // 30 chars + null terminator
+#include <stdbool.h>
+
+#define studentNumberLen 11 // 10 chars + null terminator
+#define studentNameLen 31   // 30 chars + null terminator
+#define studentFirstNameLen 32
+#define studentMiddleNameLen 32
+#define studentLastNameLen 32
 
 typedef enum {
-    GENDER_MALE,
-    GENDER_FEMALE
+    genderMale,
+    genderFemale
 } Gender;
 
 typedef enum {
@@ -23,15 +28,21 @@ typedef enum {
 } YearLevel;
 
 typedef enum {
-    ACAD_DEANS_LISTER,
-    ACAD_REGULAR,
-    ACAD_PROBATION
+    acadRegular,
+    acadProbation
 } AcademicStanding;
 
 
 typedef struct {
-    char studentNumber[STUDENT_NUMBER_LEN];
-    char fullName[STUDENT_NAME_LEN];
+    char firstName[studentFirstNameLen];
+    char middleName[studentMiddleNameLen];
+    char lastName[studentLastNameLen];
+    char fullName[studentNameLen];
+} StudentName;
+
+typedef struct {
+    char studentNumber[studentNumberLen];
+    StudentName name;
     Gender gender;
     ProgramCode programCode;
     YearLevel yearLevel;
@@ -50,6 +61,9 @@ typedef struct {
     AcademicInfo academic;
     AcademicStanding standing;
 } Student;
+
+// Function declarations
+bool composeStudentName(StudentName* name);
 
 
 #endif 

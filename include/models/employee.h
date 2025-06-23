@@ -13,23 +13,35 @@
 // Forward declaration to avoid circular dependency
 typedef struct AppContext AppContext;
 
-#define EMPLOYEE_NUMBER_LEN 11
-#define EMPLOYEE_NAME_LEN 16
+#define employeeNumberLen 11
+#define employeeNameLen 16
 
-#define MAX_EMPLOYEE_CREATION_COUNT 5
-#define MAX_EMPLOYEE_RECORDS 50
+#define employeeFirstNameLen 32
+#define employeeMiddleNameLen 32
+#define employeeLastNameLen 32
 
-#define PAYROLL_FILE_NAME "payroll.dat"
-#define REGULAR_HOURS 160.0f
-#define OVERTIME_RATE 0.5f
+#define maxEmployeeCreationCount 1
+#define maxEmployeeRecords 50
+
+#define payrollFileName "payroll.dat"
+#define regularHours 160.0f
+#define overtimeRate 0.5f
 
 typedef struct {
-    char employeeNumber[EMPLOYEE_NUMBER_LEN];
-    char employeeName[EMPLOYEE_NAME_LEN];
+    char firstName[employeeFirstNameLen];
+    char middleName[employeeMiddleNameLen];
+    char lastName[employeeLastNameLen];
+    char fullName[employeeNameLen];
+} EmployeeName;
+
+typedef struct {
+    char employeeNumber[employeeNumberLen];
+    EmployeeName name;
 } PersonalInfo;
+
 typedef enum {
-    STATUS_REGULAR, // R
-    STATUS_CASUAL // C
+    statusRegular, // R
+    statusCasual // C
 } EmployeeStatus;
 
 typedef struct {
@@ -52,14 +64,34 @@ typedef struct {
 } Employee;
 
 // Function declarations
+int composeEmployeeName(EmployeeName* name);
 int saveEmployeeDataToFile(const list* employeeList, const char *filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
-
 
 int createEmployee(Employee* newEmployeeData, list** l);
 void deleteEmployee(Employee** employee);
 int createEmployeeList(list** employeeList);
 void freeEmployee(void* employeeData);
+
+// Search operations
+Employee* searchEmployeeByNumber(const list* employeeList, const char* employeeNumber);
+Employee* searchEmployeeByName(const list* employeeList, const char* fullName);
+int searchEmployeeIndexByNumber(const list* employeeList, const char* employeeNumber);
+
+// Edit operations
+int updateEmployeeData(Employee* employee, const Employee* newData);
+int editEmployeeInList(list* employeeList, const char* employeeNumber, const Employee* newData);
+
+// Remove operations
+int removeEmployeeFromList(list* employeeList, const char* employeeNumber);
+
+// Display operations
+void displayEmployeeDetails(const Employee* employee);
+void displayAllEmployees(const list* employeeList);
+
+// Utility functions
+int compareEmployeeByNumber(const void* emp1, const void* emp2);
+int compareEmployeeByName(const void* emp1, const void* emp2);
 
 // -- END --
 

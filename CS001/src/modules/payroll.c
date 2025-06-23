@@ -12,17 +12,17 @@ void calculatePayroll(Employee* employee) {
 }
 
 void calculateBasicPay(Employee* employee) {
-    if (employee->employment.hoursWorked >= REGULAR_HOURS) {
-        employee->payroll.basicPay = employee->employment.basicRate * REGULAR_HOURS;
+    if (employee->employment.hoursWorked >= regularHours) {
+        employee->payroll.basicPay = employee->employment.basicRate * regularHours;
     } else {
         employee->payroll.basicPay = employee->employment.hoursWorked * employee->employment.basicRate;
     }
 }
 
 void calculateOvertimePay(Employee* employee) {
-    if (employee->employment.hoursWorked > REGULAR_HOURS) {
-        float overtimeHours = employee->employment.hoursWorked - REGULAR_HOURS;
-        employee->payroll.overtimePay = overtimeHours * (employee->employment.basicRate * (1.0 + OVERTIME_RATE));
+    if (employee->employment.hoursWorked > regularHours) {
+        float overtimeHours = employee->employment.hoursWorked - regularHours;
+        employee->payroll.overtimePay = overtimeHours * (employee->employment.basicRate * (1.0 + overtimeRate));
     } else {
         employee->payroll.overtimePay = 0.0;
     }
@@ -31,9 +31,9 @@ void calculateOvertimePay(Employee* employee) {
 void calculateDeductions(Employee* employee) {
     float deductionRate;
     
-    if (employee->employment.status == STATUS_REGULAR) {
+    if (employee->employment.status == statusRegular) {
         deductionRate = 0.078533;  // 7.8533% for regular employees
-    } else if (employee->employment.status == STATUS_CASUAL) {
+    } else if (employee->employment.status == statusCasual) {
         deductionRate = 0.10;      // 10% for casual employees
     } else {
         deductionRate = 0.05;

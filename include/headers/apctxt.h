@@ -43,6 +43,7 @@ typedef struct {
 
 typedef enum {
     IV_NONE,
+    IV_OPTIONAL,
     IV_CHOICES,
     IV_RANGE_INT,
     IV_RANGE_FLT,

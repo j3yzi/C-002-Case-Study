@@ -48,6 +48,11 @@ void readLine(char* buffer, int size) {
  * @return Returns true if the input is valid, false otherwise.
  */
 bool isValid(const char* input, IValidationType type, IValidationParams params) {
+    // Special case: IV_OPTIONAL allows empty input
+    if (type == IV_OPTIONAL && input[0] == '\0') {
+        return true;
+    }
+    
     if (input[0] == '\0') {
         printf("   [Error] Empty input. Please enter a value.\n");
         return false;
@@ -55,6 +60,7 @@ bool isValid(const char* input, IValidationType type, IValidationParams params) 
 
     switch (type) {
         case IV_NONE:
+        case IV_OPTIONAL:
             return true;
 
         case IV_MAX_LEN:
@@ -132,12 +138,12 @@ void appGetValidatedInput(appFormField* fields, int fieldCount) {
     }
     char tempBuffer[256];
     for (int i = 0; i < fieldCount; i++) {
-        bool valid_input = false;
-        while (!valid_input) {
+        bool validInput = false;
+        while (!validInput) {
             printf("%s", fields[i].prompt);
             readLine(tempBuffer, sizeof(tempBuffer));
-            valid_input = isValid(tempBuffer, fields[i].validationType, fields[i].validationParams);
-            if (valid_input) {
+            validInput = isValid(tempBuffer, fields[i].validationType, fields[i].validationParams);
+            if (validInput) {
                 // Copy up to bufferSize-1 chars to the actual field buffer
                 strncpy(fields[i].buffer, tempBuffer, fields[i].bufferSize - 1);
                 fields[i].buffer[fields[i].bufferSize - 1] = '\0';
