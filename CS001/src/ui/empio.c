@@ -64,12 +64,13 @@ int getEmployeeNumberFromUser(char* buffer, int bufferSize) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleSearchEmployee(const list* employeeList) {
-    system("cls");
-    printf("--- Search Employee ---\n");
+    winTermClearScreen();
+    printf("=== Search Employee ===\n\n");
     printf("1. Search by Employee Number\n");
     printf("2. Search by Name\n");
     printf("3. Display All Employees\n");
-    printf("Enter choice (1-3): ");
+    printf("4. Back to Main Menu\n");
+    printf("\nEnter choice (1-4): ");
     
     char choice = _getch();
     printf("%c\n\n", choice);
@@ -77,39 +78,46 @@ int handleSearchEmployee(const list* employeeList) {
     switch (choice) {
         case '1': {
             char empNumber[employeeNumberLen];
+            printf("=== Search by Employee Number ===\n");
             if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) == 0) {
                 Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
                 if (emp) {
+                    printf("\n=== Employee Found ===\n");
                     displayEmployeeDetails(emp);
                 } else {
-                    printf("Employee with number '%s' not found.\n", empNumber);
+                    printf("\nEmployee with number '%s' not found.\n", empNumber);
                 }
             }
             break;
         }
         case '2': {
             char fullName[employeeNameLen];
+            printf("=== Search by Name ===\n");
             printf("Enter Full Name: ");
             appFormField field = { "Full Name: ", fullName, employeeNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNameLen - 1}} };
             appGetValidatedInput(&field, 1);
             
             Employee* emp = searchEmployeeByName(employeeList, fullName);
             if (emp) {
+                printf("\n=== Employee Found ===\n");
                 displayEmployeeDetails(emp);
             } else {
-                printf("Employee with name '%s' not found.\n", fullName);
+                printf("\nEmployee with name '%s' not found.\n", fullName);
             }
             break;
         }
         case '3':
+            printf("=== All Employees ===\n");
             displayAllEmployees(employeeList);
             break;
+        case '4':
+            return 0; // Back to main menu
         default:
             printf("Invalid choice.\n");
-            return -1;
+            break;
     }
     
-    printf("Press any key to continue...");
+    printf("\nPress any key to continue...");
     _getch();
     return 0;
 }
@@ -120,8 +128,8 @@ int handleSearchEmployee(const list* employeeList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleEditEmployee(list* employeeList) {
-    system("cls");
-    printf("--- Edit Employee ---\n");
+    winTermClearScreen();
+    printf("=== Edit Employee ===\n");
     
     char empNumber[employeeNumberLen];
     if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) != 0) {
@@ -163,8 +171,8 @@ int handleEditEmployee(list* employeeList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleDeleteEmployee(list* employeeList) {
-    system("cls");
-    printf("--- Delete Employee ---\n");
+    winTermClearScreen();
+    printf("=== Delete Employee ===\n");
     
     char empNumber[employeeNumberLen];
     if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) != 0) {

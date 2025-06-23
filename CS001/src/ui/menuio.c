@@ -2,6 +2,10 @@
 #include "empio.h"
 #include "../modules/data.h"
 #include "../modules/payroll.h"
+#include "../../../include/headers/apctxt.h"
+#include "../../../include/headers/state.h"
+#include "../../../include/models/employee.h"
+#include "../../../include/headers/list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,49 +20,69 @@
 
 // Global variables
 static list* employeeList = NULL;
-static appState employeeListCreated = {false};
 
 // Function prototypes
-static void handleAddEmployeeMenu();
-static int handleCreateEmployeeList();
-static int handleAddEmployee();
-static int handleExportEmployeeData();
-static int handleLoadEmployeeData();
-static int handlePayrollReport();
+static void handleAddEmployeeMenu(void);
+static int handleCreateEmployeeList(void);
+static int handleAddEmployee(void);
+static int handleExportEmployeeData(void);
+static int handleLoadEmployeeData(void);
+static int handlePayrollReport(void);
+static void showDisabledMessage(const char* action);
 
 // Menu definitions
-Menu mainMenu = {1,"Main Menu", (MenuOption[]){
-    {'1', "Add/Create Employee Options", false, true, 9,0,7,0,8,0, NULL},
-    {'2', "Edit Employee Data", true, false, 9,0,7,0,8,0, NULL},
-    {'3', "Search Employee", true, false, 9,0,7,0,8,0, NULL},
-    {'4', "Delete Employee", true, false, 9,0,7,0,8,0, NULL},
-    {'5', "Load Employee From File", false, false, 9,0,7,0,8,0, NULL},
-    {'6', "Export Employee Data To CSV", true, false, 9,0,7,0,8,0, NULL},
-    {'7', "Display Payroll Report", true, false, 9,0,7,0,8,0, NULL},
-    {'8', "Exit", false, false, 9,0,7,0,8,0, NULL}}, 8};
+Menu mainMenu = {1, "Main Menu", (MenuOption[]){
+    {'1', "Add/Create Employee Options", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'2', "Edit Employee Data", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'3', "Search Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'4', "Delete Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'5', "Load Employee From File", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'6', "Export Employee Data To CSV", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'7', "Display Payroll Report", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'8', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 8};
     
 Menu addEmployeeSubMenu = {2, "Add Employee Sub Menu", (MenuOption[]){
-    {'1', "Create Employee List", false, true, 9,0,7,0,8,0, NULL},
-    {'2', "Add an Employee", true, false, 9,0,7,0,8,0, NULL},
-    {'3', "Back to Main Menu", false, false, 9,0,7,0,8,0, NULL}}, 3};
+    {'1', "Create Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'2', "Add an Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'3', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 3};
 
-void checkStates() {
+/**
+ * @brief Updates menu option states based on current application state
+ */
+void checkStates(void) {
+    // Check if employee list has been created
     if (employeeListCreated.isEnabled) {
-        addEmployeeSubMenu.options[0].isDisabled = true;
+        // Enable "Add an Employee" option
         addEmployeeSubMenu.options[1].isDisabled = false;
-        mainMenu.options[1].isDisabled = false;
-        mainMenu.options[2].isDisabled = false;
-        mainMenu.options[3].isDisabled = false;
-        mainMenu.options[5].isDisabled = false;
-        mainMenu.options[6].isDisabled = false;
-    }
-    // Also check if list has nodes for options that require it
-    if (employeeList != NULL && employeeList->head != NULL) {
-        mainMenu.options[1].isDisabled = false; // Edit
-        mainMenu.options[2].isDisabled = false; // Search
-        mainMenu.options[3].isDisabled = false; // Delete
-        mainMenu.options[5].isDisabled = false; // Export
-        mainMenu.options[6].isDisabled = false; // Display
+        
+        // Check if list has employees for options that require data
+        if (employeeList != NULL && employeeList->head != NULL && employeeList->size > 0) {
+            mainMenu.options[1].isDisabled = false; // Edit Employee Data
+            mainMenu.options[2].isDisabled = false; // Search Employee
+            mainMenu.options[3].isDisabled = false; // Delete Employee
+            mainMenu.options[5].isDisabled = false; // Export Employee Data To CSV
+            mainMenu.options[6].isDisabled = false; // Display Payroll Report
+        } else {
+            // List exists but is empty
+            mainMenu.options[1].isDisabled = true;
+            mainMenu.options[2].isDisabled = true;
+            mainMenu.options[3].isDisabled = true;
+            mainMenu.options[5].isDisabled = true;
+            mainMenu.options[6].isDisabled = true;
+        }
+        
+        // Disable "Create Employee List" since it already exists
+        addEmployeeSubMenu.options[0].isDisabled = true;
+    } else {
+        // Employee list not created yet
+        mainMenu.options[1].isDisabled = true;
+        mainMenu.options[2].isDisabled = true;
+        mainMenu.options[3].isDisabled = true;
+        mainMenu.options[5].isDisabled = true;
+        mainMenu.options[6].isDisabled = true;
+        
+        addEmployeeSubMenu.options[0].isDisabled = false; // Enable "Create Employee List"
+        addEmployeeSubMenu.options[1].isDisabled = true;  // Disable "Add an Employee"
     }
 }
 
@@ -73,11 +97,16 @@ void initMenuIO(list* list) {
     }
 }
 
-int menuLoop() {
+/**
+ * @brief Main menu loop that handles user input and menu navigation
+ * @return Returns 0 on normal exit, other values on error
+ */
+int menuLoop(void) {
     char mainMenuChoice;
+    
     do {
         checkStates();
-        system("cls");
+        winTermClearScreen();
         mainMenuChoice = initMenu(&mainMenu);
         
         switch(mainMenuChoice) {
@@ -87,16 +116,22 @@ int menuLoop() {
             case '2':
                 if (!mainMenu.options[1].isDisabled) {
                     handleEditEmployee(employeeList);
+                } else {
+                    showDisabledMessage("edit employees");
                 }
                 break;
             case '3':
                 if (!mainMenu.options[2].isDisabled) {
                     handleSearchEmployee(employeeList);
+                } else {
+                    showDisabledMessage("search employees");
                 }
                 break;
             case '4':
                 if (!mainMenu.options[3].isDisabled) {
                     handleDeleteEmployee(employeeList);
+                } else {
+                    showDisabledMessage("delete employees");
                 }
                 break;
             case '5':
@@ -105,51 +140,64 @@ int menuLoop() {
             case '6':
                 if (!mainMenu.options[5].isDisabled) {
                     handleExportEmployeeData();
+                } else {
+                    showDisabledMessage("export employee data");
                 }
                 break;
             case '7':
                 if (!mainMenu.options[6].isDisabled) {
                     handlePayrollReport();
+                } else {
+                    showDisabledMessage("display payroll report");
                 }
                 break;
             case '8':
-                printf("Exiting program...\n");
+                printf("\nExiting program...\n");
                 return 0;
             default:
-                printf("Invalid option. Press any key to continue...");
+                printf("\nInvalid option. Press any key to continue...");
                 _getch();
                 break;
         }
     } while (true);
+    
     return 0;
 }
 
 /**
  * @brief Handles the Add Employee submenu.
  */
-static void handleAddEmployeeMenu() {
+static void handleAddEmployeeMenu(void) {
     char choice;
     
     do {
         checkStates();
-        system("cls");
+        winTermClearScreen();
         choice = initMenu(&addEmployeeSubMenu);
         
         switch(choice) {
             case '1':
                 if (!addEmployeeSubMenu.options[0].isDisabled) {
                     handleCreateEmployeeList();
+                } else {
+                    printf("\nEmployee list already exists!\n");
+                    printf("Press any key to continue...");
+                    _getch();
                 }
                 break;
             case '2':
                 if (!addEmployeeSubMenu.options[1].isDisabled) {
                     handleAddEmployee();
+                } else {
+                    printf("\nPlease create an employee list first!\n");
+                    printf("Press any key to continue...");
+                    _getch();
                 }
                 break;
             case '3':
-                return;
+                return; // Back to main menu
             default:
-                printf("Invalid option. Press any key to continue...");
+                printf("\nInvalid option. Press any key to continue...");
                 _getch();
                 break;
         }
@@ -160,7 +208,10 @@ static void handleAddEmployeeMenu() {
  * @brief Handles creating a new employee list.
  * @return Returns 0 on success, -1 on failure.
  */
-static int handleCreateEmployeeList() {
+static int handleCreateEmployeeList(void) {
+    winTermClearScreen();
+    printf("=== Create Employee List ===\n\n");
+    
     if (employeeListCreated.isEnabled) {
         printf("Employee list already exists!\n");
         printf("Press any key to continue...");
@@ -168,15 +219,19 @@ static int handleCreateEmployeeList() {
         return -1;
     }
     
-    if (createEmployeeList(&employeeList) != 0) {
-        printf("Failed to create employee list!\n");
-        printf("Press any key to continue...");
-        _getch();
-        return -1;
+    // The list should already be created in main, just mark it as enabled
+    if (employeeList == NULL) {
+        if (createEmployeeList(&employeeList) != 0) {
+            printf("Failed to create employee list!\n");
+            printf("Press any key to continue...");
+            _getch();
+            return -1;
+        }
     }
     
     employeeListCreated.isEnabled = true;
     printf("Employee list created successfully!\n");
+    printf("You can now add employees to the list.\n");
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -186,16 +241,16 @@ static int handleCreateEmployeeList() {
  * @brief Handles adding a new employee.
  * @return Returns 0 on success, -1 on failure.
  */
-static int handleAddEmployee() {
-    if (!employeeListCreated.isEnabled) {
+static int handleAddEmployee(void) {
+    winTermClearScreen();
+    printf("=== Add New Employee ===\n\n");
+    
+    if (!employeeListCreated.isEnabled || employeeList == NULL) {
         printf("Employee list not created yet!\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
-    
-    system("cls");
-    printf("--- Add New Employee ---\n");
     
     Employee* newEmployee = (Employee*)malloc(sizeof(Employee));
     if (!newEmployee) {
@@ -204,6 +259,9 @@ static int handleAddEmployee() {
         _getch();
         return -1;
     }
+    
+    // Initialize employee data
+    memset(newEmployee, 0, sizeof(Employee));
     
     if (getEmployeeDataFromUser(newEmployee) != 0) {
         printf("Failed to get employee data. Operation cancelled.\n");
@@ -224,7 +282,9 @@ static int handleAddEmployee() {
         return -1;
     }
     
-    printf("\nEmployee added successfully!\n");
+    printf("\nEmployee '%s' added successfully!\n", newEmployee->personal.name.fullName);
+    printf("Employee Number: %s\n", newEmployee->personal.employeeNumber);
+    printf("Net Pay: %.2f\n", newEmployee->payroll.netPay);
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -234,26 +294,30 @@ static int handleAddEmployee() {
  * @brief Handles exporting employee data to a CSV file.
  * @return Returns 0 on success, -1 on failure.
  */
-static int handleExportEmployeeData() {
-    if (!employeeListCreated.isEnabled || !employeeList || !employeeList->head) {
+static int handleExportEmployeeData(void) {
+    winTermClearScreen();
+    printf("=== Export Employee Data to CSV ===\n\n");
+    
+    if (!employeeListCreated.isEnabled || !employeeList || !employeeList->head || employeeList->size == 0) {
         printf("No employee data to export!\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
-    system("cls");
-    printf("--- Export Employee Data to CSV ---\n");
-    
     char filename[100];
     printf("Enter filename for CSV export (e.g., employees.csv): ");
-    scanf("%99s", filename);
+    if (scanf("%99s", filename) != 1) {
+        printf("Invalid filename!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
     getchar(); // Clear newline
     
-    // TODO: Implement actual CSV export functionality
     FILE* file = fopen(filename, "w");
     if (!file) {
-        printf("Failed to open file for writing!\n");
+        printf("Failed to open file '%s' for writing!\n", filename);
         printf("Press any key to continue...");
         _getch();
         return -1;
@@ -264,11 +328,12 @@ static int handleExportEmployeeData() {
     
     // Write employee data
     node* current = employeeList->head;
-    if (current) {
+    int count = 0;
+    
+    if (current != NULL) {
         do {
-            current = current->next;
-            if (current != employeeList->head) {
-                Employee* emp = (Employee*)current->data;
+            Employee* emp = (Employee*)current->data;
+            if (emp != NULL) {
                 fprintf(file, "%s,%s,%s,%s,%s,%s,%d,%.2f,%.2f,%.2f,%.2f,%.2f\n",
                     emp->personal.employeeNumber,
                     emp->personal.name.fullName,
@@ -282,12 +347,14 @@ static int handleExportEmployeeData() {
                     emp->payroll.overtimePay,
                     emp->payroll.deductions,
                     emp->payroll.netPay);
+                count++;
             }
-        } while (current != employeeList->head);
+            current = current->next;
+        } while (current != employeeList->head && current != NULL);
     }
     
     fclose(file);
-    printf("Data exported to %s successfully!\n", filename);
+    printf("Successfully exported %d employee records to '%s'!\n", count, filename);
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -297,22 +364,27 @@ static int handleExportEmployeeData() {
  * @brief Handles loading employee data from a file.
  * @return Returns 0 on success, -1 on failure.
  */
-static int handleLoadEmployeeData() {
-    system("cls");
-    printf("--- Load Employee Data ---\n");
+static int handleLoadEmployeeData(void) {
+    winTermClearScreen();
+    printf("=== Load Employee Data ===\n\n");
     
     char filename[100];
     printf("Enter filename to load from: ");
-    scanf("%99s", filename);
+    if (scanf("%99s", filename) != 1) {
+        printf("Invalid filename!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
     getchar(); // Clear newline
     
-    // If list already exists, confirm overwrite
-    if (employeeListCreated.isEnabled && employeeList && employeeList->head) {
+    // If list already exists and has data, confirm overwrite
+    if (employeeListCreated.isEnabled && employeeList && employeeList->head && employeeList->size > 0) {
         printf("Warning: This will replace existing employee data. Continue? (Y/N): ");
-        char confirm = toupper(_getch());
+        char confirm = _getch();
         printf("%c\n", confirm);
         
-        if (confirm != 'Y') {
+        if (confirm != 'Y' && confirm != 'y') {
             printf("Operation cancelled.\n");
             printf("Press any key to continue...");
             _getch();
@@ -320,22 +392,28 @@ static int handleLoadEmployeeData() {
         }
         
         // Clean up old list
-        destroyList(&employeeList, freeEmployee);
+        clearList(employeeList, freeEmployee);
     }
     
     // Load new employee data
     list* newList = loadEmployeeDataFromFile(filename, SINGLY);
     if (!newList) {
-        printf("Failed to load employee data from file!\n");
+        printf("Failed to load employee data from file '%s'!\n", filename);
+        printf("Make sure the file exists and is in the correct format.\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
+    // Replace current list
+    if (employeeList != NULL && employeeList != newList) {
+        destroyList(&employeeList, freeEmployee);
+    }
     employeeList = newList;
     employeeListCreated.isEnabled = true;
     
-    printf("Employee data loaded successfully!\n");
+    printf("Employee data loaded successfully from '%s'!\n", filename);
+    printf("Loaded %d employee records.\n", employeeList->size);
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -345,16 +423,17 @@ static int handleLoadEmployeeData() {
  * @brief Handles displaying the payroll report.
  * @return Returns 0 on success, -1 on failure.
  */
-static int handlePayrollReport() {
-    if (!employeeListCreated.isEnabled || !employeeList || !employeeList->head) {
+static int handlePayrollReport(void) {
+    winTermClearScreen();
+    printf("=== Employee Payroll Report ===\n\n");
+    
+    if (!employeeListCreated.isEnabled || !employeeList || !employeeList->head || employeeList->size == 0) {
         printf("No employee data to display!\n");
+        printf("Please create an employee list and add some employees first.\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
-    
-    system("cls");
-    printf("=== Payroll Report ===\n\n");
     
     node* current = employeeList->head;
     int count = 0;
@@ -364,45 +443,64 @@ static int handlePayrollReport() {
     double totalDeductions = 0.0;
     double totalNetPay = 0.0;
     
-    printf("%-12s | %-15s | %-8s | %-10s | %-10s | %-10s | %-10s | %-10s\n",
+    printf("%-12s | %-20s | %-8s | %-10s | %-10s | %-10s | %-10s | %-6s\n",
            "Emp. Number", "Employee Name", "Status", "Basic Pay", "Overtime", "Deductions", "Net Pay", "Hours");
-    printf("----------------------------------------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------------------------------------\n");
     
-    do {
-        current = current->next;
-        if (current != employeeList->head) {
+    if (current != NULL) {
+        do {
             Employee* emp = (Employee*)current->data;
-            count++;
-            
-            // Calculate payroll if not already calculated
-            if (emp->payroll.netPay == 0.0) {
-                calculatePayroll(emp);
+            if (emp != NULL) {
+                count++;
+                
+                // Recalculate payroll if needed
+                if (emp->payroll.netPay == 0.0) {
+                    calculatePayroll(emp);
+                }
+                
+                printf("%-12s | %-20s | %-8s | %10.2f | %10.2f | %10.2f | %10.2f | %6d\n",
+                       emp->personal.employeeNumber,
+                       emp->personal.name.fullName,
+                       (emp->employment.status == statusRegular) ? "Regular" : "Casual",
+                       emp->payroll.basicPay,
+                       emp->payroll.overtimePay,
+                       emp->payroll.deductions,
+                       emp->payroll.netPay,
+                       emp->employment.hoursWorked);
+                       
+                totalBasicPay += emp->payroll.basicPay;
+                totalOvertimePay += emp->payroll.overtimePay;
+                totalDeductions += emp->payroll.deductions;
+                totalNetPay += emp->payroll.netPay;
             }
-            
-            printf("%-12s | %-15s | %-8s | %10.2f | %10.2f | %10.2f | %10.2f | %10d\n",
-                   emp->personal.employeeNumber,
-                   emp->personal.name.fullName,
-                   (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                   emp->payroll.basicPay,
-                   emp->payroll.overtimePay,
-                   emp->payroll.deductions,
-                   emp->payroll.netPay,
-                   emp->employment.hoursWorked);
-                   
-            totalBasicPay += emp->payroll.basicPay;
-            totalOvertimePay += emp->payroll.overtimePay;
-            totalDeductions += emp->payroll.deductions;
-            totalNetPay += emp->payroll.netPay;
-        }
-    } while (current != employeeList->head);
+            current = current->next;
+        } while (current != employeeList->head && current != NULL);
+    }
     
-    printf("----------------------------------------------------------------------------------------------\n");
-    printf("Totals:                           | %10.2f | %10.2f | %10.2f | %10.2f |\n",
-           totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
-    printf("----------------------------------------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------------------------------------\n");
+    printf("%-32s | %10.2f | %10.2f | %10.2f | %10.2f |\n",
+           "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
+    printf("------------------------------------------------------------------------------------------------------\n");
     printf("Total employees: %d\n\n", count);
     
     printf("Press any key to continue...");
     _getch();
     return 0;
+}
+
+/**
+ * @brief Shows a message when a disabled option is selected
+ * @param action The action that cannot be performed
+ */
+static void showDisabledMessage(const char* action) {
+    printf("\nCannot %s: ", action);
+    if (!employeeListCreated.isEnabled) {
+        printf("Please create an employee list first.\n");
+    } else if (employeeList == NULL || employeeList->size == 0) {
+        printf("No employees in the list. Please add some employees first.\n");
+    } else {
+        printf("This option is currently unavailable.\n");
+    }
+    printf("Press any key to continue...");
+    _getch();
 }

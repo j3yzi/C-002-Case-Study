@@ -118,6 +118,8 @@ char initMenu(Menu* m) {
     int selected = 0;
 
     int key;
+    char errorMessage[100] = "";
+    int showError = 0;
 
     while (true) {
         // Reset color and mark selected option
@@ -125,6 +127,15 @@ char initMenu(Menu* m) {
         
         // Display the menu
         appDisplayMenu(m);
+        
+        // Display error message if needed
+        if (showError) {
+            printf("\n");
+            appMenuSetColor(12, 0); // Red text for error
+            printf("%s", errorMessage);
+            appMenuSetColor(7, 0); // Reset to default
+            showError = 0;
+        }
         
         // Get user input
         key = _getch();
@@ -137,9 +148,11 @@ char initMenu(Menu* m) {
                 }
                 return m->options[i].key; 
             } else if (key == m->options[i].key && m->options[i].isDisabled) {
-                // If the key matches a disabled option, notify the user
-                printf("Option '%c' is disabled.\n", m->options[i].key);
-                Sleep(1000); // Pause for a moment to let the user read the message
+                // If the key matches a disabled option, show error
+                snprintf(errorMessage, sizeof(errorMessage), 
+                         "Option '%c - %s' is currently disabled.", 
+                         m->options[i].key, m->options[i].text);
+                showError = 1;
                 continue;
             }
         }
@@ -160,8 +173,7 @@ char initMenu(Menu* m) {
                 }
                 appUpdateMenuSelection(m, oldSelected, selected);
             }
-            
-            if (key == 80 || key == 77) { // Down/Right arrow
+            else if (key == 80 || key == 77) { // Down/Right arrow
                 int oldSelected = selected;
                 selected++;
                 if (selected >= m->optionCount) selected = 0;
@@ -173,12 +185,17 @@ char initMenu(Menu* m) {
                 }
                 appUpdateMenuSelection(m, oldSelected, selected);
             }
+            // Continue to skip the invalid key check for arrow keys
+            continue;
         }
 
         // Process Enter key
         if (key == 13) {
             if (m->options[selected].isDisabled) {
-                printf("Option is disabled.\n");
+                snprintf(errorMessage, sizeof(errorMessage), 
+                         "Option '%c - %s' is currently disabled.", 
+                         m->options[selected].key, m->options[selected].text);
+                showError = 1;
                 continue;
             }
               // Execute the menu option's callback function if it exists
@@ -201,6 +218,23 @@ char initMenu(Menu* m) {
                 }
             }
             return m->options[selected].key; // Return the key of the selected option
+        }
+        
+        // Handle invalid key press
+        if (key != 0 && key != -32 && key != 224 && key != 13) {
+            // Check if it's not a valid menu option key
+            int validKey = 0;
+            for (int i = 0; i < m->optionCount; i++) {
+                if (key == m->options[i].key) {
+                    validKey = 1;
+                    break;
+                }
+            }
+            if (!validKey) {
+                snprintf(errorMessage, sizeof(errorMessage), 
+                         "Invalid option '%c'. Please select a valid menu option.", key);
+                showError = 1;
+            }
         }
     }
 }
