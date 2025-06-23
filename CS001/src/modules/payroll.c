@@ -3,7 +3,6 @@
 
 // Define constants for payroll calculations
 #define regularHours 160
-#define overtimeRate 0.5
 
 void calculatePayroll(Employee* employee) {
     if (!employee) return;
@@ -32,7 +31,9 @@ void calculateOvertimePay(Employee* employee) {
     
     if (employee->employment.hoursWorked > regularHours) {
         float overtimeHours = employee->employment.hoursWorked - regularHours;
-        employee->payroll.overtimePay = overtimeHours * (employee->employment.basicRate * (1.0 + overtimeRate));
+        // Overtime rate is 0.5 MORE than basic rate (basicRate + 0.5)
+        float overtimeHourlyRate = employee->employment.basicRate + 0.5;
+        employee->payroll.overtimePay = overtimeHours * overtimeHourlyRate;
     } else {
         employee->payroll.overtimePay = 0.0;
     }
