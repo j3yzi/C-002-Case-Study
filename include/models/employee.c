@@ -246,33 +246,69 @@ void displayEmployeeDetails(const Employee* employee) {
  * @param employeeList Pointer to the employee list.
  */
 void displayAllEmployees(const list* employeeList) {
-    if (!employeeList || !employeeList->head) {
-        printf("No employees to display.\n");
+    if (!employeeList) {
+        printf("No employee list available.\n");
+        return;
+    }
+    
+    if (!employeeList->head || employeeList->size == 0) {
+        printf("No employees to display. The list is empty.\n");
         return;
     }
 
     printf("\n=== All Employees ===\n");
-    printf("%-12s | %-15s | %-8s | %-10s | %-10s\n", "Emp. Number", "Full Name", "Status", "Hours", "Rate");
-    printf("------------------------------------------------------------------\n");
+    printf("%-12s | %-20s | %-8s | %-10s | %-10s\n", "Emp. Number", "Full Name", "Status", "Hours", "Rate");
+    printf("------------------------------------------------------------------------\n");
 
     node* current = employeeList->head;
     int count = 0;
-    do {
-        Employee* emp = (Employee*)current->data;
-        if (emp) {
-            printf("%-12s | %-15s | %-8s | %-10d | %-10.2f\n", 
-                   emp->personal.employeeNumber,
-                   emp->personal.name.fullName,
-                   (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                   emp->employment.hoursWorked,
-                   emp->employment.basicRate);
-            count++;
+    
+    // For non-circular lists
+    if (employeeList->type == SINGLY || employeeList->type == DOUBLY) {
+        while (current != NULL) {
+            Employee* emp = (Employee*)current->data;
+            if (emp) {
+                printf("%-12s | %-20s | %-8s | %-10d | %-10.2f\n", 
+                       emp->personal.employeeNumber,
+                       emp->personal.name.fullName,
+                       (emp->employment.status == statusRegular) ? "Regular" : "Casual",
+                       emp->employment.hoursWorked,
+                       emp->employment.basicRate);
+                count++;
+            }
+            current = current->next;
         }
-        current = current->next;
-    } while (current != employeeList->head);
+    } 
+    // For circular lists
+    else {
+        if (current != NULL) {
+            do {
+                Employee* emp = (Employee*)current->data;
+                if (emp) {
+                    printf("%-12s | %-20s | %-8s | %-10d | %-10.2f\n", 
+                           emp->personal.employeeNumber,
+                           emp->personal.name.fullName,
+                           (emp->employment.status == statusRegular) ? "Regular" : "Casual",
+                           emp->employment.hoursWorked,
+                           emp->employment.basicRate);
+                    count++;
+                }
+                current = current->next;
+                
+                // Safety check to prevent infinite loops
+                if (count >= employeeList->size) {
+                    break;
+                }
+            } while (current != NULL && current != employeeList->head);
+        }
+    }
 
-    printf("------------------------------------------------------------------\n");
-    printf("Total employees: %d\n\n", count);
+    printf("------------------------------------------------------------------------\n");
+    printf("Total employees displayed: %d\n", count);
+    
+    if (count == 0) {
+        printf("Note: List has %d entries but no valid employee data found.\n", employeeList->size);
+    }
 }
 
 /**
