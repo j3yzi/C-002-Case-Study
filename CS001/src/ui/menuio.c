@@ -205,7 +205,7 @@ static void handleAddEmployeeMenu(void) {
 }
 
 /**
- * @brief Handles creating a new employee list.
+ * @brief Handles creating a new employee list and populating it with initial employees.
  * @return Returns 0 on success, -1 on failure.
  */
 static int handleCreateEmployeeList(void) {
@@ -219,7 +219,7 @@ static int handleCreateEmployeeList(void) {
         return -1;
     }
     
-    // The list should already be created in main, just mark it as enabled
+    // Create the list if it doesn't exist
     if (employeeList == NULL) {
         if (createEmployeeList(&employeeList) != 0) {
             printf("Failed to create employee list!\n");
@@ -229,9 +229,70 @@ static int handleCreateEmployeeList(void) {
         }
     }
     
-    employeeListCreated.isEnabled = true;
     printf("Employee list created successfully!\n");
-    printf("You can now add employees to the list.\n");
+    printf("Now let's add %d employees to initialize the list.\n\n", maxEmployeeCreationCount);
+    
+    int employeesCreated = 0;
+    for (int i = 0; i < maxEmployeeCreationCount; i++) {
+        printf("=== Adding Employee %d of %d ===\n\n", i + 1, maxEmployeeCreationCount);
+        
+        Employee* newEmployee = (Employee*)malloc(sizeof(Employee));
+        if (!newEmployee) {
+            printf("Memory allocation failed for employee %d!\n", i + 1);
+            printf("Press any key to continue...");
+            _getch();
+            continue;
+        }
+        
+        // Initialize employee data
+        memset(newEmployee, 0, sizeof(Employee));
+        
+        if (getEmployeeDataFromUser(newEmployee) != 0) {
+            printf("Employee %d creation cancelled or failed.\n", i + 1);
+            free(newEmployee);
+            
+            printf("Do you want to continue with remaining employees? (Y/N): ");
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            if (choice == 'N' || choice == 'n') {
+                break;
+            }
+            continue;
+        }
+        
+        // Calculate payroll information
+        calculatePayroll(newEmployee);
+        
+        if (createEmployee(newEmployee, &employeeList) != 0) {
+            printf("Failed to add employee %d to the list!\n", i + 1);
+            free(newEmployee);
+            printf("Press any key to continue...");
+            _getch();
+            continue;
+        }
+        
+        employeesCreated++;
+        printf("\nEmployee %d '%s' added successfully!\n", i + 1, newEmployee->personal.name.fullName);
+        
+        if (i < maxEmployeeCreationCount - 1) {
+            printf("Press any key to add the next employee...");
+            _getch();
+        }
+    }
+    
+    if (employeesCreated > 0) {
+        employeeListCreated.isEnabled = true;
+        printf("\n=== Employee List Creation Complete ===\n");
+        printf("Successfully created %d out of %d employees.\n", employeesCreated, maxEmployeeCreationCount);
+        printf("You can now add more employees or perform other operations.\n");
+    } else {
+        printf("\n=== No Employees Created ===\n");
+        printf("Employee list was created but no employees were added.\n");
+        printf("You can add employees using the 'Add an Employee' option later.\n");
+        employeeListCreated.isEnabled = true; // Still mark as created even if empty
+    }
+    
     printf("Press any key to continue...");
     _getch();
     return 0;

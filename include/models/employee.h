@@ -20,7 +20,7 @@ typedef struct AppContext AppContext;
 #define employeeMiddleNameLen 32
 #define employeeLastNameLen 32
 
-#define maxEmployeeCreationCount 1
+#define maxEmployeeCreationCount 5
 #define maxEmployeeRecords 50
 
 #define payrollFileName "payroll.dat"

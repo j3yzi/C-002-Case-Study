@@ -21,9 +21,9 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
         printf("=== Enter Employee Name ===\n\n");
         
         appFormField nameFields[] = {
-            { "Enter First Name: ", newEmployee->personal.name.firstName, employeeFirstNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeFirstNameLen - 1}} },
-            { "Enter Middle Name (optional): ", newEmployee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL, {.rangeInt = {.max = employeeMiddleNameLen - 1}} },
-            { "Enter Last Name: ", newEmployee->personal.name.lastName, employeeLastNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeLastNameLen - 1}} }
+            { "Enter First Name: ", newEmployee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
+            { "Enter Middle Name (optional): ", newEmployee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
+            { "Enter Last Name: ", newEmployee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
         };
         appGetValidatedInput(nameFields, 3);
 
@@ -120,7 +120,7 @@ int handleSearchEmployee(const list* employeeList) {
         case '2': {
             char fullName[employeeNameLen];
             printf("=== Search by Name ===\n");
-            appFormField field = { "Enter Full Name: ", fullName, employeeNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNameLen - 1}} };
+            appFormField field = { "Enter Full Name: ", fullName, employeeNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeNameLen - 1}} };
             appGetValidatedInput(&field, 1);
             
             Employee* emp = searchEmployeeByName(employeeList, fullName);
@@ -323,9 +323,9 @@ int editEmployeeDataFromUser(Employee* employee) {
             // Edit name
             printf("=== Edit Name ===\n");
             appFormField nameFields[] = {
-                { "Enter First Name: ", employee->personal.name.firstName, employeeFirstNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL, {.rangeInt = {.max = employeeMiddleNameLen - 1}} },
-                { "Enter Last Name: ", employee->personal.name.lastName, employeeLastNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeLastNameLen - 1}} }
+                { "Enter First Name: ", employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
+                { "Enter Middle Name (optional): ", employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
+                { "Enter Last Name: ", employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
             };
             appGetValidatedInput(nameFields, 3);
             
@@ -377,9 +377,9 @@ int editEmployeeDataFromUser(Employee* employee) {
             // Name fields
             printf("--- Name Information ---\n");
             appFormField nameFields[] = {
-                { "Enter First Name: ", employee->personal.name.firstName, employeeFirstNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL, {.rangeInt = {.max = employeeMiddleNameLen - 1}} },
-                { "Enter Last Name: ", employee->personal.name.lastName, employeeLastNameLen, IV_MAX_LEN, {.rangeInt = {.max = employeeLastNameLen - 1}} }
+                { "Enter First Name: ", employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
+                { "Enter Middle Name (optional): ", employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
+                { "Enter Last Name: ", employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
             };
             appGetValidatedInput(nameFields, 3);
             

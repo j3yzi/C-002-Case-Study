@@ -120,6 +120,40 @@ bool isValid(const char* input, IValidationType type, IValidationParams params) 
                 return false;
             }
             return true;
+            
+        case IV_ALPHA_ONLY:
+            {
+                for (int i = 0; input[i] != '\0'; i++) {
+                    char c = input[i];
+                    // Allow only alphabetic characters and spaces
+                    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
+                        printf("   [Error] Invalid characters. Only letters and spaces are allowed.\n");
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+        case IV_ALPHA_ONLY_MAX_LEN:
+            {
+                // First check length
+                if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
+                    printf("   [Error] Input too long. Maximum length is %d characters.\n", params.maxLengthChars.maxLength);
+                    return false;
+                }
+                
+                // Then check alphabetic characters only
+                for (int i = 0; input[i] != '\0'; i++) {
+                    char c = input[i];
+                    // Allow only alphabetic characters and spaces
+                    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
+                        printf("   [Error] Invalid characters. Only letters and spaces are allowed.\n");
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
         default:
             return true;
     }

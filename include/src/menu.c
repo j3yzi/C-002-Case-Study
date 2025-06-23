@@ -114,8 +114,28 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
  * @return The character key of the selected menu option.
  */
 char initMenu(Menu* m) {
-    // Find the currently selected option, or default to 0
+    // Find the first non-disabled option for initial selection
     int selected = 0;
+    
+    // Reset all selections first
+    for (int i = 0; i < m->optionCount; i++) {
+        m->options[i].isSelected = false;
+    }
+    
+    // Find first available (non-disabled) option
+    while (selected < m->optionCount && m->options[selected].isDisabled) {
+        selected++;
+    }
+    
+    // If all options are disabled, default to first option
+    if (selected >= m->optionCount) {
+        selected = 0;
+    }
+    
+    // Mark the selected option as selected for highlighting
+    if (selected < m->optionCount) {
+        m->options[selected].isSelected = true;
+    }
 
     int key;
     char errorMessage[100] = "";
@@ -205,18 +225,9 @@ char initMenu(Menu* m) {
             
             // Reset selection state for next time menu is shown
             for (int i = 0; i < m->optionCount; i++) {
-                m->options[i].isSelected = (i == 0 && !m->options[i].isDisabled);
+                m->options[i].isSelected = false;
             }
             
-            // If first option is disabled, find the first enabled option
-            if (m->options[0].isDisabled) {
-                for (int j = 1; j < m->optionCount; j++) {
-                    if (!m->options[j].isDisabled) {
-                        m->options[j].isSelected = true;
-                        break;
-                    }
-                }
-            }
             return m->options[selected].key; // Return the key of the selected option
         }
         
