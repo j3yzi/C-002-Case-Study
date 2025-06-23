@@ -3,7 +3,9 @@
 
 #include "apctxt.h"
 
-/* Declare the state variable (not define) */
+/* Declare the state variables (not define) */
 extern appState employeeListCreated;
+extern appState studentListCreated;
+extern appState universityEmployeeListCreated;
 
 #endif /* STATE_H */
