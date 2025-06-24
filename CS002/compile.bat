@@ -5,6 +5,8 @@ echo Compiling CS002 - Dual Management System...
 gcc -o bin/CS002.exe ^
     src/main.c ^
     src/ui/menuio.c ^
+    src/ui/employee_menu.c ^
+    src/ui/student_menu.c ^
     src/ui/empio.c ^
     src/ui/stuio.c ^
     src/modules/data.c ^
