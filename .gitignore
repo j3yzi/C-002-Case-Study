@@ -1,4 +1,5 @@
-# Ignore all executable files
+# Ignore compiled binaries and build outputs
+bin/
 *.exe
 
 # Ignore binary files

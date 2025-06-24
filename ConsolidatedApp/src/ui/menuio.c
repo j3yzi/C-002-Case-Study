@@ -165,14 +165,6 @@ void displaySystemStatistics(void) {
     printf("Total Records: %d\n", totalEmployees + totalStudents);
     printf("Total Lists: %d\n", empManager.employeeListCount + stuManager.studentListCount);
     
-    printf("\nSYSTEM CAPABILITIES:\n");
-    printf("- Multi-list management (up to 10 lists per type)\n");
-    printf("- Employee payroll calculations and reporting\n");
-    printf("- Student academic records and grade tracking\n");
-    printf("- Individual list saving with custom names\n");
-    printf("- Comprehensive reporting and statistics\n");
-    printf("- Data validation and error handling\n");
-    
     printf("\nPress any key to continue...");
     _getch();
 }
