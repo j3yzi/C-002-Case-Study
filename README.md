@@ -524,18 +524,3 @@ The consolidation of CS001, CS002, and CS003 into the **PUP Information Manageme
 <div align="center">
   <h3>✨ Special Thanks ✨</h3>
 </div>
-
-<div align="center">
-  <p>We extend our heartfelt gratitude to:</p>
-  
-  <p>👨‍🏫 Our Professor for guidance in software engineering principles</p>
-  <p>🏫 <b>Polytechnic University of the Philippines</b> for fostering innovation and academic excellence</p>
-  <p>🌐 The open-source community for providing invaluable tools and documentation</p>
-  <p>🎯 Our commitment to engineering excellence and continuous improvement</p>
-  <p>📚 The wealth of research resources that guided our architectural decisions</p>
-  <p>🤝 Our collaborative team spirit that made this consolidation possible</p>
-  
-  <hr style="width: 70%; border-top: 2px dashed #ccc;">
-  <p>💻 <b>Made with ❤️ and Engineering Excellence by BSIT 1-2 Group 1</b> 💻</p>
-  <p>🏛️ <b>Polytechnic University of the Philippines</b> 🏛️</p>
-</div>
