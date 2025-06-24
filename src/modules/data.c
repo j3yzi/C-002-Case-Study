@@ -442,12 +442,9 @@ int saveListWithCustomName(list* dataList, const char* listName, const char* dat
         return -1;
     }
     
-    // Generate timestamped filename
-    char timestamp[32];
-    getCurrentTimestamp(timestamp, sizeof(timestamp));
-    
+    // Generate simple filename without timestamp
     char filename[256];
-    snprintf(filename, sizeof(filename), "%s_%s_%s.dat", dataType, listName, timestamp);
+    snprintf(filename, sizeof(filename), "%s_%s.dat", dataType, listName);
     
     if (strcmp(dataType, "employee") == 0) {
         return saveEmployeeDataFromFile(dataList, filename);

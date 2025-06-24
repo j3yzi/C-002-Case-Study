@@ -647,7 +647,7 @@ int handleSaveEmployeeList(void) {
     printf("\n");
     
     char filename[100];
-    appFormField field = { "Enter filename (will be saved as 'employee_LISTNAME_TIMESTAMP.dat'): ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} };
+    appFormField field = { "Enter filename (will be saved as 'employee_LISTNAME.dat'): ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} };
     appGetValidatedInput(&field, 1);
     
     // Use the custom save function
@@ -656,7 +656,7 @@ int handleSaveEmployeeList(void) {
     
     if (savedCount >= 0) {
         printf("Successfully saved %d employee records!\n", savedCount);
-        printf("Data saved to data directory with timestamp.\n");
+        printf("Data saved to data directory.\n");
     } else {
         printf("Failed to save employee list.\n");
     }
@@ -677,7 +677,7 @@ int handleLoadEmployeeList(void) {
     char filename[100];
     char listName[50];
     appFormField fields[] = {
-        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} },
+        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
         { "Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
     };
     appGetValidatedInput(fields, 2);
@@ -871,7 +871,7 @@ int handleSaveStudentList(void) {
     printf("\n");
     
     char filename[100];
-    appFormField field = { "Enter filename (will be saved as 'student_LISTNAME_TIMESTAMP.dat'): ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} };
+    appFormField field = { "Enter filename (will be saved as 'student_LISTNAME.dat'): ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} };
     appGetValidatedInput(&field, 1);
     
     // Use the custom save function
@@ -880,7 +880,7 @@ int handleSaveStudentList(void) {
     
     if (savedCount >= 0) {
         printf("Successfully saved %d student records!\n", savedCount);
-        printf("Data saved to data directory with timestamp.\n");
+        printf("Data saved to data directory.\n");
     } else {
         printf("Failed to save student list.\n");
     }
@@ -901,7 +901,7 @@ int handleLoadStudentList(void) {
     char filename[100];
     char listName[50];
     appFormField fields[] = {
-        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} },
+        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
         { "Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
     };
     appGetValidatedInput(fields, 2);
