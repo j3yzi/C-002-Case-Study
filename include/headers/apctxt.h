@@ -43,11 +43,14 @@ typedef struct {
 
 typedef enum {
     IV_NONE,
+    IV_OPTIONAL,
     IV_CHOICES,
     IV_RANGE_INT,
     IV_RANGE_FLT,
     IV_MAX_LEN,
     IV_MAX_LEN_CHARS,
+    IV_ALPHA_ONLY,
+    IV_ALPHA_ONLY_MAX_LEN,
 } IValidationType;
 
 typedef union {
@@ -91,7 +94,7 @@ char initMenu(Menu* m);
 // Validation functions
 void enableAnsiSupport();
 void readLine(char* buffer, int size);
-bool isValid(const char* input, IValidationType type, IValidationParams params);
+bool isValid(const char* input, IValidationType type, IValidationParams params, const char* fieldName);
 void appGetValidatedInput(appFormField* fields, int fieldCount);
 
 typedef struct {

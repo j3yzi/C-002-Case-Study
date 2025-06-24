@@ -1,7 +1,7 @@
 #ifndef PAYROLL_H
 #define PAYROLL_H
 
-#include "../../../include/models/employee.h"
+#include "../../include/models/employee.h"
 
 void calculatePayroll(Employee* employee);
 void calculateBasicPay(Employee* employee);
