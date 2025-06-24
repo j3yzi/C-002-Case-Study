@@ -108,8 +108,22 @@ int getStudentDataFromUser(Student* newStudent) {
  * @return Returns 0 on success, -1 on cancel.
  */
 int getStudentNumberFromUser(char* buffer, int bufferSize) {
-    appFormField field = { "Enter Student Number: ", buffer, bufferSize, IV_MAX_LEN, {.rangeInt = {.max = bufferSize - 1}} };
-    appGetValidatedInput(&field, 1);
+    fflush(stdout);
+    
+    if (fgets(buffer, bufferSize, stdin) == NULL) {
+        return -1; // Handle EOF or read error
+    }
+
+    // Remove newline character if present
+    char* newline = strchr(buffer, '\n');
+    if (newline) {
+        *newline = '\0';
+    } else {
+        // Clear any remaining input from the buffer if it was too long
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+    }
+    
     return 0;
 }
 
@@ -228,10 +242,6 @@ int handleEditStudent(list* studentList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleDeleteStudent(list* studentList) {
-    winTermClearScreen();
-    printf("=== Delete Student ===\n\n");
-    
-    // Validate student list first
     if (!studentList) {
         printf("Error: Student list is not available.\n");
         printf("Press any key to continue...");
@@ -246,74 +256,76 @@ int handleDeleteStudent(list* studentList) {
         _getch();
         return 0;
     }
-    
-    char stuNumber[studentNumberLen];
-    printf("Enter the student number you want to delete:\n");
-    if (getStudentNumberFromUser(stuNumber, studentNumberLen) != 0) {
-        printf("Operation cancelled.\n");
-        printf("Press any key to continue...");
-        _getch();
-        return 0;
-    }
-    
-      Student* stu = searchStudentByNumber(studentList, stuNumber);
-    if (!stu) {
-        printf("\n❌ Student with number '%s' was not found.\n", stuNumber);
+
+    while (1) {
+        winTermClearScreen();
+        printf("=== Delete Student ===\n\n");
+        printf("Enter the student number to delete (or type 'back' to cancel):\n");
         
-        char menuTitle[100];
-        sprintf(menuTitle, "Student Not Found: %s", stuNumber);
-        
-        Menu notFoundMenu = {1, menuTitle, (MenuOption[]){
-            {'1', "Try a different student number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-            {'2', "View all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
-            {'3', "Return to main menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
-        }, 3};
-        
-        char choice = initMenu(&notFoundMenu);
-        
-        switch (choice) {
-            case '1':
-                return handleDeleteStudent(studentList);
-            case '2':
-                printf("\n=== Current Students ===\n");
-                displayAllStudents(studentList);
-                printf("\nPress any key to continue...");
-                _getch();
-                return 0;
-            case '3':
-            default:
-                printf("Returning to main menu...\n");
-                printf("Press any key to continue...");
-                _getch();
-                return 0;
+        char stuNumber[studentNumberLen];
+        getStudentNumberFromUser(stuNumber, studentNumberLen);
+
+        if (strcmp(stuNumber, "back") == 0) {
+            printf("\nOperation Cancelled.\n");
+            printf("Press any key to continue...");
+            _getch();
+            return 0;
         }
-    }
-    
-    printf("\n=== Student to Delete ===\n");
-    displayStudentDetails(stu);
-    
-    printf("\n⚠️  WARNING: This action cannot be undone!\n");
-    printf("Are you sure you want to delete this student? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm == 'Y' || confirm == 'y') {
-        printf("\nDeleting student...\n");
-        if (removeStudentFromList(studentList, stuNumber) == 0) {
-            printf("✅ Student '%s' deleted successfully!\n", stuNumber);
-            printf("Student count is now: %d\n", studentList->size);
+        
+          Student* stu = searchStudentByNumber(studentList, stuNumber);
+        if (stu) {
+            printf("\n=== Student to Delete ===\n");
+            displayStudentDetails(stu);
+            
+            printf("\n⚠️  WARNING: This action cannot be undone!\n");
+            printf("Are you sure you want to delete this student? (Y/N): ");
+            char confirm = _getch();
+            printf("%c\n", confirm);
+            
+            if (confirm == 'Y' || confirm == 'y') {
+                printf("\nDeleting student...\n");
+                if (removeStudentFromList(studentList, stuNumber) == 0) {
+                    printf("✅ Student '%s' deleted successfully!\n", stuNumber);
+                    printf("Student count is now: %d\n", studentList->size);
+                } else {
+                    printf("❌ Failed to delete student from the system.\n");
+                    printf("The student may have already been removed.\n");
+                }
+            } else {
+                printf("Delete operation cancelled.\n");
+                printf("Student '%s' was not deleted.\n", stuNumber);
+            }
+            
+            printf("\nPress any key to continue...");
+            _getch();
+            return 0; // Exit loop
         } else {
-            printf("❌ Failed to delete student from the system.\n");
-            printf("The student may have already been removed.\n");
+            printf("\n❌ Student with number '%s' was not found.\n", stuNumber);
+            printf("\nWhat would you like to do?\n");
+            printf("1. Try again\n");
+            printf("2. View all students\n");
+            printf("3. Back to Student Menu\n");
+            printf("\nSelect an option (1-3): ");
+            
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            switch (choice) {
+                case '1':
+                    continue; // Loop to try again
+                case '2':
+                    winTermClearScreen();
+                    printf("=== All Students ===\n\n");
+                    displayAllStudents(studentList);
+                    printf("\nPress any key to continue...");
+                    _getch();
+                    continue; // Loop back to delete prompt
+                case '3':
+                default:
+                    return 0; // Exit to student menu
+            }
         }
-    } else {
-        printf("Delete operation cancelled.\n");
-        printf("Student '%s' was not deleted.\n", stuNumber);
     }
-    
-    printf("\nPress any key to continue...");
-    _getch();
-    return 0;
 }
 
 /**

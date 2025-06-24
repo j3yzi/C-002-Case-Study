@@ -79,8 +79,22 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
  * @return Returns 0 on success, -1 on cancel.
  */
 int getEmployeeNumberFromUser(char* buffer, int bufferSize) {
-    appFormField field = { "Enter Employee Number: ", buffer, bufferSize, IV_MAX_LEN, {.rangeInt = {.max = bufferSize - 1}} };
-    appGetValidatedInput(&field, 1);
+    fflush(stdout);
+    
+    if (fgets(buffer, bufferSize, stdin) == NULL) {
+        return -1; // Handle EOF or read error
+    }
+
+    // Remove newline character if present
+    char* newline = strchr(buffer, '\n');
+    if (newline) {
+        *newline = '\0';
+    } else {
+        // Clear any remaining input from the buffer if it was too long
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+    }
+    
     return 0;
 }
 
@@ -199,10 +213,6 @@ int handleEditEmployee(list* employeeList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleDeleteEmployee(list* employeeList) {
-    winTermClearScreen();
-    printf("=== Delete Employee ===\n\n");
-    
-    // Validate employee list first
     if (!employeeList) {
         printf("Error: Employee list is not available.\n");
         printf("Press any key to continue...");
@@ -217,74 +227,76 @@ int handleDeleteEmployee(list* employeeList) {
         _getch();
         return 0; // Return 0 to continue program
     }
-    
-    char empNumber[employeeNumberLen];
-    printf("Enter the employee number you want to delete:\n");
-    if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) != 0) {
-        printf("Operation cancelled.\n");
-        printf("Press any key to continue...");
-        _getch();
-        return 0; // Return 0 to continue program
-    }
-      Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
-    if (!emp) {
-        printf("\n❌ Employee with number '%s' was not found.\n", empNumber);
+
+    while (1) {
+        winTermClearScreen();
+        printf("=== Delete Employee ===\n\n");
+        printf("Enter the employee number to delete (or type 'back' to cancel):\n");
         
-        char menuTitle[100];
-        sprintf(menuTitle, "Employee Not Found: %s", empNumber);
-        
-        Menu notFoundMenu = {1, menuTitle, (MenuOption[]){
-            {'1', "Try a different employee number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-            {'2', "View all employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
-            {'3', "Return to main menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
-        }, 3};
-        
-        char choice = initMenu(&notFoundMenu);
-        
-        switch (choice) {
-            case '1':
-                // Recursive call to try again
-                return handleDeleteEmployee(employeeList);
-            case '2':
-                printf("\n=== Current Employees ===\n");
-                displayAllEmployees(employeeList);
-                printf("\nPress any key to continue...");
-                _getch();
-                return 0;
-            case '3':
-            default:
-                printf("Returning to main menu...\n");
-                printf("Press any key to continue...");
-                _getch();
-                return 0;
+        char empNumber[employeeNumberLen];
+        getEmployeeNumberFromUser(empNumber, employeeNumberLen);
+
+        if (strcmp(empNumber, "back") == 0) {
+            printf("\nOperation Cancelled.\n");
+            printf("Press any key to continue...");
+            _getch();
+            return 0;
         }
-    }
-    
-    printf("\n=== Employee to Delete ===\n");
-    displayEmployeeDetails(emp);
-    
-    printf("\n⚠️  WARNING: This action cannot be undone!\n");
-    printf("Are you sure you want to delete this employee? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm == 'Y' || confirm == 'y') {
-        printf("\nDeleting employee...\n");
-        if (removeEmployeeFromList(employeeList, empNumber) == 0) {
-            printf("✅ Employee '%s' deleted successfully!\n", empNumber);
-            printf("Employee count is now: %d\n", employeeList->size);
+        
+        Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
+        if (emp) {
+            printf("\n=== Employee to Delete ===\n");
+            displayEmployeeDetails(emp);
+            
+            printf("\n⚠️  WARNING: This action cannot be undone!\n");
+            printf("Are you sure you want to delete this employee? (Y/N): ");
+            char confirm = _getch();
+            printf("%c\n", confirm);
+            
+            if (confirm == 'Y' || confirm == 'y') {
+                printf("\nDeleting employee...\n");
+                if (removeEmployeeFromList(employeeList, empNumber) == 0) {
+                    printf("✅ Employee '%s' deleted successfully!\n", empNumber);
+                    printf("Employee count is now: %d\n", employeeList->size);
+                } else {
+                    printf("❌ Failed to delete employee from the system.\n");
+                    printf("The employee may have already been removed.\n");
+                }
+            } else {
+                printf("Delete operation cancelled.\n");
+                printf("Employee '%s' was not deleted.\n", empNumber);
+            }
+            
+            printf("\nPress any key to continue...");
+            _getch();
+            return 0; // Exit loop
         } else {
-            printf("❌ Failed to delete employee from the system.\n");
-            printf("The employee may have already been removed.\n");
+            printf("\n❌ Employee with number '%s' was not found.\n", empNumber);
+            printf("\nWhat would you like to do?\n");
+            printf("1. Try again\n");
+            printf("2. View all employees\n");
+            printf("3. Back to Employee Menu\n");
+            printf("\nSelect an option (1-3): ");
+            
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            switch (choice) {
+                case '1':
+                    continue; // Loop to try again
+                case '2':
+                    winTermClearScreen();
+                    printf("=== All Employees ===\n\n");
+                    displayAllEmployees(employeeList);
+                    printf("\nPress any key to continue...");
+                    _getch();
+                    continue; // Loop back to delete prompt
+                case '3':
+                default:
+                    return 0; // Exit to employee menu
+            }
         }
-    } else {
-        printf("Delete operation cancelled.\n");
-        printf("Employee '%s' was not deleted.\n", empNumber);
     }
-    
-    printf("\nPress any key to continue...");
-    _getch();
-    return 0; // Always return 0 to continue program execution
 }
 
 /**
