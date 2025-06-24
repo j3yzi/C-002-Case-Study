@@ -122,15 +122,15 @@ int getStudentNumberFromUser(char* buffer, int bufferSize) {
  */
 int handleSearchStudent(const list* studentList) {
     winTermClearScreen();
-    printf("=== Search Student ===\n\n");
-    printf("1. Search by Student Number\n");
-    printf("2. Search by Name\n");
-    printf("3. Display All Students\n");
-    printf("4. Back to Main Menu\n");
-    printf("\nEnter choice (1-4): ");
     
-    char choice = _getch();
-    printf("%c\n\n", choice);
+    Menu searchMenu = {1, "Search Student", (MenuOption[]){
+        {'1', "Search by Student Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Display All Students", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+    }, 4};
+    
+    char choice = initMenu(&searchMenu);
     
     switch (choice) {
         case '1': {
@@ -257,18 +257,20 @@ int handleDeleteStudent(list* studentList) {
         _getch();
         return 0;
     }
-    
-    Student* stu = searchStudentByNumber(studentList, stuNumber);
+      Student* stu = searchStudentByNumber(studentList, stuNumber);
     if (!stu) {
         printf("\n❌ Student with number '%s' was not found.\n", stuNumber);
-        printf("\nWould you like to:\n");
-        printf("1. Try a different student number\n");
-        printf("2. View all students\n");
-        printf("3. Return to main menu\n");
-        printf("\nEnter choice (1-3): ");
         
-        char choice = _getch();
-        printf("%c\n", choice);
+        char menuTitle[100];
+        sprintf(menuTitle, "Student Not Found: %s", stuNumber);
+        
+        Menu notFoundMenu = {1, menuTitle, (MenuOption[]){
+            {'1', "Try a different student number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+            {'2', "View all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
+            {'3', "Return to main menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+        }, 3};
+        
+        char choice = initMenu(&notFoundMenu);
         
         switch (choice) {
             case '1':
@@ -331,21 +333,23 @@ int editStudentDataFromUser(Student* student) {
            student->personal.name.middleName, student->personal.name.lastName);
     printf("Student Number: %s\n", student->personal.studentNumber);
     printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "IT" : "CS");
-    printf("Year Level: %d\n", student->personal.yearLevel);
-    printf("Final Grade: %.2f\n\n", student->academic.finalGrade);
+    printf("Year Level: %d\n", student->personal.yearLevel);    printf("Final Grade: %.2f\n\n", student->academic.finalGrade);
     
-    printf("Choose what to edit:\n");
-    printf("1. Name\n");
-    printf("2. Student Number\n");
-    printf("3. Program\n");
-    printf("4. Year Level\n");
-    printf("5. Grades\n");
-    printf("6. Edit All Fields\n");
-    printf("7. Cancel\n");
-    printf("\nEnter choice (1-7): ");
+    // Create a menu for editing options
+    char menuTitle[100];
+    sprintf(menuTitle, "Edit Student: %s", student->personal.studentNumber);
     
-    char choice = _getch();
-    printf("%c\n\n", choice);
+    Menu editMenu = {1, menuTitle, (MenuOption[]){
+        {'1', "Edit Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Edit Student Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Edit Program", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Edit Year Level", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Edit Grades", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Edit All Fields", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Cancel", false, false, 9, 0, 7, 0, 8, 0, NULL}
+    }, 7};
+    
+    char choice = initMenu(&editMenu);
     
     switch (choice) {
         case '1': {

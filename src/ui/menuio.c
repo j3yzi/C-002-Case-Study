@@ -22,7 +22,8 @@ Menu mainMenu = {1, "PUP Information Management System", (MenuOption[]){
     {'1', "Employee Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
     {'2', "Student Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
     {'3', "System Statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'4', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 4};
+    {'4', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 4
+};
 
 /**
  * @brief Initializes the multi-list management system
@@ -174,7 +175,17 @@ void displaySystemStatistics(void) {
  */
 int runEmployeeManagement(void) {
     char choice;
-    Menu employeeMenu = {1, "Employee Management", (MenuOption[]){
+    // Add active list info to menu title
+    char menuTitle[100] = "Employee Management";
+    
+    if (empManager.activeEmployeeList >= 0) {
+        sprintf(menuTitle, "Employee Management - %s (%d employees)", 
+               empManager.employeeListNames[empManager.activeEmployeeList],
+               empManager.employeeLists[empManager.activeEmployeeList] ? 
+               empManager.employeeLists[empManager.activeEmployeeList]->size : 0);
+    }
+    
+    Menu employeeMenu = {1, menuTitle, (MenuOption[]){
         {'1', "Create Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'2', "Switch Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'3', "Add Employee", false, false, 9, 0, 7, 0, 8, 0, NULL},
@@ -188,16 +199,16 @@ int runEmployeeManagement(void) {
         {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
     
     do {
-        winTermClearScreen();
-        printf("=== Employee Management ===\n");
+        // Update menu title with current active list info before displaying menu
         if (empManager.activeEmployeeList >= 0) {
-            printf("Active List: %s (%d employees)\n\n", 
+            sprintf(menuTitle, "Employee Management - %s (%d employees)", 
                    empManager.employeeListNames[empManager.activeEmployeeList],
                    empManager.employeeLists[empManager.activeEmployeeList] ? 
                    empManager.employeeLists[empManager.activeEmployeeList]->size : 0);
         } else {
-            printf("No active employee list\n\n");
+            strcpy(menuTitle, "Employee Management - No active list");
         }
+        employeeMenu.name = menuTitle;
         
         choice = initMenu(&employeeMenu);
         
@@ -275,7 +286,17 @@ int runEmployeeManagement(void) {
  */
 int runStudentManagement(void) {
     char choice;
-    Menu studentMenu = {1, "Student Management", (MenuOption[]){
+    // Add active list info to menu title
+    char menuTitle[100] = "Student Management";
+    
+    if (stuManager.activeStudentList >= 0) {
+        sprintf(menuTitle, "Student Management - %s (%d students)", 
+               stuManager.studentListNames[stuManager.activeStudentList],
+               stuManager.studentLists[stuManager.activeStudentList] ? 
+               stuManager.studentLists[stuManager.activeStudentList]->size : 0);
+    }
+    
+    Menu studentMenu = {1, menuTitle, (MenuOption[]){
         {'1', "Create Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'2', "Switch Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'3', "Add Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
@@ -289,16 +310,16 @@ int runStudentManagement(void) {
         {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
     
     do {
-        winTermClearScreen();
-        printf("=== Student Management ===\n");
+        // Update menu title with current active list info before displaying menu
         if (stuManager.activeStudentList >= 0) {
-            printf("Active List: %s (%d students)\n\n", 
+            sprintf(menuTitle, "Student Management - %s (%d students)", 
                    stuManager.studentListNames[stuManager.activeStudentList],
                    stuManager.studentLists[stuManager.activeStudentList] ? 
                    stuManager.studentLists[stuManager.activeStudentList]->size : 0);
         } else {
-            printf("No active student list\n\n");
+            strcpy(menuTitle, "Student Management - No active list");
         }
+        studentMenu.name = menuTitle;
         
         choice = initMenu(&studentMenu);
         
@@ -386,11 +407,8 @@ int handleCreateEmployeeList(void) {
     }
     
     char listName[50];
-    printf("Enter name for this employee list: ");
-    if (!fgets(listName, sizeof(listName), stdin)) {
-        return -1;
-    }
-    listName[strcspn(listName, "\n")] = 0; // Remove newline
+    appFormField field = { "Enter name for this employee list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appGetValidatedInput(&field, 1);
     
     // Create new list
     list* newList = NULL;
@@ -537,11 +555,8 @@ int handleSaveEmployeeList(void) {
     printf("\n");
     
     char filename[100];
-    printf("Enter filename (will be saved as 'employee_LISTNAME_TIMESTAMP.dat'): ");
-    if (!fgets(filename, sizeof(filename), stdin)) {
-        return -1;
-    }
-    filename[strcspn(filename, "\n")] = 0; // Remove newline
+    appFormField field = { "Enter filename (will be saved as 'employee_LISTNAME_TIMESTAMP.dat'): ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} };
+    appGetValidatedInput(&field, 1);
     
     // Use the custom save function
     int savedCount = saveListWithCustomName(empManager.employeeLists[empManager.activeEmployeeList], 
@@ -568,18 +583,12 @@ int handleLoadEmployeeList(void) {
     printf("\n");
     
     char filename[100];
-    printf("Enter filename to load: ");
-    if (!fgets(filename, sizeof(filename), stdin)) {
-        return -1;
-    }
-    filename[strcspn(filename, "\n")] = 0; // Remove newline
-    
     char listName[50];
-    printf("Enter name for this loaded list: ");
-    if (!fgets(listName, sizeof(listName), stdin)) {
-        return -1;
-    }
-    listName[strcspn(listName, "\n")] = 0; // Remove newline
+    appFormField fields[] = {
+        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} },
+        { "Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
+    };
+    appGetValidatedInput(fields, 2);
     
     // Load the data
     list* newList = loadListWithName(filename, "employee", SINGLY);
@@ -626,11 +635,8 @@ int handleCreateStudentList(void) {
     }
     
     char listName[50];
-    printf("Enter name for this student list: ");
-    if (!fgets(listName, sizeof(listName), stdin)) {
-        return -1;
-    }
-    listName[strcspn(listName, "\n")] = 0; // Remove newline
+    appFormField field = { "Enter name for this student list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appGetValidatedInput(&field, 1);
     
     // Create new list
     list* newList = NULL;
@@ -773,11 +779,8 @@ int handleSaveStudentList(void) {
     printf("\n");
     
     char filename[100];
-    printf("Enter filename (will be saved as 'student_LISTNAME_TIMESTAMP.dat'): ");
-    if (!fgets(filename, sizeof(filename), stdin)) {
-        return -1;
-    }
-    filename[strcspn(filename, "\n")] = 0; // Remove newline
+    appFormField field = { "Enter filename (will be saved as 'student_LISTNAME_TIMESTAMP.dat'): ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} };
+    appGetValidatedInput(&field, 1);
     
     // Use the custom save function
     int savedCount = saveListWithCustomName(stuManager.studentLists[stuManager.activeStudentList], 
@@ -804,18 +807,12 @@ int handleLoadStudentList(void) {
     printf("\n");
     
     char filename[100];
-    printf("Enter filename to load: ");
-    if (!fgets(filename, sizeof(filename), stdin)) {
-        return -1;
-    }
-    filename[strcspn(filename, "\n")] = 0; // Remove newline
-    
     char listName[50];
-    printf("Enter name for this loaded list: ");
-    if (!fgets(listName, sizeof(listName), stdin)) {
-        return -1;
-    }
-    listName[strcspn(listName, "\n")] = 0; // Remove newline
+    appFormField fields[] = {
+        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.maxLengthChars = {.maxLength = 99}} },
+        { "Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
+    };
+    appGetValidatedInput(fields, 2);
     
     // Load the data
     list* newList = loadListWithName(filename, "student", SINGLY);
@@ -880,12 +877,11 @@ int handleSwitchEmployeeList(void) {
     }
     
     printf("\n* = Currently Active List\n");
-    printf("\nEnter the number of the list to switch to (1-%d): ", empManager.employeeListCount);
-    
     char input[10];
-    if (!fgets(input, sizeof(input), stdin)) {
-        return -1;
-    }
+    char prompt[100];
+    sprintf(prompt, "Enter the number of the list to switch to (1-%d): ", empManager.employeeListCount);
+    appFormField field = { prompt, input, 10, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = empManager.employeeListCount}} };
+    appGetValidatedInput(&field, 1);
     
     int choice = atoi(input) - 1; // Convert to 0-based index
     
@@ -943,12 +939,11 @@ int handleSwitchStudentList(void) {
     }
     
     printf("\n* = Currently Active List\n");
-    printf("\nEnter the number of the list to switch to (1-%d): ", stuManager.studentListCount);
-    
     char input[10];
-    if (!fgets(input, sizeof(input), stdin)) {
-        return -1;
-    }
+    char prompt[100];
+    sprintf(prompt, "Enter the number of the list to switch to (1-%d): ", stuManager.studentListCount);
+    appFormField field = { prompt, input, 10, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = stuManager.studentListCount}} };
+    appGetValidatedInput(&field, 1);
     
     int choice = atoi(input) - 1; // Convert to 0-based index
     

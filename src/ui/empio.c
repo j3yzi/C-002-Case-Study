@@ -92,15 +92,15 @@ int getEmployeeNumberFromUser(char* buffer, int bufferSize) {
  */
 int handleSearchEmployee(const list* employeeList) {
     winTermClearScreen();
-    printf("=== Search Employee ===\n\n");
-    printf("1. Search by Employee Number\n");
-    printf("2. Search by Name\n");
-    printf("3. Display All Employees\n");
-    printf("4. Back to Main Menu\n");
-    printf("\nEnter choice (1-4): ");
     
-    char choice = _getch();
-    printf("%c\n\n", choice);
+    Menu searchMenu = {1, "Search Employee", (MenuOption[]){
+        {'1', "Search by Employee Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Display All Employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+    }, 4};
+    
+    char choice = initMenu(&searchMenu);
     
     switch (choice) {
         case '1': {
@@ -227,18 +227,20 @@ int handleDeleteEmployee(list* employeeList) {
         _getch();
         return 0; // Return 0 to continue program
     }
-    
-    Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
+      Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
     if (!emp) {
         printf("\n❌ Employee with number '%s' was not found.\n", empNumber);
-        printf("\nWould you like to:\n");
-        printf("1. Try a different employee number\n");
-        printf("2. View all employees\n");
-        printf("3. Return to main menu\n");
-        printf("\nEnter choice (1-3): ");
         
-        char choice = _getch();
-        printf("%c\n", choice);
+        char menuTitle[100];
+        sprintf(menuTitle, "Employee Not Found: %s", empNumber);
+        
+        Menu notFoundMenu = {1, menuTitle, (MenuOption[]){
+            {'1', "Try a different employee number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+            {'2', "View all employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
+            {'3', "Return to main menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+        }, 3};
+        
+        char choice = initMenu(&notFoundMenu);
         
         switch (choice) {
             case '1':
@@ -296,7 +298,7 @@ int editEmployeeDataFromUser(Employee* employee) {
     memcpy(&backup, employee, sizeof(Employee)); // Backup original data
     
     winTermClearScreen();
-    printf("=== Edit Employee Data ===\n\n");
+    printf("=== Edit Employee Data ===\n\n");    // Display current employee information
     printf("Current Employee Information:\n");
     printf("Name: %s %s %s\n", employee->personal.name.firstName, 
            employee->personal.name.middleName, employee->personal.name.lastName);
@@ -305,18 +307,21 @@ int editEmployeeDataFromUser(Employee* employee) {
     printf("Hours Worked: %d\n", employee->employment.hoursWorked);
     printf("Basic Rate: %.2f\n\n", employee->employment.basicRate);
     
-    printf("Choose what to edit:\n");
-    printf("1. Name\n");
-    printf("2. Employee Number\n");
-    printf("3. Employment Status\n");
-    printf("4. Hours Worked\n");
-    printf("5. Basic Rate\n");
-    printf("6. Edit All Fields\n");
-    printf("7. Cancel\n");
-    printf("\nEnter choice (1-7): ");
+    // Create a menu for editing options
+    char menuTitle[100];
+    sprintf(menuTitle, "Edit Employee: %s", employee->personal.employeeNumber);
     
-    char choice = _getch();
-    printf("%c\n\n", choice);
+    Menu editMenu = {1, menuTitle, (MenuOption[]){
+        {'1', "Edit Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Edit Employee Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Edit Employment Status", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Edit Hours Worked", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Edit Basic Rate", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Edit All Fields", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Cancel", false, false, 9, 0, 7, 0, 8, 0, NULL}
+    }, 7};
+    
+    char choice = initMenu(&editMenu);
     
     switch (choice) {
         case '1': {
