@@ -1,6 +1,9 @@
 @echo off
 echo Compiling PUP Information Management System...
 
+:: Create bin directory if it doesn't exist
+if not exist bin mkdir bin
+
 :: Compile the PUP Information Management System with all modules
 gcc -o bin/PUP-InformationManagementSystem.exe ^
     src/main.c ^

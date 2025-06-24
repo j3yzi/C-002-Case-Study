@@ -67,17 +67,24 @@ int composeEmployeeName(EmployeeName* name) {
     size_t fnLen = strlen(name->firstName);
     size_t mnLen = strlen(name->middleName);
     size_t lnLen = strlen(name->lastName);
-    size_t totalLen = fnLen + mnLen + lnLen;
 
-    // If total length is exactly 15, use LastName+FirstName+MiddleName.
-    if (totalLen == (employeeNameLen - 1)) {
-        snprintf(name->fullName, employeeNameLen, "%s%s%s", name->lastName, name->firstName, name->middleName);
-        return 1;
+    // Try LastName, FirstName format with spaces (safer and more readable)
+    if (mnLen > 0) {
+        // Include middle name if present: "Last, First M."
+        if ((lnLen + fnLen + 4) < employeeNameLen) { // +4 for ", " and " " and null
+            snprintf(name->fullName, employeeNameLen, "%.*s, %.*s %c.", 
+                    (int)(employeeNameLen/3), name->lastName,
+                    (int)(employeeNameLen/3), name->firstName, 
+                    name->middleName[0]);
+            return 1;
+        }
     }
-
-    // For all other cases, try LastName+FirstName.
-    if ((lnLen + fnLen) < employeeNameLen) {
-        snprintf(name->fullName, employeeNameLen, "%s%s", name->lastName, name->firstName);
+    
+    // Fallback: "Last, First" format
+    if ((lnLen + fnLen + 3) < employeeNameLen) { // +3 for ", " and null
+        snprintf(name->fullName, employeeNameLen, "%.*s, %.*s", 
+                (int)(employeeNameLen/2), name->lastName,
+                (int)(employeeNameLen/2), name->firstName);
         return 1;
     }
 

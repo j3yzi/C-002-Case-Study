@@ -1,19 +1,7 @@
 #include "../headers/auth.h"
 #include <time.h>
 
-/**
- * @brief Initializes the random number generator seed.
- * @brief This function should be called once at the start of the application to ensure that
- * @brief generated salts for password hashing are sufficiently random. It uses a static
- * @brief flag to ensure it only runs once.
- */
-static void initRandom() {
-    static bool initialized = false;
-    if (!initialized) {
-        srand(time(NULL));
-        initialized = true;
-    }
-}
+// Removed unused initRandom function
 
 /**
  * @brief Checks if a user exists in the user data file.
@@ -241,13 +229,13 @@ int hashPassword(const char* password, char* buffer, size_t buffer_size) {
         return -1; // Invalid arguments
     }
     
-    int len = strlen(password);
-    int hashIndex = 0;
+    size_t len = strlen(password);
+    size_t hashIndex = 0;
     
-    for (int i = 0; i < len && hashIndex < buffer_size - 1; i++) {
+    for (size_t i = 0; i < len && hashIndex < buffer_size - 1; i++) {
         char c = password[i];
         
-        int shift = (i + 1) * 3 + 7;
+        int shift = (int)(i + 1) * 3 + 7;
         
         if (c >= 'a' && c <= 'z') c = ((c - 'a' + shift) % 26) + 'a';
         else if (c >= 'A' && c <= 'Z') c = ((c - 'A' + shift) % 26) + 'A';

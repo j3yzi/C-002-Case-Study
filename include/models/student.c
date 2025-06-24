@@ -17,17 +17,24 @@ int composeStudentName(StudentName* name) {
     size_t fnLen = strlen(name->firstName);
     size_t mnLen = strlen(name->middleName);
     size_t lnLen = strlen(name->lastName);
-    size_t totalLen = fnLen + mnLen + lnLen;
 
-    // If total length is exactly studentNameLen - 1, use LastName+FirstName+MiddleName.
-    if (totalLen == (studentNameLen - 1)) {
-        snprintf(name->fullName, studentNameLen, "%s%s%s", name->lastName, name->firstName, name->middleName);
-        return 1;
+    // Try LastName, FirstName format with spaces (safer and more readable)
+    if (mnLen > 0) {
+        // Include middle name if present: "Last, First M."
+        if ((lnLen + fnLen + 4) < studentNameLen) { // +4 for ", " and " " and null
+            snprintf(name->fullName, studentNameLen, "%.*s, %.*s %c.", 
+                    (int)(studentNameLen/3), name->lastName,
+                    (int)(studentNameLen/3), name->firstName, 
+                    name->middleName[0]);
+            return 1;
+        }
     }
-
-    // For all other cases, try LastName+FirstName.
-    if ((lnLen + fnLen) < studentNameLen) {
-        snprintf(name->fullName, studentNameLen, "%s%s", name->lastName, name->firstName);
+    
+    // Fallback: "Last, First" format
+    if ((lnLen + fnLen + 3) < studentNameLen) { // +3 for ", " and null
+        snprintf(name->fullName, studentNameLen, "%.*s, %.*s", 
+                (int)(studentNameLen/2), name->lastName,
+                (int)(studentNameLen/2), name->firstName);
         return 1;
     }
 
