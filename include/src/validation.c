@@ -108,8 +108,8 @@ const char* extractFieldName(const char* prompt) {
  * @return Returns true if the input is valid, false otherwise.
  */
 bool isValid(const char* input, IValidationType type, IValidationParams params, const char* fieldName) {
-    // Special case: IV_OPTIONAL allows empty input
-    if (type == IV_OPTIONAL && input[0] == '\0') {
+    // Special cases: IV_OPTIONAL and IV_OPTIONAL_ALPHA_ONLY_MAX_LEN allow empty input
+    if ((type == IV_OPTIONAL || type == IV_OPTIONAL_ALPHA_ONLY_MAX_LEN) && input[0] == '\0') {
         return true;
     }
     
@@ -224,15 +224,10 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 }
                 return true;
             }
-            
-        case IV_OPTIONAL_ALPHA_ONLY_MAX_LEN:
+              case IV_OPTIONAL_ALPHA_ONLY_MAX_LEN:
             {
-                // If empty, it's valid (optional field)
-                if (input[0] == '\0') {
-                    return true;
-                }
-                
-                // If not empty, validate as alphabetic with max length
+                // Empty input was already checked at the beginning of the function
+                // Validate as alphabetic with max length
                 // First check length
                 if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
                     printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 

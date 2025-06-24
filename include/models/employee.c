@@ -63,32 +63,40 @@ int composeEmployeeName(EmployeeName* name) {
     if (!name) {
         return 0;
     }
-
-    size_t fnLen = strlen(name->firstName);
-    size_t mnLen = strlen(name->middleName);
-    size_t lnLen = strlen(name->lastName);
-
-    // Try LastName, FirstName format with spaces (safer and more readable)
-    if (mnLen > 0) {
-        // Include middle name if present: "Last, First M."
-        if ((lnLen + fnLen + 4) < employeeNameLen) { // +4 for ", " and " " and null
-            snprintf(name->fullName, employeeNameLen, "%.*s, %.*s %c.", 
-                    (int)(employeeNameLen/3), name->lastName,
-                    (int)(employeeNameLen/3), name->firstName, 
-                    name->middleName[0]);
-            return 1;
-        }
-    }
     
-    // Fallback: "Last, First" format
+    size_t fnLen = strlen(name->firstName);
+    size_t lnLen = strlen(name->lastName);
+    
+    // Add validation check: If the first name or last name is excessive in length, reject it
+    // This prevents accepting extremely long names that would be unreadable when truncated
+    if (fnLen > employeeNameLen - 5 || lnLen > employeeNameLen - 5) {
+        return 0;  // Names too long, reject
+    }
+
+    // Format 1: "Last, First" format (most compact)
     if ((lnLen + fnLen + 3) < employeeNameLen) { // +3 for ", " and null
         snprintf(name->fullName, employeeNameLen, "%.*s, %.*s", 
-                (int)(employeeNameLen/2), name->lastName,
-                (int)(employeeNameLen/2), name->firstName);
+                (int)lnLen, name->lastName,
+                (int)fnLen, name->firstName);
+        return 1;
+    }
+    
+    // Format 2: Use initials for first name if full name is too long
+    if ((lnLen + 3) < employeeNameLen) { // +3 for ", " and initial and null
+        snprintf(name->fullName, employeeNameLen, "%.*s, %c.", 
+                (int)lnLen, name->lastName,
+                name->firstName[0]);
+        return 1;
+    }
+    
+    // Format 3: Truncate last name if it's still too long
+    if (employeeNameLen > 5) { // Make sure we have at least a few characters
+        snprintf(name->fullName, employeeNameLen, "%.*s...", 
+                (int)(employeeNameLen - 4), name->lastName);
         return 1;
     }
 
-    // If LastName+FirstName is too long, or the name is invalid, reject.
+    // If everything fails, which shouldn't happen given the constraints above
     return 0;
 }
 

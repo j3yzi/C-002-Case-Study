@@ -25,12 +25,10 @@ int getStudentDataFromUser(Student* newStudent) {
             { "Enter First Name: ", newStudent->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
             { "Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
             { "Enter Last Name: ", newStudent->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
-        };
-        appGetValidatedInput(nameFields, 3);
-
-        isNameValid = composeStudentName(&newStudent->personal.name);
+        };        appGetValidatedInput(nameFields, 3);        isNameValid = composeStudentName(&newStudent->personal.name);
         if (!isNameValid) {
-            printf("\n[Error] Invalid name combination. It must be less than %d chars, or exactly %d with a middle name.\n", studentNameLen, studentNameLen - 1);
+            printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+            printf("        less than %d characters to fit in the %d character full name format.\n", studentNameLen - 5, studentNameLen);
             printf("Press any key to try again, or ESC to cancel...");
             if (_getch() == 27) return -1; // ESC key
         }
@@ -257,6 +255,7 @@ int handleDeleteStudent(list* studentList) {
         _getch();
         return 0;
     }
+    
       Student* stu = searchStudentByNumber(studentList, stuNumber);
     if (!stu) {
         printf("\n❌ Student with number '%s' was not found.\n", stuNumber);
@@ -325,44 +324,64 @@ int handleDeleteStudent(list* studentList) {
 int editStudentDataFromUser(Student* student) {
     Student backup;
     memcpy(&backup, student, sizeof(Student)); // Backup original data
-    
-    winTermClearScreen();
-    printf("=== Edit Student Data ===\n\n");
-    printf("Current Student Information:\n");
-    printf("Name: %s %s %s\n", student->personal.name.firstName, 
-           student->personal.name.middleName, student->personal.name.lastName);
-    printf("Student Number: %s\n", student->personal.studentNumber);
-    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "IT" : "CS");
-    printf("Year Level: %d\n", student->personal.yearLevel);    printf("Final Grade: %.2f\n\n", student->academic.finalGrade);
-    
+
     // Create a menu for editing options
     char menuTitle[100];
     sprintf(menuTitle, "Edit Student: %s", student->personal.studentNumber);
     
-    Menu editMenu = {1, menuTitle, (MenuOption[]){
-        {'1', "Edit Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Edit Student Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Edit Program", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Edit Year Level", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Edit Grades", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Edit All Fields", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'7', "Cancel", false, false, 9, 0, 7, 0, 8, 0, NULL}
-    }, 7};
+    winTermClearScreen();
+    printf("====================================\n");
+    printf("%s\n", menuTitle);
+    printf("====================================\n\n");
     
-    char choice = initMenu(&editMenu);
+    printf("Current Student Information:\n");
+    printf("Name: %s\n", student->personal.name.fullName);
+    printf("  First Name: %s\n", student->personal.name.firstName);
+    printf("  Middle Name: %s\n", student->personal.name.middleName);
+    printf("  Last Name: %s\n", student->personal.name.lastName);
+    printf("Student Number: %s\n", student->personal.studentNumber);
+    printf("Gender: %s\n", (student->personal.gender == genderMale) ? "Male" : "Female");
+    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Year Level: %d\n", student->personal.yearLevel);
+    printf("Academic Information:\n");
+    printf("  Units Enrolled: %d\n", student->academic.unitsEnrolled);
+    printf("  Prelim Grade: %.2f\n", student->academic.prelimGrade);
+    printf("  Midterm Grade: %.2f\n", student->academic.midtermGrade);
+    printf("  Final Exam Grade: %.2f\n", student->academic.finalExamGrade);
+    printf("  Final Grade: %.2f (%s)\n\n", student->academic.finalGrade, student->academic.remarks);
+    
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf(">> Edit Name\n");
+    printf(" Edit Student Number\n");
+    printf(" Edit Program\n");
+    printf(" Edit Year Level\n");
+    printf(" Edit Grades\n");
+    printf(" Edit All Fields\n");
+    printf(" Cancel\n");
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf("\nSelect an option (1-7): ");
+    
+    char choice = _getch();
+    printf("%c\n", choice);
     
     switch (choice) {
         case '1': {
             printf("=== Edit Name ===\n");
+            char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];
+            sprintf(firstNamePrompt, "Enter First Name [%s]: ", student->personal.name.firstName);
+            sprintf(middleNamePrompt, "Enter Middle Name (optional) [%s]: ", student->personal.name.middleName);
+            sprintf(lastNamePrompt, "Enter Last Name [%s]: ", student->personal.name.lastName);
+            
             appFormField nameFields[] = {
-                { "Enter First Name: ", student->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", student->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
-                { "Enter Last Name: ", student->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
+                { firstNamePrompt, student->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
+                { middleNamePrompt, student->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
+                { lastNamePrompt, student->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
             };
             appGetValidatedInput(nameFields, 3);
             
             if (!composeStudentName(&student->personal.name)) {
-                printf("\n[Error] Invalid name combination. Changes reverted.\n");
+                printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+                printf("        less than %d characters to fit in the %d character full name format. Changes reverted.\n", studentNameLen - 5, studentNameLen);
                 memcpy(&student->personal.name, &backup.personal.name, sizeof(StudentName));
                 return -1;
             }
@@ -370,14 +389,26 @@ int editStudentDataFromUser(Student* student) {
         }
         case '2': {
             printf("=== Edit Student Number ===\n");
-            appFormField field = { "Enter Student Number: ", student->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} };
+            char numberPrompt[64];
+            sprintf(numberPrompt, "Enter Student Number [%s]: ", student->personal.studentNumber);
+            appFormField field = { numberPrompt, student->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} };
             appGetValidatedInput(&field, 1);
             break;
         }
         case '3': {
             printf("=== Edit Program ===\n");
             char programInput[3];
-            appFormField field = { "Enter Program (IT/CS): ", programInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"IT", "CS", "it", "cs"}, .count = 4}} };
+            char programPrompt[64];
+            
+            sprintf(programPrompt, "Enter Program (IT/CS) [%s]: ", 
+                   (student->personal.programCode == PROG_IT) ? "IT" : "CS");
+            
+            // Initialize with current value
+            programInput[0] = (student->personal.programCode == PROG_IT) ? 'I' : 'C';
+            programInput[1] = (student->personal.programCode == PROG_IT) ? 'T' : 'S';
+            programInput[2] = '\0';
+            
+            appFormField field = { programPrompt, programInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"IT", "CS", "it", "cs"}, .count = 4}} };
             appGetValidatedInput(&field, 1);
             student->personal.programCode = (programInput[0] == 'I' || programInput[0] == 'i') ? PROG_IT : PROG_CS;
             break;
@@ -385,7 +416,12 @@ int editStudentDataFromUser(Student* student) {
         case '4': {
             printf("=== Edit Year Level ===\n");
             char yearBuffer[3];
-            appFormField field = { "Enter Year Level (1-4): ", yearBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} };
+            char yearPrompt[64];
+            
+            sprintf(yearPrompt, "Enter Year Level (1-4) [%d]: ", student->personal.yearLevel);
+            sprintf(yearBuffer, "%d", student->personal.yearLevel);
+            
+            appFormField field = { yearPrompt, yearBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} };
             appGetValidatedInput(&field, 1);
             student->personal.yearLevel = atoi(yearBuffer);
             break;
@@ -393,10 +429,24 @@ int editStudentDataFromUser(Student* student) {
         case '5': {
             printf("=== Edit Grades ===\n");
             char prelimBuffer[10], midtermBuffer[10], finalExamBuffer[10];
+            char prelimPrompt[64], midtermPrompt[64], finalPrompt[64];
+            
+            sprintf(prelimPrompt, "Enter Prelim Grade (0.0-100.0) [%.2f]: ", 
+                   student->academic.prelimGrade);
+            sprintf(midtermPrompt, "Enter Midterm Grade (0.0-100.0) [%.2f]: ", 
+                   student->academic.midtermGrade);
+            sprintf(finalPrompt, "Enter Final Exam Grade (0.0-100.0) [%.2f]: ", 
+                   student->academic.finalExamGrade);
+                   
+            // Initialize with current values
+            sprintf(prelimBuffer, "%.2f", student->academic.prelimGrade);
+            sprintf(midtermBuffer, "%.2f", student->academic.midtermGrade);
+            sprintf(finalExamBuffer, "%.2f", student->academic.finalExamGrade);
+            
             appFormField gradeFields[] = {
-                { "Enter Prelim Grade (0.0-100.0): ", prelimBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
-                { "Enter Midterm Grade (0.0-100.0): ", midtermBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
-                { "Enter Final Exam Grade (0.0-100.0): ", finalExamBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} }
+                { prelimPrompt, prelimBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
+                { midtermPrompt, midtermBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
+                { finalPrompt, finalExamBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} }
             };
             appGetValidatedInput(gradeFields, 3);
             

@@ -25,11 +25,10 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
             { "Enter Middle Name (optional): ", newEmployee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
             { "Enter Last Name: ", newEmployee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
         };
-        appGetValidatedInput(nameFields, 3);
-
-        isNameValid = composeEmployeeName(&newEmployee->personal.name);
+        appGetValidatedInput(nameFields, 3);        isNameValid = composeEmployeeName(&newEmployee->personal.name);
         if (!isNameValid) {
-            printf("\n[Error] Invalid name combination. It must be less than %d chars, or exactly %d with a middle name.\n", employeeNameLen, employeeNameLen - 1);
+            printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+            printf("        less than %d characters to fit in the %d character full name format.\n", employeeNameLen - 5, employeeNameLen);
             printf("Press any key to try again, or ESC to cancel...");
             if (_getch() == 27) return -1; // ESC key
         }
@@ -296,46 +295,58 @@ int handleDeleteEmployee(list* employeeList) {
 int editEmployeeDataFromUser(Employee* employee) {
     Employee backup;
     memcpy(&backup, employee, sizeof(Employee)); // Backup original data
+
+    // Create a menu for editing options
+    char menuTitle[100];
+    sprintf(menuTitle, "Edit Employee: %s", employee->personal.employeeNumber);
     
     winTermClearScreen();
-    printf("=== Edit Employee Data ===\n\n");    // Display current employee information
+    printf("====================================\n");
+    printf("%s\n", menuTitle);
+    printf("====================================\n\n");
+    
     printf("Current Employee Information:\n");
-    printf("Name: %s %s %s\n", employee->personal.name.firstName, 
-           employee->personal.name.middleName, employee->personal.name.lastName);
+    printf("Name: %s\n", employee->personal.name.fullName);
+    printf("  First Name: %s\n", employee->personal.name.firstName);
+    printf("  Middle Name: %s\n", employee->personal.name.middleName);
+    printf("  Last Name: %s\n", employee->personal.name.lastName);
     printf("Employee Number: %s\n", employee->personal.employeeNumber);
     printf("Status: %s\n", (employee->employment.status == statusRegular) ? "Regular" : "Casual");
     printf("Hours Worked: %d\n", employee->employment.hoursWorked);
     printf("Basic Rate: %.2f\n\n", employee->employment.basicRate);
     
-    // Create a menu for editing options
-    char menuTitle[100];
-    sprintf(menuTitle, "Edit Employee: %s", employee->personal.employeeNumber);
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf(">> Edit Name\n");
+    printf(" Edit Employee Number\n");
+    printf(" Edit Employment Status\n");
+    printf(" Edit Hours Worked\n");
+    printf(" Edit Basic Rate\n");
+    printf(" Edit All Fields\n");
+    printf(" Cancel\n");
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf("\nSelect an option (1-7): ");
     
-    Menu editMenu = {1, menuTitle, (MenuOption[]){
-        {'1', "Edit Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Edit Employee Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Edit Employment Status", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Edit Hours Worked", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Edit Basic Rate", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Edit All Fields", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'7', "Cancel", false, false, 9, 0, 7, 0, 8, 0, NULL}
-    }, 7};
-    
-    char choice = initMenu(&editMenu);
+    char choice = _getch();
+    printf("%c\n", choice);
     
     switch (choice) {
         case '1': {
             // Edit name
             printf("=== Edit Name ===\n");
+            char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];
+            sprintf(firstNamePrompt, "Enter First Name [%s]: ", employee->personal.name.firstName);
+            sprintf(middleNamePrompt, "Enter Middle Name (optional) [%s]: ", employee->personal.name.middleName);
+            sprintf(lastNamePrompt, "Enter Last Name [%s]: ", employee->personal.name.lastName);
+            
             appFormField nameFields[] = {
-                { "Enter First Name: ", employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
-                { "Enter Last Name: ", employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
-            };
-            appGetValidatedInput(nameFields, 3);
+                { firstNamePrompt, employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
+                { middleNamePrompt, employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
+                { lastNamePrompt, employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
+            };appGetValidatedInput(nameFields, 3);
             
             if (!composeEmployeeName(&employee->personal.name)) {
-                printf("\n[Error] Invalid name combination. Changes reverted.\n");
+                printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+                printf("        less than %d characters to fit in the %d character full name format. Changes reverted.\n", employeeNameLen - 5, employeeNameLen);
                 memcpy(&employee->personal.name, &backup.personal.name, sizeof(EmployeeName));
                 return -1;
             }
@@ -344,7 +355,9 @@ int editEmployeeDataFromUser(Employee* employee) {
         case '2': {
             // Edit employee number
             printf("=== Edit Employee Number ===\n");
-            appFormField field = { "Enter Employee Number: ", employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} };
+            char numberPrompt[64];
+            sprintf(numberPrompt, "Enter Employee Number [%s]: ", employee->personal.employeeNumber);
+            appFormField field = { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} };
             appGetValidatedInput(&field, 1);
             break;
         }
@@ -352,7 +365,14 @@ int editEmployeeDataFromUser(Employee* employee) {
             // Edit status
             printf("=== Edit Employment Status ===\n");
             char statusInput[3];
-            appFormField field = { "Enter Status (R/C): ", statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} };
+            char statusPrompt[64];
+            sprintf(statusPrompt, "Enter Status (R/C) [%c]: ", 
+                   employee->employment.status == statusRegular ? 'R' : 'C');
+            
+            statusInput[0] = (employee->employment.status == statusRegular) ? 'R' : 'C';
+            statusInput[1] = '\0';
+            
+            appFormField field = { statusPrompt, statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} };
             appGetValidatedInput(&field, 1);
             employee->employment.status = (statusInput[0] == 'R' || statusInput[0] == 'r') ? statusRegular : statusCasual;
             break;
@@ -361,7 +381,13 @@ int editEmployeeDataFromUser(Employee* employee) {
             // Edit hours worked
             printf("=== Edit Hours Worked ===\n");
             char hoursBuffer[10];
-            appFormField field = { "Enter Hours Worked (0-400): ", hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} };
+            char hoursPrompt[64];
+            
+            sprintf(hoursPrompt, "Enter Hours Worked (0-400) [%d]: ", 
+                   employee->employment.hoursWorked);
+            sprintf(hoursBuffer, "%d", employee->employment.hoursWorked);
+            
+            appFormField field = { hoursPrompt, hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} };
             appGetValidatedInput(&field, 1);
             employee->employment.hoursWorked = atoi(hoursBuffer);
             break;
@@ -370,7 +396,13 @@ int editEmployeeDataFromUser(Employee* employee) {
             // Edit basic rate
             printf("=== Edit Basic Rate ===\n");
             char rateBuffer[20];
-            appFormField field = { "Enter Basic Rate (minimum 0.00): ", rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} };
+            char ratePrompt[64];
+            
+            sprintf(ratePrompt, "Enter Basic Rate (minimum 0.00) [%.2f]: ", 
+                   employee->employment.basicRate);
+            sprintf(rateBuffer, "%.2f", employee->employment.basicRate);
+            
+            appFormField field = { ratePrompt, rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} };
             appGetValidatedInput(&field, 1);
             employee->employment.basicRate = (float)atof(rateBuffer);
             break;
@@ -378,30 +410,50 @@ int editEmployeeDataFromUser(Employee* employee) {
         case '6': {
             // Edit all fields
             printf("=== Edit All Fields ===\n\n");
-            
             // Name fields
             printf("--- Name Information ---\n");
+            char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];
+            sprintf(firstNamePrompt, "Enter First Name [%s]: ", employee->personal.name.firstName);
+            sprintf(middleNamePrompt, "Enter Middle Name (optional) [%s]: ", employee->personal.name.middleName);
+            sprintf(lastNamePrompt, "Enter Last Name [%s]: ", employee->personal.name.lastName);
+            
             appFormField nameFields[] = {
-                { "Enter First Name: ", employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
-                { "Enter Last Name: ", employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
-            };
-            appGetValidatedInput(nameFields, 3);
+                { firstNamePrompt, employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
+                { middleNamePrompt, employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
+                { lastNamePrompt, employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
+            };appGetValidatedInput(nameFields, 3);
             
             if (!composeEmployeeName(&employee->personal.name)) {
-                printf("\n[Error] Invalid name combination. Changes reverted.\n");
+                printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+                printf("        less than %d characters to fit in the %d character full name format. Changes reverted.\n", employeeNameLen - 5, employeeNameLen);
                 memcpy(&employee->personal.name, &backup.personal.name, sizeof(EmployeeName));
                 return -1;
             }
             
             // Employment fields
             printf("\n--- Employment Information ---\n");
+            char numberPrompt[64], statusPrompt[64], hoursPrompt[64], ratePrompt[64];
             char statusInput[3], hoursBuffer[10], rateBuffer[20];
+            
+            sprintf(numberPrompt, "Enter Employee Number [%s]: ", employee->personal.employeeNumber);
+            sprintf(statusPrompt, "Enter Status (R/C) [%c]: ", 
+                   employee->employment.status == statusRegular ? 'R' : 'C');
+            sprintf(hoursPrompt, "Enter Hours Worked (0-400) [%d]: ", 
+                   employee->employment.hoursWorked);
+            sprintf(ratePrompt, "Enter Basic Rate (minimum 0.00) [%.2f]: ", 
+                   employee->employment.basicRate);
+            
+            // Initialize buffers with current values
+            sprintf(hoursBuffer, "%d", employee->employment.hoursWorked);
+            sprintf(rateBuffer, "%.2f", employee->employment.basicRate);
+            statusInput[0] = (employee->employment.status == statusRegular) ? 'R' : 'C';
+            statusInput[1] = '\0';
+            
             appFormField employmentFields[] = {
-                { "Enter Employee Number: ", employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} },
-                { "Enter Status (R/C): ", statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} },
-                { "Enter Hours Worked (0-400): ", hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} },
-                { "Enter Basic Rate (minimum 0.00): ", rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} }
+                { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} },
+                { statusPrompt, statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} },
+                { hoursPrompt, hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} },
+                { ratePrompt, rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} }
             };
             appGetValidatedInput(employmentFields, 4);
             
