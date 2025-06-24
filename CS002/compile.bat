@@ -1,114 +1,44 @@
 @echo off
-setlocal EnableDelayedExpansion
-:: Compile script for CS002 project
+echo Compiling CS002 - Dual Management System...
 
-:: Create bin directory if it doesn't exist
-if not exist bin mkdir bin
+:: Compile the CS002 dual management system with all modules
+gcc -o bin/CS002.exe ^
+    src/main.c ^
+    src/ui/menuio.c ^
+    src/ui/empio.c ^
+    src/ui/stuio.c ^
+    src/modules/data.c ^
+    src/modules/payroll.c ^
+    ../include/models/employee.c ^
+    ../include/models/student.c ^
+    ../include/src/appwnd.c ^
+    ../include/src/auth.c ^
+    ../include/src/config.c ^
+    ../include/src/lismgr.c ^
+    ../include/src/lisops.c ^
+    ../include/src/menu.c ^
+    ../include/src/state.c ^
+    ../include/src/validation.c ^
+    -I../include ^
+    -I../include/headers ^
+    -I../include/models ^
+    -I../include/src ^
+    -Wall -Wextra -std=c99
 
-:: Define PowerShell commands for colored output
-set "CYAN=powershell write-host -foregroundcolor cyan -nonewline"
-set "YELLOW=powershell write-host -foregroundcolor yellow -nonewline"
-set "GREEN=powershell write-host -foregroundcolor green -nonewline"
-set "RED=powershell write-host -foregroundcolor red -nonewline"
-
-%CYAN% "Compiling the project..."
-echo.
-
-:: Define compiler and flags
-set CC=C:\msys64\ucrt64\bin\gcc.exe
-set CFLAGS=-g -Wall -I../include/headers
-
-:: Dynamically scan for source files
-set "MAIN_SRC=src/main.c"
-set "UI_SRCS="
-set "MODULE_SRCS="
-set "MODEL_SRCS=../include/models/employee.c"
-set "LIB_SRCS="
-
-:: Scan UI sources
-for %%F in (src\ui\*.c) do (
-    if not defined UI_SRCS (
-        set "UI_SRCS=%%F"
-    ) else (
-        set "UI_SRCS=!UI_SRCS! %%F"
-    )
-)
-
-:: Scan module sources
-for %%F in (src\modules\*.c) do (
-    if not defined MODULE_SRCS (
-        set "MODULE_SRCS=%%F"
-    ) else (
-        set "MODULE_SRCS=!MODULE_SRCS! %%F"
-    )
-)
-
-:: Scan library sources
-for %%F in (..\include\src\*.c) do (
-    if not defined LIB_SRCS (
-        set "LIB_SRCS=%%F"
-    ) else (
-        set "LIB_SRCS=!LIB_SRCS! %%F"
-    )
-)
-
-:: Display source files that will be compiled
-echo.
-%YELLOW% "Source files to be compiled:"
-echo.
-%YELLOW% "Main source: "
-echo %MAIN_SRC%
-
-%YELLOW% "UI sources: "
-if defined UI_SRCS (
-    echo %UI_SRCS%
-) else (
-    echo No UI sources found.
-)
-
-%YELLOW% "Module sources: "
-if defined MODULE_SRCS (
-    echo %MODULE_SRCS%
-) else (
-    echo No module sources found.
-)
-
-%YELLOW% "Model sources: "
-if defined MODEL_SRCS (
-    echo %MODEL_SRCS%
-) else (
-    echo No model sources found.
-)
-
-%YELLOW% "Library sources: "
-if defined LIB_SRCS (
-    echo %LIB_SRCS%
-) else (
-    echo No library sources found.
-)
-echo.
-
-:: Define output executable name
-set TARGET=bin\project_cs002.exe
-
-:: --- Compilation Command ---
-%CYAN% "Running compilation command..."
-echo.
-%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS% -o %TARGET%
-
-IF %ERRORLEVEL% NEQ 0 (
+if %errorlevel% == 0 (
+    echo Compilation successful!
+    echo CS002 Dual Management System executable created: bin/CS002.exe
     echo.
-    %RED% "ERROR: Compilation failed!"
+    echo System Features:
+    echo - Multiple Employee List Management
+    echo - Multiple Student List Management  
+    echo - Individual List Saving/Loading
+    echo - Comprehensive Reporting
+    echo - Advanced Data Validation
     echo.
-) ELSE (
-    echo.
-    %GREEN% "Compilation successful! Executable: "
-    echo %TARGET%
-    echo.
-    
-    :: Optionally run the program
-    :: Remove the "rem" from the next line to run the program after successful compilation
-    rem %TARGET%
+    echo You can now run: bin/CS002.exe
+) else (
+    echo Compilation failed! Check the errors above.
 )
 
 pause
