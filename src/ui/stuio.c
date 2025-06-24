@@ -23,7 +23,7 @@ int getStudentDataFromUser(Student* newStudent) {
         
         appFormField nameFields[] = {
             { "Enter First Name: ", newStudent->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
-            { "Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
+            { "Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
             { "Enter Last Name: ", newStudent->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
         };
         appGetValidatedInput(nameFields, 3);
@@ -356,7 +356,7 @@ int editStudentDataFromUser(Student* student) {
             printf("=== Edit Name ===\n");
             appFormField nameFields[] = {
                 { "Enter First Name: ", student->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", student->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
+                { "Enter Middle Name (optional): ", student->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
                 { "Enter Last Name: ", student->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
             };
             appGetValidatedInput(nameFields, 3);

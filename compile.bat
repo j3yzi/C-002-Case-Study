@@ -30,14 +30,6 @@ if %errorlevel% == 0 (
     echo Compilation successful!
     echo PUP Information Management System executable created: bin/PUP-InformationManagementSystem.exe
     echo.
-    echo System Features:
-    echo - Employee Management with Payroll Calculations
-    echo - Student Records Management with Academic Tracking
-    echo - Multiple List Management for both Employee and Student records
-    echo - Individual List Saving/Loading with Custom Names
-    echo - Comprehensive Reporting and Statistics
-    echo - Advanced Data Validation and Error Handling
-    echo.
     echo You can now run: bin/PUP-InformationManagementSystem.exe
 ) else (
     echo Compilation failed! Check the errors above.

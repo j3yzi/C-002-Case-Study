@@ -66,6 +66,7 @@ typedef enum {
     IV_MAX_LEN_CHARS,
     IV_ALPHA_ONLY,
     IV_ALPHA_ONLY_MAX_LEN,
+    IV_OPTIONAL_ALPHA_ONLY_MAX_LEN,
 } IValidationType;
 
 typedef union {

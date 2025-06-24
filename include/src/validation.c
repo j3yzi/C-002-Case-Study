@@ -221,6 +221,34 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 return true;
             }
             
+        case IV_OPTIONAL_ALPHA_ONLY_MAX_LEN:
+            {
+                // If empty, it's valid (optional field)
+                if (input[0] == '\0') {
+                    return true;
+                }
+                
+                // If not empty, validate as alphabetic with max length
+                // First check length
+                if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
+                    printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 
+                           fieldName, params.maxLengthChars.maxLength, strlen(input));
+                    return false;
+                }
+                
+                // Then check alphabetic characters only
+                for (int i = 0; input[i] != '\0'; i++) {
+                    char c = input[i];
+                    // Allow only alphabetic characters and spaces
+                    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
+                        printf("   [Error] %s can only contain letters and spaces. Invalid character: '%c'\n", 
+                               fieldName, c);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
         default:
             return true;
     }
