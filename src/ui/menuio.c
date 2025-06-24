@@ -71,6 +71,92 @@ void checkStates(void) {
 }
 
 /**
+ * @brief Updates employee menu option states based on current manager state
+ * @param menu Pointer to the employee menu to update
+ */
+static void updateEmployeeMenuStates(Menu* menu) {
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList] != 0);
+    int hasEmployees = hasActiveList && (empManager.employeeLists[empManager.activeEmployeeList]->size > 0);
+    int hasMultipleLists = (empManager.employeeListCount > 1);
+    
+    // Create Employee List (1) - Always available
+    menu->options[0].isDisabled = 0;
+    
+    // Switch Employee List (2) - Only if multiple lists exist
+    menu->options[1].isDisabled = !hasMultipleLists;
+    
+    // Add Employee (3) - Only if there's an active list
+    menu->options[2].isDisabled = !hasActiveList;
+    
+    // Edit Employee (4) - Only if there are employees in active list
+    menu->options[3].isDisabled = !hasEmployees;
+    
+    // Delete Employee (5) - Only if there are employees in active list
+    menu->options[4].isDisabled = !hasEmployees;
+    
+    // Search Employee (6) - Only if there are employees in active list
+    menu->options[5].isDisabled = !hasEmployees;
+    
+    // Display All Employees (7) - Only if there are employees in active list
+    menu->options[6].isDisabled = !hasEmployees;
+    
+    // Payroll Report (8) - Only if there are employees in active list
+    menu->options[7].isDisabled = !hasEmployees;
+    
+    // Save Employee List (9) - Only if there's an active list with employees
+    menu->options[8].isDisabled = !hasEmployees;
+    
+    // Load Employee List (A) - Always available
+    menu->options[9].isDisabled = 0;
+    
+    // Back to Main Menu (B) - Always available
+    menu->options[10].isDisabled = 0;
+}
+
+/**
+ * @brief Updates student menu option states based on current manager state
+ * @param menu Pointer to the student menu to update
+ */
+static void updateStudentMenuStates(Menu* menu) {
+    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList] != 0);
+    int hasStudents = hasActiveList && (stuManager.studentLists[stuManager.activeStudentList]->size > 0);
+    int hasMultipleLists = (stuManager.studentListCount > 1);
+    
+    // Create Student List (1) - Always available
+    menu->options[0].isDisabled = 0;
+    
+    // Switch Student List (2) - Only if multiple lists exist
+    menu->options[1].isDisabled = !hasMultipleLists;
+    
+    // Add Student (3) - Only if there's an active list
+    menu->options[2].isDisabled = !hasActiveList;
+    
+    // Edit Student (4) - Only if there are students in active list
+    menu->options[3].isDisabled = !hasStudents;
+    
+    // Delete Student (5) - Only if there are students in active list
+    menu->options[4].isDisabled = !hasStudents;
+    
+    // Search Student (6) - Only if there are students in active list
+    menu->options[5].isDisabled = !hasStudents;
+    
+    // Display All Students (7) - Only if there are students in active list
+    menu->options[6].isDisabled = !hasStudents;
+    
+    // Student Report (8) - Only if there are students in active list
+    menu->options[7].isDisabled = !hasStudents;
+    
+    // Save Student List (9) - Only if there's an active list with students
+    menu->options[8].isDisabled = !hasStudents;
+    
+    // Load Student List (A) - Always available
+    menu->options[9].isDisabled = 0;
+    
+    // Back to Main Menu (B) - Always available
+    menu->options[10].isDisabled = 0;
+}
+
+/**
  * @brief Main menu loop
  * @return Returns 0 on normal exit, other values on error
  */
@@ -210,6 +296,9 @@ int runEmployeeManagement(void) {
         }
         employeeMenu.name = menuTitle;
         
+        // Update menu option states based on current manager state
+        updateEmployeeMenuStates(&employeeMenu);
+        
         choice = initMenu(&employeeMenu);
         
         switch(choice) {
@@ -320,6 +409,9 @@ int runStudentManagement(void) {
             strcpy(menuTitle, "Student Management - No active list");
         }
         studentMenu.name = menuTitle;
+        
+        // Update menu option states based on current manager state
+        updateStudentMenuStates(&studentMenu);
         
         choice = initMenu(&studentMenu);
         

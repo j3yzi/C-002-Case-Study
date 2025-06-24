@@ -4,6 +4,8 @@ void appMenuSetColor(int textColor, int bgColor);
 void appDisplayMenu(const Menu* menu);
 static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y);
 static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection);
+static void appDisplayErrorMessage(const char* message, int errorY);
+static void appClearErrorMessage(int errorY);
 char initMenu(Menu* m);
 
 /**
@@ -89,10 +91,11 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     winTermCursorPos pos;
     winTermGetCursorPosition(&pos);
     
-    // Calculate the Y positions of the old and new selections
-    // Assuming menu header takes 2 lines (title + separator)
-    int oldY = 2 + oldSelection;
-    int newY = 2 + newSelection;
+    // Calculate the Y positions more accurately
+    // Header line + title line + separator + blank line + separator = 5 lines
+    int menuStartY = 5;
+    int oldY = menuStartY + oldSelection;
+    int newY = menuStartY + newSelection;
     
     // Update the old selection (removing the selection indicator)
     menu->options[oldSelection].isSelected = false;
@@ -102,8 +105,30 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     menu->options[newSelection].isSelected = true;
     appDisplayMenuOption(menu, newSelection, 0, newY);
     
-    // Restore cursor position
-    winTermSetCursor(pos.x, pos.y);
+    // Restore cursor position (move it below the menu for cleaner appearance)
+    winTermSetCursor(0, menuStartY + menu->optionCount + 2);
+}
+
+/**
+ * @brief Displays an error message at the specified position without clearing the entire screen.
+ * @param message The error message to display.
+ * @param errorY The Y position where the error should be displayed.
+ */
+static void appDisplayErrorMessage(const char* message, int errorY) {
+    winTermSetCursor(0, errorY);
+    winTermClearLine();
+    appMenuSetColor(12, 0); // Red text for error
+    printf("⚠ %s", message);
+    winTermResetColors();
+}
+
+/**
+ * @brief Clears the error message at the specified position.
+ * @param errorY The Y position where the error message is displayed.
+ */
+static void appClearErrorMessage(int errorY) {
+    winTermSetCursor(0, errorY);
+    winTermClearLine();
 }
 
 /**
@@ -137,23 +162,30 @@ char initMenu(Menu* m) {
         m->options[selected].isSelected = true;
     }
 
+    // Initial menu display (only once!)
+    appMenuSetColor(7, 0);
+    appDisplayMenu(m);
+    
     int key;
     char errorMessage[100] = "";
     int showError = 0;
+    int needsFullRedraw = 0;
+    
+    // Calculate error message position to match menu positioning
+    int menuStartY = 5;
+    int errorY = menuStartY + m->optionCount + 2; // After menu items
 
     while (true) {
-        // Reset color and mark selected option
-        appMenuSetColor(7, 0);
+        // Only redraw completely if needed
+        if (needsFullRedraw) {
+            appMenuSetColor(7, 0);
+            appDisplayMenu(m);
+            needsFullRedraw = 0;
+        }
         
-        // Display the menu
-        appDisplayMenu(m);
-        
-        // Display error message if needed
+        // Display error message at fixed position if needed
         if (showError) {
-            printf("\n");
-            appMenuSetColor(12, 0); // Red text for error
-            printf("%s", errorMessage);
-            appMenuSetColor(7, 0); // Reset to default
+            appDisplayErrorMessage(errorMessage, errorY);
             showError = 0;
         }
         
@@ -177,7 +209,7 @@ char initMenu(Menu* m) {
             }
         }
 
-        // Handle arrow keys
+        // Handle arrow keys - use selective update for smooth navigation
         if (key == 0 || key == -32 || key == 224) {
             key = _getch(); // Get the actual key code
             
@@ -191,6 +223,8 @@ char initMenu(Menu* m) {
                         if (selected < 0) selected = m->optionCount - 1;
                     } while (m->options[selected].isDisabled);
                 }
+                // Clear any previous error message and update selection
+                appClearErrorMessage(errorY);
                 appUpdateMenuSelection(m, oldSelected, selected);
             }
             else if (key == 80 || key == 77) { // Down/Right arrow
@@ -203,6 +237,8 @@ char initMenu(Menu* m) {
                         if (selected >= m->optionCount) selected = 0;
                     } while (m->options[selected].isDisabled);
                 }
+                // Clear any previous error message and update selection
+                appClearErrorMessage(errorY);
                 appUpdateMenuSelection(m, oldSelected, selected);
             }
             // Continue to skip the invalid key check for arrow keys
