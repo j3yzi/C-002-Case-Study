@@ -8,6 +8,21 @@
 #include <conio.h>
 #include <windows.h>
 
+// Configuration for business logic values (not struct sizes)
+typedef struct {
+    // Payroll settings
+    float regular_hours;
+    float overtime_rate;
+    
+    // Academic settings
+    float passing_grade;
+    float min_grade;
+    float max_grade;
+} Config;
+
+// Global configuration instance
+extern Config g_config;
+
 typedef struct {
     char* appName;
     char* appVersion;
@@ -115,7 +130,15 @@ void winTermClearScreen();
 void winTermGetCursorPosition(winTermCursorPos* position);
 void winTermResetColors();
 
-// void winTermPrintLine(char ch, int width);
-// void winTermPrintCentered(const char* text, int width);
+// Configuration functions
+int loadConfig(const char* config_file);
+int saveConfig(const char* config_file);
+void setDefaultConfig(void);
+void printCurrentConfig(void);
+
+// Convenience functions for accessing configurable values
+float getRegularHours(void);
+float getOvertimeRate(void);
+float getPassingGrade(void);
 
 #endif // APCTXT_H

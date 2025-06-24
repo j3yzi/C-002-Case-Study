@@ -12,6 +12,10 @@
 
 int main(void)
 {   
+    // Load configuration first
+    printf("Loading configuration...\n");
+    loadConfig("config.ini");
+    
     // Initialize the Windows terminal
     appInitWinTerm("PUP Information Management System - Employee & Student Records");
     

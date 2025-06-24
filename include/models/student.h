@@ -1,9 +1,10 @@
 #ifndef STUDENT_H
 #define STUDENT_H
 
-#include <stdbool.h>
 #include "../headers/list.h"
+#include "../headers/apctxt.h"
 
+// Fixed-size definitions for struct compatibility  
 #define studentNumberLen 11 // 10 chars + null terminator
 #define studentNameLen 31   // 30 chars + null terminator
 #define studentFirstNameLen 32
@@ -11,6 +12,9 @@
 #define studentLastNameLen 32
 #define studentRemarksLen 8 // "Passed" or "Failed" + null terminator
 #define maxStudentCreationCount 10
+
+// Configurable business values (loaded from config.ini)
+// Use getPassingGrade() function instead of hard-coded threshold
 
 typedef enum {
     genderMale,
@@ -66,8 +70,8 @@ typedef struct {
     AcademicStanding standing;
 } Student;
 
-// Function declarations
-bool composeStudentName(StudentName* name);
+// Function declarations  
+int composeStudentName(StudentName* name);
 void calculateFinalGrade(Student* student);
 Student* searchStudentByNumber(const list* studentList, const char* studentNumber);
 Student* searchStudentByName(const list* studentList, const char* fullName);

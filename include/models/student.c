@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "../models/student.h"
+#include "../headers/apctxt.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -8,9 +9,9 @@
  * @param name Pointer to the StudentName struct.
  * @return true if the name was composed successfully, false otherwise.
  */
-bool composeStudentName(StudentName* name) {
+int composeStudentName(StudentName* name) {
     if (!name) {
-        return false;
+        return 0;
     }
 
     size_t fnLen = strlen(name->firstName);
@@ -21,17 +22,17 @@ bool composeStudentName(StudentName* name) {
     // If total length is exactly studentNameLen - 1, use LastName+FirstName+MiddleName.
     if (totalLen == (studentNameLen - 1)) {
         snprintf(name->fullName, studentNameLen, "%s%s%s", name->lastName, name->firstName, name->middleName);
-        return true;
+        return 1;
     }
 
     // For all other cases, try LastName+FirstName.
     if ((lnLen + fnLen) < studentNameLen) {
         snprintf(name->fullName, studentNameLen, "%s%s", name->lastName, name->firstName);
-        return true;
+        return 1;
     }
 
     // If LastName+FirstName is too long, or the name is invalid, reject.
-    return false;
+    return 0;
 }
 
 /**
@@ -46,8 +47,8 @@ void calculateFinalGrade(Student* student) {
                                    student->academic.midtermGrade + 
                                    student->academic.finalExamGrade) / 3.0f;
     
-    // Assign remarks based on final grade
-    if (student->academic.finalGrade >= 75.0f) {
+    // Assign remarks based on configurable passing grade
+    if (student->academic.finalGrade >= getPassingGrade()) {
         strcpy(student->academic.remarks, "Passed");
     } else {
         strcpy(student->academic.remarks, "Failed");

@@ -231,6 +231,9 @@ list* loadEmployeeDataFromFile(const char* filename, ListType listType) {
         return NULL;
     }
     
+    // Note: listType parameter reserved for future list type handling
+    (void)listType; // Suppress unused parameter warning
+    
     char fullPath[256];
     snprintf(fullPath, sizeof(fullPath), "data/%s", filename);
     
@@ -323,6 +326,9 @@ list* loadStudentDataFromFile(const char* filename, ListType listType) {
     if (!filename) {
         return NULL;
     }
+    
+    // Note: listType parameter reserved for future list type handling
+    (void)listType; // Suppress unused parameter warning
     
     char fullPath[256];
     snprintf(fullPath, sizeof(fullPath), "data/%s", filename);
