@@ -1,5 +1,16 @@
 #include "../headers/auth.h"
 #include <time.h>
+#include <string.h>
+
+// Provide a fallback implementation of strdup if not defined
+#if defined(_WIN32) && !defined(_POSIX_C_SOURCE)
+char* strdup(const char* s) {
+    size_t len = strlen(s) + 1;  // +1 for the null terminator
+    char* new_str = (char*)malloc(len);
+    if (new_str == NULL) return NULL;
+    return (char*)memcpy(new_str, s, len);
+}
+#endif
 
 // Removed unused initRandom function
 

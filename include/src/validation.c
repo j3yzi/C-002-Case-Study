@@ -15,6 +15,10 @@ void enableAnsiSupport() {
         if (hOut != INVALID_HANDLE_VALUE) {
             DWORD dwMode = 0;
             if (GetConsoleMode(hOut, &dwMode)) {
+                // Define ENABLE_VIRTUAL_TERMINAL_PROCESSING if not defined (for older Windows SDKs)
+                #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                    #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+                #endif
                 dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
                 SetConsoleMode(hOut, dwMode);
             }

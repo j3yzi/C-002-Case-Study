@@ -13,6 +13,10 @@
 
 int main(int argc, char* argv[])
 {   
+    // Prevent unused parameter warnings
+    (void)argc;
+    (void)argv;
+    
     // Get the directory where the executable is located
     char executablePath[512];
     char configPath[600];
