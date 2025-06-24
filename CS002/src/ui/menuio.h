@@ -4,8 +4,8 @@
 #include "../../../include/headers/apctxt.h"
 #include "../../../include/headers/list.h"
 
-void initMenuIO(list* students, list* employees);
+void initMenuIO(list* employeeList);
 void checkStates(void);
-int runMenuLoop(void);
+int menuLoop(void);
 
 #endif 

@@ -22,6 +22,7 @@ set CFLAGS=-g -Wall -I../include/headers
 set "MAIN_SRC=src/main.c"
 set "UI_SRCS="
 set "MODULE_SRCS="
+set "MODEL_SRCS=../include/models/employee.c"
 set "LIB_SRCS="
 
 :: Scan UI sources
@@ -72,6 +73,13 @@ if defined MODULE_SRCS (
     echo No module sources found.
 )
 
+%YELLOW% "Model sources: "
+if defined MODEL_SRCS (
+    echo %MODEL_SRCS%
+) else (
+    echo No model sources found.
+)
+
 %YELLOW% "Library sources: "
 if defined LIB_SRCS (
     echo %LIB_SRCS%
@@ -86,7 +94,7 @@ set TARGET=bin\project_cs002.exe
 :: --- Compilation Command ---
 %CYAN% "Running compilation command..."
 echo.
-%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %LIB_SRCS% -o %TARGET%
+%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS% -o %TARGET%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo.

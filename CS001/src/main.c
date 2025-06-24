@@ -35,8 +35,7 @@ int main(void)
     if (employeeList != NULL) {
         destroyList(&employeeList, freeEmployee);
     }
-
-    printf("Thank you for using the Employee Payroll Management System!\n");
+    
     printf("Press any key to exit...");
     _getch();
     

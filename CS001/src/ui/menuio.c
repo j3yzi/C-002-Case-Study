@@ -25,7 +25,7 @@ static list* employeeList = NULL;
 static void handleAddEmployeeMenu(void);
 static int handleCreateEmployeeList(void);
 static int handleAddEmployee(void);
-static int handleExportEmployeeData(void);
+static int handleSaveEmployeeData(void);
 static int handleLoadEmployeeData(void);
 static int handlePayrollReport(void);
 static void showDisabledMessage(const char* action);
@@ -37,7 +37,7 @@ Menu mainMenu = {1, "Main Menu", (MenuOption[]){
     {'3', "Search Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
     {'4', "Delete Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
     {'5', "Load Employee From File", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'6', "Export Employee Data To CSV", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'6', "Save Employee Data", true, false, 9, 0, 7, 0, 8, 0, NULL},
     {'7', "Display Payroll Report", true, false, 9, 0, 7, 0, 8, 0, NULL},
     {'8', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 8};
     
@@ -60,7 +60,7 @@ void checkStates(void) {
             mainMenu.options[1].isDisabled = false; // Edit Employee Data
             mainMenu.options[2].isDisabled = false; // Search Employee
             mainMenu.options[3].isDisabled = false; // Delete Employee
-            mainMenu.options[5].isDisabled = false; // Export Employee Data To CSV
+            mainMenu.options[5].isDisabled = false; // Save Employee Data
             mainMenu.options[6].isDisabled = false; // Display Payroll Report
         } else {
             // List exists but is empty
@@ -139,9 +139,9 @@ int menuLoop(void) {
                 break;
             case '6':
                 if (!mainMenu.options[5].isDisabled) {
-                    handleExportEmployeeData();
+                    handleSaveEmployeeData();
                 } else {
-                    showDisabledMessage("export employee data");
+                    showDisabledMessage("save employee data");
                 }
                 break;
             case '7':
@@ -273,7 +273,7 @@ static int handleCreateEmployeeList(void) {
         }
         
         employeesCreated++;
-        printf("\nEmployee %d '%s' added successfully!\n", i + 1, newEmployee->personal.name.fullName);
+        printf("\nEmployee %d '%s %s' added successfully!\n", i + 1, newEmployee->personal.name.firstName, newEmployee->personal.name.lastName);
         
         if (i < maxEmployeeCreationCount - 1) {
             printf("Press any key to add the next employee...");
@@ -343,7 +343,7 @@ static int handleAddEmployee(void) {
         return -1;
     }
     
-    printf("\nEmployee '%s' added successfully!\n", newEmployee->personal.name.fullName);
+    printf("\nEmployee '%s %s' added successfully!\n", newEmployee->personal.name.firstName, newEmployee->personal.name.lastName);
     printf("Employee Number: %s\n", newEmployee->personal.employeeNumber);
     printf("Net Pay: %.2f\n", newEmployee->payroll.netPay);
     printf("Press any key to continue...");
@@ -352,22 +352,27 @@ static int handleAddEmployee(void) {
 }
 
 /**
- * @brief Handles exporting employee data to a CSV file.
+ * @brief Handles saving employee data to a binary file using data.c functions.
  * @return Returns 0 on success, -1 on failure.
  */
-static int handleExportEmployeeData(void) {
+static int handleSaveEmployeeData(void) {
     winTermClearScreen();
-    printf("=== Export Employee Data to CSV ===\n\n");
+    printf("=== Save Employee Data ===\n\n");
     
     if (!employeeListCreated.isEnabled || !employeeList || !employeeList->head || employeeList->size == 0) {
-        printf("No employee data to export!\n");
+        printf("No employee data to save!\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
+    // Show existing data files
+    printf("Existing data files:\n");
+    listDataFiles();
+    printf("\n");
+    
     char filename[100];
-    printf("Enter filename for CSV export (e.g., employees.csv): ");
+    printf("Enter filename for binary save (include .dat extension): ");
     if (scanf("%99s", filename) != 1) {
         printf("Invalid filename!\n");
         printf("Press any key to continue...");
@@ -376,46 +381,19 @@ static int handleExportEmployeeData(void) {
     }
     getchar(); // Clear newline
     
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        printf("Failed to open file '%s' for writing!\n", filename);
-        printf("Press any key to continue...");
-        _getch();
-        return -1;
+    // Use the saveEmployeeDataFromFile function from data.c
+    // This will automatically save to the "../../../data/" directory
+    int savedCount = saveEmployeeDataFromFile(employeeList, filename);
+    
+    if (savedCount >= 0) {
+        printf("Successfully saved %d employee records to 'data/%s'!\n", savedCount, filename);
+        printf("The file has been saved in binary format for efficient storage and loading.\n");
+        printf("Data folder created automatically in the program directory.\n");
+    } else {
+        printf("Failed to save employee data to 'data/%s'!\n", filename);
+        printf("Please check if you have write permissions in the program directory.\n");
     }
     
-    // Write CSV header
-    fprintf(file, "Employee Number,Full Name,First Name,Middle Name,Last Name,Status,Hours Worked,Basic Rate,Basic Pay,Overtime Pay,Deductions,Net Pay\n");
-    
-    // Write employee data
-    node* current = employeeList->head;
-    int count = 0;
-    
-    if (current != NULL) {
-        do {
-            Employee* emp = (Employee*)current->data;
-            if (emp != NULL) {
-                fprintf(file, "%s,%s,%s,%s,%s,%s,%d,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-                    emp->personal.employeeNumber,
-                    emp->personal.name.fullName,
-                    emp->personal.name.firstName,
-                    emp->personal.name.middleName,
-                    emp->personal.name.lastName,
-                    (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                    emp->employment.hoursWorked,
-                    emp->employment.basicRate,
-                    emp->payroll.basicPay,
-                    emp->payroll.overtimePay,
-                    emp->payroll.deductions,
-                    emp->payroll.netPay);
-                count++;
-            }
-            current = current->next;
-        } while (current != employeeList->head && current != NULL);
-    }
-    
-    fclose(file);
-    printf("Successfully exported %d employee records to '%s'!\n", count, filename);
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -429,8 +407,12 @@ static int handleLoadEmployeeData(void) {
     winTermClearScreen();
     printf("=== Load Employee Data ===\n\n");
     
+    // List available .dat files
+    listDataFiles();
+    printf("\n");
+    
     char filename[100];
-    printf("Enter filename to load from: ");
+    printf("Enter filename to load from (include .dat extension): ");
     if (scanf("%99s", filename) != 1) {
         printf("Invalid filename!\n");
         printf("Press any key to continue...");
@@ -543,6 +525,16 @@ static int handlePayrollReport(void) {
            "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Total employees: %d\n\n", count);
+    
+    // Generate the payroll report file
+    char reportFilePath[512];
+    int reportResult = generatePayrollReportFile(employeeList, reportFilePath, sizeof(reportFilePath));
+    
+    if (reportResult > 0) {
+        printf("Successfully generated %s at ./%s\n", reportFilePath, reportFilePath);
+    } else {
+        printf("Warning: Failed to generate report file, but display completed successfully.\n");
+    }
     
     printf("Press any key to continue...");
     _getch();

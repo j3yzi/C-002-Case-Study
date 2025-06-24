@@ -286,5 +286,4 @@ list* loadEmployeeDataFromFile(const char* filename, ListType listType) {
     
     fclose(file);
     return employeeList;
-}
-
+} 
