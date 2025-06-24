@@ -1,8 +1,11 @@
 @echo off
 setlocal EnableDelayedExpansion
-REM compile.bat - Batch script to compile the CS001 project
+:: Compile script for CS003 project
 
-REM Define PowerShell commands for colored output
+:: Create bin directory if it doesn't exist
+if not exist bin mkdir bin
+
+:: Define PowerShell commands for colored output
 set "CYAN=powershell write-host -foregroundcolor cyan -nonewline"
 set "YELLOW=powershell write-host -foregroundcolor yellow -nonewline"
 set "GREEN=powershell write-host -foregroundcolor green -nonewline"
@@ -11,26 +14,18 @@ set "RED=powershell write-host -foregroundcolor red -nonewline"
 %CYAN% "Compiling the project..."
 echo.
 
-REM Define compiler and flags
-set CC=gcc
-set CFLAGS=-Wall -Wextra -std=c11 -g
+:: Define compiler and flags
+set CC=C:\msys64\ucrt64\bin\gcc.exe
+set CFLAGS=-g -Wall -I../include/headers
 
-REM Create bin directory if it doesn't exist
-if not exist bin mkdir bin
-
-REM Define include directory
-set INCLUDE_DIR=..\include\headers
-
-REM Include model sources
-set MODEL_SRCS=..\include\models\employee.c
-
-REM Dynamically scan for source files
-set "MAIN_SRC=src\main.c"
+:: Dynamically scan for source files
+set "MAIN_SRC=src/main.c"
 set "UI_SRCS="
 set "MODULE_SRCS="
+set "MODEL_SRCS=../include/models/student.c"
 set "LIB_SRCS="
 
-REM Scan UI sources
+:: Scan UI sources
 for %%F in (src\ui\*.c) do (
     if not defined UI_SRCS (
         set "UI_SRCS=%%F"
@@ -39,7 +34,7 @@ for %%F in (src\ui\*.c) do (
     )
 )
 
-REM Scan module sources
+:: Scan module sources
 for %%F in (src\modules\*.c) do (
     if not defined MODULE_SRCS (
         set "MODULE_SRCS=%%F"
@@ -48,7 +43,7 @@ for %%F in (src\modules\*.c) do (
     )
 )
 
-REM Scan library sources
+:: Scan library sources
 for %%F in (..\include\src\*.c) do (
     if not defined LIB_SRCS (
         set "LIB_SRCS=%%F"
@@ -57,10 +52,7 @@ for %%F in (..\include\src\*.c) do (
     )
 )
 
-REM Define output executable name
-set TARGET=bin\project_payroll.exe
-
-REM Display source files that will be compiled
+:: Display source files that will be compiled
 echo.
 %YELLOW% "Source files to be compiled:"
 echo.
@@ -81,6 +73,13 @@ if defined MODULE_SRCS (
     echo No module sources found.
 )
 
+%YELLOW% "Model sources: "
+if defined MODEL_SRCS (
+    echo %MODEL_SRCS%
+) else (
+    echo No model sources found.
+)
+
 %YELLOW% "Library sources: "
 if defined LIB_SRCS (
     echo %LIB_SRCS%
@@ -89,11 +88,13 @@ if defined LIB_SRCS (
 )
 echo.
 
-REM --- Compilation Command ---
+:: Define output executable name
+set TARGET=bin\project_cs003.exe
+
+:: --- Compilation Command ---
 %CYAN% "Running compilation command..."
 echo.
-echo %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS%
-%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS% -I%INCLUDE_DIR% -o %TARGET%
+%CC% %CFLAGS% %MAIN_SRC% %UI_SRCS% %MODULE_SRCS% %MODEL_SRCS% %LIB_SRCS% -o %TARGET%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo.
@@ -104,6 +105,10 @@ IF %ERRORLEVEL% NEQ 0 (
     %GREEN% "Compilation successful! Executable: "
     echo %TARGET%
     echo.
+    
+    :: Optionally run the program
+    :: Remove the "rem" from the next line to run the program after successful compilation
+    rem %TARGET%
 )
 
-pause
+pause 

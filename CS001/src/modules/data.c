@@ -1,0 +1,290 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "data.h"
+#include "../../../include/models/employee.h"
+#include "../../../include/headers/list.h"
+
+// Function to create data directory if it doesn't exist
+static int createDataDirectory(void) {
+    // Use system command to create directory (works on Windows and Unix)
+    // The command will fail silently if directory already exists, which is what we want
+    system("mkdir data 2>nul"); // Windows: redirect error to null
+    return 0; // Always return success
+}
+
+// Function to list all .dat files in the data directory
+int listDataFiles(void) {
+    // Create data directory if it doesn't exist
+    createDataDirectory();
+    
+    printf("=== Available Data Files ===\n");
+    
+    // Use system command to list .dat files
+    
+    // Windows command to list .dat files
+    int result = system("dir data\\*.dat /B 2>nul");
+    if (result != 0) {
+        printf("No .dat files found in the data directory.\n");
+        return 0;
+    }
+    
+    printf("=============================\n");
+    return 1; // Files found
+}
+
+// Function to create output directory if it doesn't exist
+static int createOutputDirectory(void) {
+    // Use system command to create directory (works on Windows and Unix)
+    system("mkdir output 2>nul"); // Windows: redirect error to null
+    return 0; // Always return success
+}
+
+// Function to get current timestamp for filenames
+void getCurrentTimestamp(char* buffer, int bufferSize) {
+    // Get current time
+    time_t rawtime;
+    struct tm * timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    
+    // Format: YYYY-MM-DD_HH-MM-SS
+    strftime(buffer, bufferSize, "%Y-%m-%d_%H-%M-%S", timeinfo);
+}
+
+// Function to generate payroll report file
+int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, int pathBufferSize) {
+    if (!employeeList || !employeeList->head || employeeList->size == 0) {
+        return -1; // No data to report
+    }
+    
+    // Create output directory if it doesn't exist
+    createOutputDirectory();
+    
+    // Generate timestamp for filename
+    char timestamp[32];
+    getCurrentTimestamp(timestamp, sizeof(timestamp));
+    
+    // Create filename with timestamp
+    char filename[256];
+    snprintf(filename, sizeof(filename), "output/payroll_report-%s.txt", timestamp);
+    
+    // Copy full path to output parameter
+    snprintf(generatedFilePath, pathBufferSize, "%s", filename);
+    
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        return -1; // Failed to create file
+    }
+    
+    // Write header
+    fprintf(file, "=== Employee Payroll Report ===\n");
+    fprintf(file, "Generated on: %s\n\n", timestamp);
+    
+    // Write table header
+    fprintf(file, "%-12s | %-20s | %-8s | %-10s | %-10s | %-10s | %-10s | %-6s\n",
+           "Emp. Number", "Employee Name", "Status", "Basic Pay", "Overtime", "Deductions", "Net Pay", "Hours");
+    fprintf(file, "------------------------------------------------------------------------------------------------------\n");
+    
+    // Write employee data
+    node* current = employeeList->head;
+    int count = 0;
+    double totalBasicPay = 0.0;
+    double totalOvertimePay = 0.0;
+    double totalDeductions = 0.0;
+    double totalNetPay = 0.0;
+    
+    if (current != NULL) {
+        do {
+            Employee* emp = (Employee*)current->data;
+            if (emp != NULL) {
+                count++;
+                
+                fprintf(file, "%-12s | %-20s | %-8s | %10.2f | %10.2f | %10.2f | %10.2f | %6d\n",
+                       emp->personal.employeeNumber,
+                       emp->personal.name.fullName,
+                       (emp->employment.status == statusRegular) ? "Regular" : "Casual",
+                       emp->payroll.basicPay,
+                       emp->payroll.overtimePay,
+                       emp->payroll.deductions,
+                       emp->payroll.netPay,
+                       emp->employment.hoursWorked);
+                       
+                totalBasicPay += emp->payroll.basicPay;
+                totalOvertimePay += emp->payroll.overtimePay;
+                totalDeductions += emp->payroll.deductions;
+                totalNetPay += emp->payroll.netPay;
+            }
+            current = current->next;
+        } while (current != employeeList->head && current != NULL);
+    }
+    
+    // Write totals
+    fprintf(file, "------------------------------------------------------------------------------------------------------\n");
+    fprintf(file, "%-32s | %10.2f | %10.2f | %10.2f | %10.2f |\n",
+           "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
+    fprintf(file, "------------------------------------------------------------------------------------------------------\n");
+    fprintf(file, "Total employees: %d\n\n", count);
+    
+    fprintf(file, "Report generated by Employee Payroll System\n");
+    
+    fclose(file);
+    return count; // Return number of employees processed
+}
+
+int saveEmployeeDataFromFile(list* employeeList, const char *filename) {
+    if (!employeeList || !filename) {
+        return -1; // Invalid parameters
+    }
+    
+    // Create data directory if it doesn't exist
+    if (createDataDirectory() != 0) {
+        return -1; // Failed to create data directory
+    }
+    
+    // Build full path to data directory (local to executable)
+    char fullPath[512];
+    snprintf(fullPath, sizeof(fullPath), "data/%s", filename);
+    
+    FILE *file = fopen(fullPath, "wb");
+    if (!file) {
+        return -1; // Failed to open file for writing
+    }
+    
+    // Write the number of employees first
+    int employeeCount = employeeList->size;
+    if (fwrite(&employeeCount, sizeof(int), 1, file) != 1) {
+        fclose(file);
+        return -1; // Failed to write employee count
+    }
+    
+    // If list is empty, we're done
+    if (employeeCount == 0 || !employeeList->head) {
+        fclose(file);
+        return 0;
+    }
+    
+    // Iterate through the linked list and save each employee
+    node* current = employeeList->head;
+    int savedCount = 0;
+    
+    // Handle different list types
+    if (employeeList->type == SINGLY || employeeList->type == DOUBLY) {
+        // Non-circular lists
+        while (current != NULL && savedCount < employeeCount) {
+            Employee* emp = (Employee*)current->data;
+            if (emp) {
+                if (fwrite(emp, sizeof(Employee), 1, file) != 1) {
+                    fclose(file);
+                    return -1; // Failed to write employee data
+                }
+                savedCount++;
+            }
+            current = current->next;
+        }
+    } else {
+        // Circular lists
+        if (current != NULL) {
+            do {
+                Employee* emp = (Employee*)current->data;
+                if (emp) {
+                    if (fwrite(emp, sizeof(Employee), 1, file) != 1) {
+                        fclose(file);
+                        return -1; // Failed to write employee data
+                    }
+                    savedCount++;
+                }
+                current = current->next;
+                
+                // Safety check to prevent infinite loops
+                if (savedCount >= employeeCount) {
+                    break;
+                }
+            } while (current != NULL && current != employeeList->head);
+        }
+    }
+    
+    fclose(file);
+    return savedCount; // Return number of employees saved
+}
+
+list* loadEmployeeDataFromFile(const char* filename, ListType listType) {
+    if (!filename) {
+        return NULL; // Invalid filename
+    }
+    
+    // Create data directory if it doesn't exist
+    if (createDataDirectory() != 0) {
+        // If we can't create the directory, still try to create an empty list
+        list* employeeList = NULL;
+        if (createList(&employeeList, listType) != 0) {
+            return NULL;
+        }
+        return employeeList;
+    }
+    
+    // Build full path to data directory (local to executable)
+    char fullPath[512];
+    snprintf(fullPath, sizeof(fullPath), "data/%s", filename);
+    
+    FILE *file = fopen(fullPath, "rb");
+    if (!file) {
+        // File doesn't exist or can't be opened, return NULL to indicate failure
+        return NULL;
+    }
+    
+    // Read the number of employees
+    int employeeCount;
+    if (fread(&employeeCount, sizeof(int), 1, file) != 1) {
+        fclose(file);
+        return NULL; // Failed to read employee count
+    }
+    
+    // Create the list
+    list* employeeList = NULL;
+    if (createList(&employeeList, listType) != 0) {
+        fclose(file);
+        return NULL; // Failed to create list
+    }
+    
+    // If no employees to load, return empty list
+    if (employeeCount <= 0) {
+        fclose(file);
+        return employeeList;
+    }
+    
+    // Load each employee and add to the list
+    for (int i = 0; i < employeeCount; i++) {
+        // Allocate memory for new employee
+        Employee* newEmployee = (Employee*)malloc(sizeof(Employee));
+        if (!newEmployee) {
+            // Memory allocation failed, cleanup and return NULL
+            fclose(file);
+            destroyList(&employeeList, freeEmployee);
+            return NULL;
+        }
+        
+        // Read employee data from file
+        if (fread(newEmployee, sizeof(Employee), 1, file) != 1) {
+            // Failed to read employee data, cleanup and return NULL
+            free(newEmployee);
+            fclose(file);
+            destroyList(&employeeList, freeEmployee);
+            return NULL;
+        }
+        
+        // Add the employee to the list using addNode
+        if (addNode(&employeeList, newEmployee) != 0) {
+            // Failed to add node, cleanup and return NULL
+            free(newEmployee);
+            fclose(file);
+            destroyList(&employeeList, freeEmployee);
+            return NULL;
+        }
+    }
+    
+    fclose(file);
+    return employeeList;
+}
+

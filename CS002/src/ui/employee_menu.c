@@ -1,0 +1,474 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <conio.h>
+#include "employee_menu.h"
+#include "empio.h"
+#include "../modules/data.h"
+#include "../modules/payroll.h"
+#include "../../../include/headers/apctxt.h"
+#include "../../../include/headers/state.h"
+#include "../../../include/models/employee.h"
+#include "../../../include/headers/list.h"
+
+// External reference to the global employee manager
+extern EmployeeManager empManager;
+
+// Employee menu definition
+Menu employeeMenu = {2, "Employee Management", (MenuOption[]){
+    {'1', "Create New Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'2', "Switch Active List", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'3', "Add Employee to Active List", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'4', "Edit Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'5', "Delete Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'6', "Search Employee", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'7', "Display All Employees", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'8', "Generate Payroll Report", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'9', "Save Active List", true, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'A', "Load Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
+
+/**
+ * @brief Updates employee menu option states based on current application state
+ */
+void checkEmployeeMenuStates(void) {
+    // Employee menu states
+    if (empManager.employeeListCount > 0) {
+        employeeMenu.options[1].isDisabled = false; // Switch Active List
+        
+        if (empManager.activeEmployeeList >= 0 && 
+            empManager.employeeLists[empManager.activeEmployeeList] &&
+            empManager.employeeLists[empManager.activeEmployeeList]->size > 0) {
+            // Enable all employee operations
+            for (int i = 2; i < 9; i++) {
+                employeeMenu.options[i].isDisabled = false;
+            }
+        } else {
+            // Enable only add employee, disable others
+            employeeMenu.options[2].isDisabled = false; // Add Employee
+            for (int i = 3; i < 9; i++) {
+                employeeMenu.options[i].isDisabled = true;
+            }
+        }
+    } else {
+        // No employee lists, disable all except create
+        for (int i = 1; i < 9; i++) {
+            employeeMenu.options[i].isDisabled = true;
+        }
+    }
+}
+
+/**
+ * @brief Runs the employee management submenu
+ * @return 0 on success, -1 on failure
+ */
+int runEmployeeManagement(void) {
+    char choice;
+    
+    do {
+        checkEmployeeMenuStates();
+        winTermClearScreen();
+        
+        printf("=== Employee Management ===\n");
+        printf("Lists: %d | Active: %s | Records: %d\n\n", 
+               empManager.employeeListCount,
+               (empManager.activeEmployeeList >= 0) ? 
+               empManager.employeeListNames[empManager.activeEmployeeList] : "None",
+               (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]) ?
+               empManager.employeeLists[empManager.activeEmployeeList]->size : 0);
+        
+        choice = initMenu(&employeeMenu);
+        
+        switch(choice) {
+            case '1':
+                handleCreateEmployeeList();
+                break;
+            case '2':
+                if (!employeeMenu.options[1].isDisabled) {
+                    handleSwitchEmployeeList();
+                } else {
+                    printf("\nNo employee lists available to switch!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '3':
+                if (!employeeMenu.options[2].isDisabled) {
+                    handleAddEmployee();
+                } else {
+                    printf("\nPlease create an employee list first!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '4':
+                if (!employeeMenu.options[3].isDisabled) {
+                    handleEditEmployee(empManager.employeeLists[empManager.activeEmployeeList]);
+                } else {
+                    printf("\nNo employees to edit!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '5':
+                if (!employeeMenu.options[4].isDisabled) {
+                    handleDeleteEmployee(empManager.employeeLists[empManager.activeEmployeeList]);
+                } else {
+                    printf("\nNo employees to delete!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '6':
+                if (!employeeMenu.options[5].isDisabled) {
+                    handleSearchEmployee(empManager.employeeLists[empManager.activeEmployeeList]);
+                } else {
+                    printf("\nNo employees to search!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '7':
+                if (!employeeMenu.options[6].isDisabled) {
+                    handleDisplayAllEmployees();
+                } else {
+                    printf("\nNo employees to display!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '8':
+                if (!employeeMenu.options[7].isDisabled) {
+                    handlePayrollReport();
+                } else {
+                    printf("\nNo employee data for payroll report!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case '9':
+                if (!employeeMenu.options[8].isDisabled) {
+                    handleSaveEmployeeList();
+                } else {
+                    printf("\nNo employee data to save!\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                }
+                break;
+            case 'A':
+            case 'a':
+                handleLoadEmployeeList();
+                break;
+            case 'B':
+            case 'b':
+                return 0; // Back to main menu
+            default:
+                printf("\nInvalid option. Press any key to continue...");
+                _getch();
+                break;
+        }
+    } while (true);
+    
+    return 0;
+}
+
+/**
+ * @brief Creates a new employee list
+ */
+int handleCreateEmployeeList(void) {
+    winTermClearScreen();
+    printf("=== Create New Employee List ===\n\n");
+    
+    if (empManager.employeeListCount >= 10) {
+        printf("Maximum number of employee lists (10) reached!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    char listName[50];
+    printf("Enter name for this employee list: ");
+    if (!fgets(listName, sizeof(listName), stdin)) {
+        return -1;
+    }
+    listName[strcspn(listName, "\n")] = 0; // Remove newline
+    
+    // Create new list
+    list* newList = NULL;
+    if (createEmployeeList(&newList) != 0) {
+        printf("Failed to create employee list!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Add to manager
+    empManager.employeeLists[empManager.employeeListCount] = newList;
+    strncpy(empManager.employeeListNames[empManager.employeeListCount], listName, 49);
+    empManager.employeeListNames[empManager.employeeListCount][49] = '\0';
+    empManager.activeEmployeeList = empManager.employeeListCount;
+    empManager.employeeListCount++;
+    
+    printf("Employee list '%s' created successfully!\n", listName);
+    printf("This list is now active. Add employees to get started.\n");
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
+}
+
+/**
+ * @brief Switches the active employee list
+ */
+int handleSwitchEmployeeList(void) {
+    winTermClearScreen();
+    printf("=== Switch Active Employee List ===\n\n");
+    
+    if (empManager.employeeListCount == 0) {
+        printf("No employee lists available!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    printf("Available Employee Lists:\n");
+    for (int i = 0; i < empManager.employeeListCount; i++) {
+        printf("%d. %s (%d employees) %s\n", i + 1, 
+               empManager.employeeListNames[i],
+               empManager.employeeLists[i] ? empManager.employeeLists[i]->size : 0,
+               (i == empManager.activeEmployeeList) ? "[ACTIVE]" : "");
+    }
+    
+    printf("\nSelect list to activate (1-%d): ", empManager.employeeListCount);
+    int choice;
+    if (scanf("%d", &choice) != 1) {
+        printf("Invalid input!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    getchar(); // Clear newline
+    
+    if (choice < 1 || choice > empManager.employeeListCount) {
+        printf("Invalid choice!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    empManager.activeEmployeeList = choice - 1;
+    printf("Active employee list switched to: %s\n", empManager.employeeListNames[empManager.activeEmployeeList]);
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
+}
+
+/**
+ * @brief Adds an employee to the active list
+ */
+int handleAddEmployee(void) {
+    winTermClearScreen();
+    printf("=== Add Employee to Active List ===\n\n");
+    
+    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
+        printf("No active employee list!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    Employee* newEmployee = (Employee*)malloc(sizeof(Employee));
+    if (!newEmployee) {
+        printf("Memory allocation failed!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Initialize employee data
+    memset(newEmployee, 0, sizeof(Employee));
+    
+    if (getEmployeeDataFromUser(newEmployee) != 0) {
+        printf("Failed to get employee data. Operation cancelled.\n");
+        free(newEmployee);
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Calculate payroll information
+    calculatePayroll(newEmployee);
+    
+    if (createEmployee(newEmployee, &empManager.employeeLists[empManager.activeEmployeeList]) != 0) {
+        printf("Failed to add employee to list!\n");
+        free(newEmployee);
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    printf("\nEmployee '%s %s' added successfully to list '%s'!\n", 
+           newEmployee->personal.name.firstName, 
+           newEmployee->personal.name.lastName,
+           empManager.employeeListNames[empManager.activeEmployeeList]);
+    printf("Employee Number: %s\n", newEmployee->personal.employeeNumber);
+    printf("Net Pay: %.2f\n", newEmployee->payroll.netPay);
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
+}
+
+/**
+ * @brief Displays all employees in the active list
+ */
+int handleDisplayAllEmployees(void) {
+    winTermClearScreen();
+    printf("=== Display All Employees ===\n\n");
+    
+    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
+        printf("No active employee list!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    printf("Active List: %s\n", empManager.employeeListNames[empManager.activeEmployeeList]);
+    displayAllEmployees(empManager.employeeLists[empManager.activeEmployeeList]);
+    printf("\nPress any key to continue...");
+    _getch();
+    return 0;
+}
+
+/**
+ * @brief Generates payroll report for the active employee list
+ */
+int handlePayrollReport(void) {
+    winTermClearScreen();
+    printf("=== Payroll Report ===\n\n");
+    
+    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
+        printf("No active employee list!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    printf("Generating payroll report for: %s\n\n", empManager.employeeListNames[empManager.activeEmployeeList]);
+    
+    // Generate the payroll report file
+    char reportFilePath[512];
+    int reportResult = generatePayrollReportFile(empManager.employeeLists[empManager.activeEmployeeList], reportFilePath, sizeof(reportFilePath));
+    
+    if (reportResult > 0) {
+        printf("Successfully generated payroll report!\n");
+        printf("Report saved to: %s\n", reportFilePath);
+        printf("Processed %d employees\n", reportResult);
+    } else {
+        printf("Failed to generate payroll report.\n");
+    }
+    
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
+}
+
+/**
+ * @brief Saves the active employee list to file
+ */
+int handleSaveEmployeeList(void) {
+    winTermClearScreen();
+    printf("=== Save Employee List ===\n\n");
+    
+    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
+        printf("No active employee list to save!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    printf("Saving list: %s\n", empManager.employeeListNames[empManager.activeEmployeeList]);
+    
+    // Show existing data files
+    printf("\nExisting employee data files:\n");
+    listEmployeeDataFiles();
+    printf("\n");
+    
+    char filename[100];
+    printf("Enter filename (will be saved as 'employee_LISTNAME_TIMESTAMP.dat'): ");
+    if (!fgets(filename, sizeof(filename), stdin)) {
+        return -1;
+    }
+    filename[strcspn(filename, "\n")] = 0; // Remove newline
+    
+    // Use the custom save function
+    int savedCount = saveListWithCustomName(empManager.employeeLists[empManager.activeEmployeeList], 
+                                           filename, "employee");
+    
+    if (savedCount >= 0) {
+        printf("Successfully saved %d employee records!\n", savedCount);
+        printf("Data saved to data directory with timestamp.\n");
+    } else {
+        printf("Failed to save employee list.\n");
+    }
+    
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
+}
+
+/**
+ * @brief Loads an employee list from file
+ */
+int handleLoadEmployeeList(void) {
+    winTermClearScreen();
+    printf("=== Load Employee List ===\n\n");
+    
+    // List available employee data files
+    listEmployeeDataFiles();
+    printf("\n");
+    
+    char filename[100];
+    printf("Enter filename to load: ");
+    if (!fgets(filename, sizeof(filename), stdin)) {
+        return -1;
+    }
+    filename[strcspn(filename, "\n")] = 0; // Remove newline
+    
+    char listName[50];
+    printf("Enter name for this loaded list: ");
+    if (!fgets(listName, sizeof(listName), stdin)) {
+        return -1;
+    }
+    listName[strcspn(listName, "\n")] = 0; // Remove newline
+    
+    // Load the data
+    list* newList = loadListWithName(filename, "employee", SINGLY);
+    if (!newList) {
+        printf("Failed to load employee data from file '%s'!\n", filename);
+        printf("Make sure the file exists and is in the correct format.\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Add to manager
+    if (empManager.employeeListCount >= 10) {
+        printf("Maximum number of employee lists reached!\n");
+        destroyList(&newList, freeEmployee);
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    empManager.employeeLists[empManager.employeeListCount] = newList;
+    strncpy(empManager.employeeListNames[empManager.employeeListCount], listName, 49);
+    empManager.employeeListNames[empManager.employeeListCount][49] = '\0';
+    empManager.activeEmployeeList = empManager.employeeListCount;
+    empManager.employeeListCount++;
+    
+    printf("Employee list '%s' loaded successfully!\n", listName);
+    printf("Loaded %d employee records.\n", newList->size);
+    printf("This list is now active.\n");
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
+} 
