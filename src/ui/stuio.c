@@ -150,10 +150,10 @@ int handleSearchStudent(const list* studentList) {
     winTermClearScreen();
     
     Menu searchMenu = {1, "Search Student", (MenuOption[]){
-        {'1', "Search by Student Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Search by Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Display All Students", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+        {'1', "Search by Student Number", "Find student using their ID number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Name", "Find student by first or last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Display All Students", "Show complete list of all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Back to Main Menu", "Return to the student management menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
     }, 4};
     
     char choice = initMenu(&searchMenu);

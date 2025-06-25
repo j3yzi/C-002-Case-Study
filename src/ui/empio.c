@@ -103,10 +103,10 @@ int handleSearchEmployee(const list* employeeList) {
     winTermClearScreen();
     
     Menu searchMenu = {1, "Search Employee", (MenuOption[]){
-        {'1', "Search by Employee Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Search by Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Display All Employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+        {'1', "Search by Employee Number", "Find employee using their ID number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Name", "Find employee by first or last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Display All Employees", "Show complete list of all employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Back to Main Menu", "Return to the employee management menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
     }, 4};
     
     char choice = initMenu(&searchMenu);

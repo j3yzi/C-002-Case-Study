@@ -19,11 +19,12 @@ StudentManager stuManager;
 
 // Main menu definition
 Menu mainMenu = {1, "PUP Information Management System", (MenuOption[]){
-    {'1', "Employee Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'2', "Student Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'3', "System Statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'4', "Configuration Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'5', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 5
+    {'1', "Employee Management", "Manage employee records and payroll information", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'2', "Student Management", "Handle student enrollment and academic records", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'3', "Course Management", "Manage course information and academic programs", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'4', "System Statistics", "View system usage and performance statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'5', "Configuration Settings", "Modify system configuration and settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'6', "Exit", "Close the application and return to system", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 6
 };
 
 /**
@@ -104,9 +105,18 @@ void checkStates(void) {
  */
 static int checkActiveList(int isActiveList, int listSize, const char* errorMessage) {
     if (!isActiveList) {
-        printf("\n%s\n", errorMessage ? errorMessage : "No active list!");
-        printf("Press any key to continue...");
-        _getch();
+        winTermClearScreen();
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                            ERROR                                  ║\n");
+        printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+        printf("║                                                                   ║\n");
+        printf("║  %-63s  ║\n", errorMessage ? errorMessage : "No active list!");
+        printf("║                                                                   ║\n");
+        printf("║  Please create or load a list first before performing this       ║\n");
+        printf("║  operation.                                                       ║\n");
+        printf("║                                                                   ║\n");
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        waitForKeypress("\nPress any key to continue...");
         return 0;
     }
     return 1;
@@ -191,19 +201,6 @@ int menuLoop(void) {
     
     do {
         checkStates();
-        winTermClearScreen();
-        
-        // Display system status
-        printf("=== PUP Information Management System ===\n");
-        printf("Employee Lists: %d | Active: %s\n", 
-               empManager.employeeListCount,
-               (empManager.activeEmployeeList >= 0) ? 
-               empManager.employeeListNames[empManager.activeEmployeeList] : "None");
-        printf("Student Lists: %d | Active: %s\n\n", 
-               stuManager.studentListCount,
-               (stuManager.activeStudentList >= 0) ? 
-               stuManager.studentListNames[stuManager.activeStudentList] : "None");
-        
         choice = initMenu(&mainMenu);
         
         switch(choice) {
@@ -223,11 +220,12 @@ int menuLoop(void) {
                 runConfigurationManagement();
                 break;
             case '6':
+                winTermClearScreen();
                 printf("\nExiting PUP Information Management System...\n");
+                printf("Thank you for using the system!\n");
                 return 0;
             default:
-                printf("\nInvalid option. Press any key to continue...");
-                _getch();
+                // This should not happen as initMenu handles invalid options
                 break;
         }
     } while (1);
@@ -240,52 +238,57 @@ int menuLoop(void) {
  */
 void displaySystemStatistics(void) {
     winTermClearScreen();
-    printf("=== System Statistics ===\n\n");
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    printf("║                         SYSTEM STATISTICS                        ║\n");
+    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+    printf("║                                                                   ║\n");
+    printf("║  EMPLOYEE MANAGEMENT:                                             ║\n");
+    printf("║    Total Employee Lists: %-41d║\n", empManager.employeeListCount);
     
-    printf("EMPLOYEE MANAGEMENT:\n");
-    printf("Total Employee Lists: %d\n", empManager.employeeListCount);
     int totalEmployees = 0;
     for (int i = 0; i < empManager.employeeListCount; i++) {
         if (empManager.employeeLists[i]) {
             int count = empManager.employeeLists[i]->size;
             totalEmployees += count;
-            printf("  - %s: %d employees\n", empManager.employeeListNames[i], count);
+            printf("║      - %-30s: %-15d║\n", empManager.employeeListNames[i], count);
         }
     }
-    printf("Total Employees: %d\n", totalEmployees);
+    printf("║    Total Employees: %-42d║\n", totalEmployees);
     
     if (empManager.activeEmployeeList >= 0) {
-        printf("Active Employee List: %s\n", empManager.employeeListNames[empManager.activeEmployeeList]);
+        printf("║    Active List: %-46s║\n", empManager.employeeListNames[empManager.activeEmployeeList]);
     } else {
-        printf("Active Employee List: None\n");
+        printf("║    Active List: %-46s║\n", "None");
     }
-    printf("\n");
+    printf("║                                                                   ║\n");
     
-    printf("STUDENT MANAGEMENT:\n");
-    printf("Total Student Lists: %d\n", stuManager.studentListCount);
+    printf("║  STUDENT MANAGEMENT:                                              ║\n");
+    printf("║    Total Student Lists: %-42d║\n", stuManager.studentListCount);
+    
     int totalStudents = 0;
     for (int i = 0; i < stuManager.studentListCount; i++) {
         if (stuManager.studentLists[i]) {
             int count = stuManager.studentLists[i]->size;
             totalStudents += count;
-            printf("  - %s: %d students\n", stuManager.studentListNames[i], count);
+            printf("║      - %-30s: %-15d║\n", stuManager.studentListNames[i], count);
         }
     }
-    printf("Total Students: %d\n", totalStudents);
+    printf("║    Total Students: %-43d║\n", totalStudents);
     
     if (stuManager.activeStudentList >= 0) {
-        printf("Active Student List: %s\n", stuManager.studentListNames[stuManager.activeStudentList]);
+        printf("║    Active List: %-46s║\n", stuManager.studentListNames[stuManager.activeStudentList]);
     } else {
-        printf("Active Student List: None\n");
+        printf("║    Active List: %-46s║\n", "None");
     }
-    printf("\n");
+    printf("║                                                                   ║\n");
     
-    printf("OVERALL STATISTICS:\n");
-    printf("Total Records: %d\n", totalEmployees + totalStudents);
-    printf("Total Lists: %d\n", empManager.employeeListCount + stuManager.studentListCount);
+    printf("║  OVERALL STATISTICS:                                              ║\n");
+    printf("║    Total Records: %-44d║\n", totalEmployees + totalStudents);
+    printf("║    Total Lists: %-46d║\n", empManager.employeeListCount + stuManager.studentListCount);
+    printf("║                                                                   ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     
-    printf("\nPress any key to continue...");
-    _getch();
+    waitForKeypress("\nPress any key to continue...");
 }
 
 /**
@@ -304,17 +307,17 @@ int runEmployeeManagement(void) {
     }
     
     Menu employeeMenu = {1, menuTitle, (MenuOption[]){
-        {'1', "Create Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Switch Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Add Employee", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Edit Employee", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Delete Employee", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Search Employee", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'7', "Display All Employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'8', "Payroll Report", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'9', "Save Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'A', "Load Employee List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
+        {'1', "Create Employee List", "Initialize a new employee database", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Switch Employee List", "Change to a different employee list", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Add Employee", "Add a new employee to the current list", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Edit Employee", "Modify existing employee information", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Delete Employee", "Remove an employee from the database", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Search Employee", "Find employees by number or name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Display All Employees", "Show complete list of all employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'8', "Payroll Report", "Generate payroll calculations and reports", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'9', "Save Employee List", "Save current list to file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'A', "Load Employee List", "Load employee data from saved file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'B', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
     
     do {
         // Update menu title with current active list info before displaying menu
@@ -351,28 +354,22 @@ int runEmployeeManagement(void) {
                 }
                 break;
             }
-            case '5':
-                if (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]) {
-                    // Call function from empio.c
+            case '5': {
+                int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+                if (checkActiveList(hasActiveList, 0, "No active employee list!")) {
                     extern int handleDeleteEmployee(list* employeeList);
                     handleDeleteEmployee(empManager.employeeLists[empManager.activeEmployeeList]);
-                } else {
-                    printf("\nNo active employee list!\n");
-                    printf("Press any key to continue...");
-                    _getch();
                 }
                 break;
-            case '6':
-                if (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]) {
-                    // Call function from empio.c
+            }
+            case '6': {
+                int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+                if (checkActiveList(hasActiveList, 0, "No active employee list!")) {
                     extern int handleSearchEmployee(const list* employeeList);
                     handleSearchEmployee(empManager.employeeLists[empManager.activeEmployeeList]);
-                } else {
-                    printf("\nNo active employee list!\n");
-                    printf("Press any key to continue...");
-                    _getch();
                 }
                 break;
+            }
             case '7':
                 handleDisplayAllEmployees();
                 break;
@@ -415,18 +412,18 @@ int runStudentManagement(void) {
     }
     
     Menu studentMenu = {1, menuTitle, (MenuOption[]){
-        {'1', "Create Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Switch Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Add Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Edit Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Delete Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Search Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'7', "Display All Students", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'8', "Sort Students by Grade", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'9', "Student Report", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'S', "Save Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'L', "Load Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 12};
+        {'1', "Create Student List", "Initialize a new student database", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Switch Student List", "Change to a different student list", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Add Student", "Enroll a new student in the system", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Edit Student", "Modify existing student information", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Delete Student", "Remove a student from the database", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Search Student", "Find students by number or name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Display All Students", "Show complete list of all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'8', "Sort Students by Grade", "Arrange students by academic performance", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'9', "Student Report", "Generate academic reports and statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'S', "Save Student List", "Save current list to file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'L', "Load Student List", "Load student data from saved file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'B', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 12};
     
     do {
         // Update menu title with current active list info before displaying menu
@@ -455,39 +452,30 @@ int runStudentManagement(void) {
             case '3':
                 handleAddStudent();
                 break;
-            case '4':
-                if (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]) {
-                    // Call function from stuio.c
+            case '4': {
+                int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+                if (checkActiveList(hasActiveList, 0, "No active student list!")) {
                     extern int handleEditStudent(list* studentList);
                     handleEditStudent(stuManager.studentLists[stuManager.activeStudentList]);
-                } else {
-                    printf("\nNo active student list!\n");
-                    printf("Press any key to continue...");
-                    _getch();
                 }
                 break;
-            case '5':
-                if (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]) {
-                    // Call function from stuio.c
+            }
+            case '5': {
+                int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+                if (checkActiveList(hasActiveList, 0, "No active student list!")) {
                     extern int handleDeleteStudent(list* studentList);
                     handleDeleteStudent(stuManager.studentLists[stuManager.activeStudentList]);
-                } else {
-                    printf("\nNo active student list!\n");
-                    printf("Press any key to continue...");
-                    _getch();
                 }
                 break;
-            case '6':
-                if (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]) {
-                    // Call function from stuio.c
+            }
+            case '6': {
+                int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+                if (checkActiveList(hasActiveList, 0, "No active student list!")) {
                     extern int handleSearchStudent(const list* studentList);
                     handleSearchStudent(stuManager.studentLists[stuManager.activeStudentList]);
-                } else {
-                    printf("\nNo active student list!\n");
-                    printf("Press any key to continue...");
-                    _getch();
                 }
                 break;
+            }
             case '7':
                 handleDisplayAllStudents();
                 break;
@@ -1201,11 +1189,11 @@ int runConfigurationManagement(void) {
     getConfigPath(configPath, sizeof(configPath));
     
     Menu configMenu = {1, "Configuration Settings", (MenuOption[]){
-        {'1', "Update Payroll Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Update Academic Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Save Configuration", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Reset to Default Configuration", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 5
+        {'1', "Update Payroll Settings", "Modify payroll calculation parameters", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Update Academic Settings", "Change grading and academic thresholds", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Save Configuration", "Save current settings to configuration file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Reset to Default Configuration", "Restore all settings to factory defaults", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 5
     };
     
     do {

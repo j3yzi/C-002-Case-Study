@@ -49,6 +49,7 @@ typedef struct {
 typedef struct {
     char key;
     const char* text;
+    const char* description; // Description text to display in the side box
     bool isDisabled;
     bool isSelected;
     int highlightTextColor; // Color for highlighting the option
@@ -144,9 +145,9 @@ void winTermGetCursorPosition(winTermCursorPos* position);
 void winTermResetColors();
 
 // Menu creation helper
-static inline MenuOption createMenuOption(char key, const char* text, bool disabled) {
+static inline MenuOption createMenuOption(char key, const char* text, const char* description, bool disabled) {
     return (MenuOption){
-        key, text, disabled, false, 
+        key, text, description, disabled, false, 
         9, 0,  // highlight colors
         7, 0,  // normal colors
         8, 0,  // disabled colors

@@ -53,15 +53,15 @@ int runCourseManagement(void) {
     }
     
     Menu courseMenu = {1, menuTitle, (MenuOption[]){
-        {'1', "Create New Catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Add Course", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Edit Course", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Delete Course", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Search Courses", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Display All Courses", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'7', "Save Catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'8', "Load Catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'9', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 9
+        {'1', "Create New Catalog", "Initialize a new course catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Add Course", "Add a new course to the catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Edit Course", "Modify existing course information", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Delete Course", "Remove a course from the catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Search Courses", "Find courses by code or title", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Display All Courses", "Show complete course catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Save Catalog", "Save current catalog to file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'8', "Load Catalog", "Load course data from saved file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'9', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 9
     };
     
     do {

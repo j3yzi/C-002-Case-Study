@@ -38,88 +38,206 @@ void appDisplayMenu(const Menu* menu) {
     }
     
     winTermClearScreen();
-
-    // Display header with dynamic width based on title length
-    int titleWidth = 0;
     
-    // Calculate the maximum width needed for the title
-    if (menu->name) {
-        const char* ptr = menu->name;
-        int currentLineWidth = 0;
-        
-        while (*ptr) {
-            if (*ptr == '\n') {
-                // Check if this line is wider than previous ones
-                if (currentLineWidth > titleWidth) {
-                    titleWidth = currentLineWidth;
-                }
-                currentLineWidth = 0;
-            } else {
-                currentLineWidth++;
-            }
-            ptr++;
-        }
-        
-        // Check the last line
-        if (currentLineWidth > titleWidth) {
-            titleWidth = currentLineWidth;
-        }
-    }
+    // Force the screen buffer to be flushed completely before redrawing
+    fflush(stdout);
     
-    // Ensure minimum width
-    if (titleWidth < 20) {
-        titleWidth = 20;
-    }
+    // Set console to UTF-8 encoding (in a more robust way)
+    SetConsoleOutputCP(65001); // Set output to UTF-8 (CP_UTF8)
     
-    // Add some padding
-    titleWidth += 4;
+    // Box dimensions matching menuui.c style
+    int box1w = 42; // menu box width
+    int box2w = 28; // side box width (increased to accommodate longer descriptions)
     
-    // Print top separator
-    printf("%s", UI_HEADER);
-    for (int i = 0; i < titleWidth; i++) {
-        printf("=");
-    }
-    printf("\n");
+    // Title text
+    char title1[] = "MENU";
+    char title2[] = "KEYS";
     
-    // Print title (supporting multi-line titles)
-    if (menu->name) {
-        const char* ptr = menu->name;
-        while (*ptr) {
-            printf("%c", *ptr);
-            ptr++;
-        }
-        printf("\n");
-    } else {
-        printf("Menu\n");
-    }
+    // Calculate padding for centered titles
+    int pad1 = (box1w - strlen(title1)) / 2;
+    int pad2 = (box2w - strlen(title2)) / 2;
     
-    // Print bottom separator
-    for (int i = 0; i < titleWidth; i++) {
-        printf("=");
-    }
-    printf("\n\n%s", TXT_RESET);
-    
-    // Print menu separator
-    for (int i = 0; i < titleWidth; i++) {
-        printf("~");
-    }
-    printf("\n");
-
+    // Get selected menu option for description
+    int selectedIndex = 0;
     for (int i = 0; i < menu->optionCount; i++) {
-        if (menu->options[i].isDisabled) {
-            appMenuSetColor(menu->options[i].disabledTextColor, menu->options[i].disabledBgColor);
-            printf(" %s (Disabled)\n", menu->options[i].text);
-            continue;
-        } else if (menu->options[i].isSelected) {
-            appMenuSetColor(menu->options[i].highlightTextColor, menu->options[i].highlightBgColor);
-            printf(">> %s\n", menu->options[i].text);
-        } else {
-            appMenuSetColor(menu->options[i].textColor, menu->options[i].bgColor);
-            printf(" %s\n", menu->options[i].text);
+        if (menu->options[i].isSelected) {
+            selectedIndex = i;
+            break;
         }
     }
     
-    winTermResetColors(); // Reset colors to default
+    // Navigation shortcuts
+    char shortcuts[3][30] = {
+        " ↑↓     Move selection ",
+        "Enter   Select",
+        " ESC    Exit"
+    };
+    
+    // Get description from selected option, with fallback
+    const char* description = menu->options[selectedIndex].description;
+    if (!description || strlen(description) == 0) {
+        description = "Select this option to proceed.";
+    }
+    
+    // Split description into two lines with simple, robust wrapping
+    char line1[100] = "";
+    char line2[100] = "";
+    int maxlinelen = 26; // Increased width to match wider side box
+    
+    // Initialize both lines to empty
+    line1[0] = '\0';
+    line2[0] = '\0';
+    
+    if (strlen(description) <= maxlinelen) {
+        // Description fits in one line
+        strcpy(line1, description);
+    } else {
+        // Find a good split point
+        int splitPos = -1;
+        
+        // Look for the last space before or at maxlinelen
+        for (int i = maxlinelen; i >= 8; i--) {
+            if (i < strlen(description) && description[i] == ' ') {
+                splitPos = i;
+                break;
+            }
+        }
+        
+        if (splitPos > 0) {
+            // Split at the space
+            strncpy(line1, description, splitPos);
+            line1[splitPos] = '\0';
+            
+            // Rest goes to second line
+            strcpy(line2, description + splitPos + 1);
+            
+            // If second line is too long, truncate it
+            if (strlen(line2) > maxlinelen) {
+                line2[maxlinelen - 3] = '\0';
+                strcat(line2, "...");
+            }
+        } else {
+            // No good split point, just truncate
+            strncpy(line1, description, maxlinelen - 3);
+            line1[maxlinelen - 3] = '\0';
+            strcat(line1, "...");
+        }
+    }
+    
+    // Top boxes borders
+    printf("╔");
+    for (int i = 0; i <= box1w; i++) 
+        printf("═");
+    printf("╗");
+
+    printf("╔");
+    for (int i = 0; i <= box2w; i++) 
+        printf("═");
+    printf("╗\n");
+
+    // Box titles
+    printf("║%*s%s%*s ║", pad1, "", title1, pad1, " "); // menu
+    printf("║ %*s%s%*s║\n", pad2, " ", title2, box2w - pad2 - strlen(title2), ""); // keys
+
+    // Title dividers
+    printf("╠");
+    for (int i = 0; i <= box1w; i++) 
+        printf("═");
+    printf("╣");
+
+    printf("╠");
+    for (int i = 0; i <= box2w; i++) 
+        printf("═");
+    printf("╣\n");
+
+    // Display menu options - ensure we display exactly the number of options in the menu
+    int maxRows = menu->optionCount > 8 ? menu->optionCount : 8; // Minimum 8 rows for side boxes
+    
+    for (int i = 0; i < maxRows; i++) {
+        // Left menu box border and content
+        printf("║");
+        
+        if (i < menu->optionCount) {
+            // Display actual menu option with proper spacing
+            if (menu->options[i].isDisabled) {
+                appMenuSetColor(menu->options[i].disabledTextColor, menu->options[i].disabledBgColor);
+                printf("   %-38s", menu->options[i].text);
+            } else if (menu->options[i].isSelected) {
+                appMenuSetColor(menu->options[i].highlightTextColor, menu->options[i].highlightBgColor);
+                printf(" → %-37s", menu->options[i].text);
+            } else {
+                appMenuSetColor(menu->options[i].textColor, menu->options[i].bgColor);
+                printf("   %-38s", menu->options[i].text);
+            }
+            winTermResetColors();
+        } else {
+            // Empty row for side box alignment
+            printf("%-41s", "");
+        }
+
+        // Right side box content based on row position
+        if (i == 3) { // Bottom border of keys box
+            printf(" ║╚");
+            for (int j = 0; j <= box2w; j++)
+                printf("═"); 
+            printf("╝\n");
+        }
+        else if (i == 4) { // Top border of description box
+            printf(" ║╔");
+            for (int j = 0; j <= box2w; j++)
+                printf("═"); 
+            printf("╗\n");
+        }
+        else if (i < 3) {
+            // Keys box content - ensure perfect box alignment
+            printf(" ║║ %-*s║\n", box2w - 1, shortcuts[i]);
+        }
+        else if (i == 5) {
+            // First line of description
+            printf(" ║║ %-*s║\n", box2w - 1, line1);
+        }
+        else if (i == 6) {
+            // Second line of description
+            printf(" ║║ %-*s║\n", box2w - 1, line2);
+        }
+        else if (i == 7) {
+            // Empty description line
+            printf(" ║║ %-*s║\n", box2w - 1, "");
+        }
+        else {
+            // Empty right side for additional menu rows
+            printf(" ║║ %-*s║\n", box2w - 1, "");
+        }
+    }
+
+    // Bottom borders for menu box
+    printf("╚");
+    for (int i = 0; i <= box1w; i++) 
+        printf("═");
+    printf("╝");
+
+    printf("╚");
+    for (int i = 0; i <= box2w; i++) 
+        printf("═");
+    printf("╝\n");
+
+    // Bottom information box - sized to fit error messages
+    int fullboxw = box1w + box2w + 4; // Adjusted for proper spacing
+    printf("╔");
+    for (int i = 0; i < fullboxw; i++) 
+        printf("═");
+    printf("╗\n");
+
+    // Make space for longer messages with proper padding
+    printf("║%-*s║\n", fullboxw, " ");
+
+    printf("╚");
+    for (int i = 0; i < fullboxw; i++) 
+        printf("═");
+    printf("╝\n");
+    
+    // Force flush of all content to ensure complete rendering
+    fflush(stdout);
 }
 
 /**
@@ -133,60 +251,44 @@ static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y
     // Validate parameters
     if (!menu || optionIndex < 0 || optionIndex >= menu->optionCount) return;
     
-    winTermSetCursor(x, y);
-    winTermClearLine();
+    // Position cursor at the start of the menu option area (after "║")
+    winTermSetCursor(1, y);
+    
+    // Start with the box border
+    printf("║");
     
     MenuOption* option = &menu->options[optionIndex];
     
     if (option->isDisabled) {
         appMenuSetColor(option->disabledTextColor, option->disabledBgColor);
-        printf(" %s (Disabled)", option->text);
+        printf("   %-38s", option->text);
     } else if (option->isSelected) {
         appMenuSetColor(option->highlightTextColor, option->highlightBgColor);
-        printf(">> %s", option->text);
+        printf(" → %-37s", option->text);
     } else {
         appMenuSetColor(option->textColor, option->bgColor);
-        printf(" %s", option->text);
+        printf("   %-38s", option->text);
     }
-    
-    // Reset to default colors
     winTermResetColors();
+    
+    // Add the right border to ensure the box stays intact
+    printf(" ║");
 }
 
 /**
- * @brief Calculates the number of header lines in a menu based on the standard format
+ * @brief Calculates the number of header lines in a menu based on the box-drawing format
  * @param menu A pointer to the Menu struct
  * @return The number of header lines
  */
 static int calculateMenuHeaderLines(const Menu* menu) {
     // If menu is NULL, return a default value
-    if (!menu) return 5;
+    if (!menu) return 3;
     
-    // Standard menu format components:
+    // Box-drawing menu format components:
     int headerLines = 0;
-    headerLines += 1; // "====" separator line
-    
-    // Count lines in the menu title (if it contains newlines)
-    if (menu->name) {
-        int titleLines = 1; // At least one line
-        const char* ptr = menu->name;
-        
-        // Count newlines in the title
-        while (*ptr) {
-            if (*ptr == '\n') {
-                titleLines++;
-            }
-            ptr++;
-        }
-        
-        headerLines += titleLines;
-    } else {
-        headerLines += 1; // Default title line if no title
-    }
-    
-    headerLines += 1; // "====" separator line
-    headerLines += 1; // Blank line
-    headerLines += 1; // "~~~~~" separator line
+    headerLines += 1; // Top border "╔═══╗╔═══╗"
+    headerLines += 1; // Title line "║MENU║║KEYS║"
+    headerLines += 1; // Separator "╠═══╣╠═══╣"
     
     return headerLines;
 }
@@ -204,25 +306,76 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     if (oldSelection < 0 || oldSelection >= menu->optionCount) return;
     if (newSelection < 0 || newSelection >= menu->optionCount) return;
     
-    winTermCursorPos pos;
-    winTermGetCursorPosition(&pos);
+    // Update the menu options selection state
+    menu->options[oldSelection].isSelected = false;
+    menu->options[newSelection].isSelected = true;
     
-    // Calculate the Y positions dynamically based on the menu header format
+    // Calculate positioning for the menu options
     int headerLines = calculateMenuHeaderLines(menu);
     int menuStartY = headerLines;
-    int oldY = menuStartY + oldSelection;
-    int newY = menuStartY + newSelection;
     
-    // Update the old selection (removing the selection indicator)
-    menu->options[oldSelection].isSelected = false;
-    appDisplayMenuOption(menu, oldSelection, 0, oldY);
+    // Update only the options that changed by directly positioning the cursor
+    // and redrawing just those specific lines
+    appDisplayMenuOption(menu, oldSelection, 1, menuStartY + oldSelection);
+    appDisplayMenuOption(menu, newSelection, 1, menuStartY + newSelection);
     
-    // Update the new selection (adding the selection indicator)
-    menu->options[newSelection].isSelected = true;
-    appDisplayMenuOption(menu, newSelection, 0, newY);
+    // Update the description box when selection changes
+    const char* description = menu->options[newSelection].description;
+    if (!description || strlen(description) == 0) {
+        description = "Select this option to proceed.";
+    }
     
-    // Restore cursor position (move it below the menu for cleaner appearance)
-    winTermSetCursor(0, menuStartY + menu->optionCount + 2);
+    // Split description into two lines with simple, robust wrapping
+    char line1[100] = "";
+    char line2[100] = "";
+    int maxlinelen = 26;
+    
+    // Initialize both lines to empty
+    line1[0] = '\0';
+    line2[0] = '\0';
+    
+    if (strlen(description) <= maxlinelen) {
+        // Description fits in one line
+        strcpy(line1, description);
+    } else {
+        // Find a good split point
+        int splitPos = -1;
+        
+        // Look for the last space before or at maxlinelen
+        for (int i = maxlinelen; i >= 8; i--) {
+            if (i < strlen(description) && description[i] == ' ') {
+                splitPos = i;
+                break;
+            }
+        }
+        
+        if (splitPos > 0) {
+            // Split at the space
+            strncpy(line1, description, splitPos);
+            line1[splitPos] = '\0';
+            
+            // Rest goes to second line
+            strcpy(line2, description + splitPos + 1);
+            
+            // If second line is too long, truncate it
+            if (strlen(line2) > maxlinelen) {
+                line2[maxlinelen - 3] = '\0';
+                strcat(line2, "...");
+            }
+        } else {
+            // No good split point, just truncate
+            strncpy(line1, description, maxlinelen - 3);
+            line1[maxlinelen - 3] = '\0';
+            strcat(line1, "...");
+        }
+    }
+    
+    // Update description box content (rows 5 and 6)
+    winTermSetCursor(43, menuStartY + 5);
+    printf("║ %-*s║", 26, line1);
+    
+    winTermSetCursor(43, menuStartY + 6);
+    printf("║ %-*s║", 26, line2);
 }
 
 /**
@@ -233,9 +386,20 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
 static void appDisplayErrorMessage(const char* message, int errorY) {
     if (!message) return;
     
-    winTermSetCursor(0, errorY);
+    // Position cursor at the bottom information box
+    winTermSetCursor(1, errorY);
+    
+    // Clear just this line to prepare for the error message
     winTermClearLine();
-    printf("%s⚠ %s%s", UI_ERROR, message, TXT_RESET);
+    
+    // Get maximum display width for the message
+    int box1w = 42; // menu box width
+    int box2w = 28; // side box width
+    int fullboxw = box1w + box2w + 4; // Full width with proper spacing
+    
+    // Format message to fit within the box with proper padding
+    // Format: ║ ⚠ Error message... ║
+    printf("║ ⚠ %-*s ║", fullboxw - 5, message);
 }
 
 /**
@@ -243,8 +407,19 @@ static void appDisplayErrorMessage(const char* message, int errorY) {
  * @param errorY The Y position where the error message is displayed.
  */
 static void appClearErrorMessage(int errorY) {
-    winTermSetCursor(0, errorY);
+    // Position cursor at the error message line
+    winTermSetCursor(1, errorY);
+    
+    // Clear the entire line using winTermClearLine function
     winTermClearLine();
+    
+    // Get maximum display width for the cleared space
+    int box1w = 42; // menu box width
+    int box2w = 28; // side box width
+    int fullboxw = box1w + box2w + 3; // Full width minus borders and spacing
+    
+    // Redraw the box border characters
+    printf("║%-*s║", fullboxw, " ");
 }
 
 /**
@@ -267,15 +442,13 @@ char initMenu(Menu* m) {
         return 0;
     }
     
-    // Find the first non-disabled option for initial selection
-    int selected = 0;
-    
-    // Reset all selections first
+    // Ensure all options are marked as not selected initially
     for (int i = 0; i < m->optionCount; i++) {
         m->options[i].isSelected = false;
     }
     
-    // Find first available (non-disabled) option
+    // Find the first non-disabled option for initial selection
+    int selected = 0;
     while (selected < m->optionCount && m->options[selected].isDisabled) {
         selected++;
     }
@@ -285,27 +458,27 @@ char initMenu(Menu* m) {
         selected = 0;
     }
     
-    // Mark the selected option as selected for highlighting
-    if (selected < m->optionCount) {
-        m->options[selected].isSelected = true;
-    }
+    // Mark only the selected option as selected for highlighting
+    m->options[selected].isSelected = true;
 
     // Initial menu display (only once!)
     appMenuSetColor(7, 0);
+    winTermClearScreen(); // Clear once at the beginning
     appDisplayMenu(m);
     
     int key;
     char errorMessage[100] = "";
     int showError = 0;
-    int needsFullRedraw = 0;
+    int needsFullRedraw = 0; // Only used when absolutely necessary
     
     // Calculate error message position to match menu positioning
     int headerLines = calculateMenuHeaderLines(m);
     int menuStartY = headerLines;
-    int errorY = menuStartY + m->optionCount + 2; // After menu items
+    int maxRows = m->optionCount > 8 ? m->optionCount : 8;
+    int errorY = menuStartY + maxRows + 3; // Position in the bottom information box
 
     while (true) {
-        // Only redraw completely if needed
+        // Only redraw completely if needed (rarely should be needed)
         if (needsFullRedraw) {
             appMenuSetColor(7, 0);
             appDisplayMenu(m);
@@ -339,7 +512,7 @@ char initMenu(Menu* m) {
             }
         }
 
-        // Handle arrow keys - use selective update for smooth navigation
+        // Handle arrow keys - use targeted updates for efficient navigation
         if (key == 0 || key == -32 || key == 224) {
             key = _getch(); // Get the actual key code
             
@@ -365,8 +538,10 @@ char initMenu(Menu* m) {
                     continue;
                 }
                 
-                // Clear any previous error message and update selection
+                // Clear any previous error message
                 appClearErrorMessage(errorY);
+                
+                // Update only the changed menu items (targeted update!)
                 appUpdateMenuSelection(m, oldSelected, selected);
             }
             else if (key == 80 || key == 77) { // Down/Right arrow
@@ -391,8 +566,10 @@ char initMenu(Menu* m) {
                     continue;
                 }
                 
-                // Clear any previous error message and update selection
+                // Clear any previous error message
                 appClearErrorMessage(errorY);
+                
+                // Update only the changed menu items (targeted update!)
                 appUpdateMenuSelection(m, oldSelected, selected);
             }
             // Continue to skip the invalid key check for arrow keys
@@ -421,8 +598,18 @@ char initMenu(Menu* m) {
             return m->options[selected].key; // Return the key of the selected option
         }
         
+        // Handle Escape key to exit menu if needed
+        if (key == 27) { // ESC key
+            // If there's a default exit option (usually the last one), return that
+            if (m->optionCount > 0) {
+                char exitKey = m->options[m->optionCount-1].key;
+                return exitKey;
+            }
+            return 0; // No options, just return 0
+        }
+        
         // Handle invalid key press
-        if (key != 0 && key != -32 && key != 224 && key != 13) {
+        if (key != 0 && key != -32 && key != 224 && key != 13 && key != 27) {
             // Check if it's not a valid menu option key
             int validKey = 0;
             for (int i = 0; i < m->optionCount; i++) {

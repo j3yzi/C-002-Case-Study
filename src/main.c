@@ -48,12 +48,12 @@ int main(void)
     
     // Update the main menu to include course management
     mainMenu = (Menu){1, "PUP Information Management System", (MenuOption[]){
-        {'1', "Employee Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Student Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Course Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "System Statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Configuration Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 6
+        {'1', "Employee Management", "Manage employee records and payroll information", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Student Management", "Handle student enrollment and academic records", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Course Management", "Create and manage course catalogs and schedules", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "System Statistics", "View system usage and performance statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Configuration Settings", "Modify system configuration and settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Exit", "Close the application and return to system", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 6
     };
     
     int result = menuLoop(); // Start the main menu loop
