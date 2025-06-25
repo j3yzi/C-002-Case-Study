@@ -813,6 +813,31 @@ void displayEmployee(const Employee* emp) {  // Protected from modification
 }
 ```
 
+#### **❌ Unsafe: Casting Away `const`**
+Sometimes, you might encounter legacy functions that don't accept `const` pointers, or you might be tempted to modify a `const` variable. Casting away the `const` qualifier is possible but dangerous.
+
+```c
+// From include/src/menu.c - A risky cast
+const char* description = menu->options[newSelection].description;
+char *full = (char*)description; // Casts away const!
+
+// This is done to use string functions that modify the string,
+// but it breaks the promise that the original data won't be changed.
+// This can lead to undefined behavior if the original data was in read-only memory.
+```
+
+#### **✅ Correct: Avoiding `const` Casts**
+The best practice is to avoid casting away `const`. If you need to modify data, the function parameter should not be `const` in the first place. If you're working with `const` data, use functions and techniques that respect its immutability.
+
+```c
+// A safer approach for string manipulation
+const char* original = "this is a constant string";
+char buffer[100];
+strncpy(buffer, original, sizeof(buffer) - 1);
+buffer[sizeof(buffer) - 1] = '\0';
+// Now manipulate the 'buffer', not the original constant string.
+```
+
 ---
 
 ## 📋 Quick Reference Table

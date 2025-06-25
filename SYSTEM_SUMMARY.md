@@ -341,16 +341,33 @@ CS=Computer Science
 
 ### 1. **Menu System Architecture**
 
-#### Main Menu Structure
+The system features a highly interactive, terminal-based user interface with a modern, box-drawing design for clarity and improved user experience.
+
+#### Main Menu Structure (Visual Representation)
 ```
-PUP Information Management System
-├── 1. Employee Management
-├── 2. Student Management  
-├── 3. Course Management
-├── 4. System Statistics
-├── 5. Configuration Settings
-└── 6. Exit
+╔═════════════════════════════════════════╗╔════════════════════════════════╗
+║                   MENU                  ║║              KEYS              ║
+╠═════════════════════════════════════════╣╠════════════════════════════════╣
+║   →  1. Employee Management             ║║  ↑↓     Move selection         ║
+║      2. Student Management              ║║  Enter   Select                ║
+║      3. Course Management               ║║  ESC    Exit                   ║
+║      4. System Statistics               ║╚════════════════════════════════╝
+║      5. Configuration Settings          ║╔════════════════════════════════╗
+║      6. Exit                            ║║ Manage employee records and    ║
+║                                         ║║ payroll information            ║
+║                                         ║║                                ║
+║                                         ║╚════════════════════════════════╝
+╚═════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════╗
+║ ⚠ Invalid option 'x'. Please select a valid menu option.                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
 ```
+
+- **Interactive Navigation**: Users can navigate using arrow keys (`↑`/`↓`), which highlights the current selection.
+- **Contextual Information**: A side panel displays keyboard shortcuts and a detailed description of the currently selected menu option.
+- **Error Display**: A dedicated area at the bottom shows feedback and error messages without disrupting the menu layout.
+- **State-Aware Options**: Menu options are dynamically enabled or disabled based on the application's state (e.g., "Edit Employee" is disabled if no employee list is active).
+
 
 #### Employee Management Submenu
 - Create Employee List

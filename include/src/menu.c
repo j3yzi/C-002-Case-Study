@@ -46,11 +46,11 @@ void appDisplayMenu(const Menu* menu) {
     // Set console to UTF-8 encoding (in a more robust way)
     SetConsoleOutputCP(65001); // Set output to UTF-8 (CP_UTF8)
     
-    // Box dimensions - increased side box width for better description display
+    // Box dimensions - standardized width across all menu functions
     char title1[] = "MENU";
     char title2[] = "KEYS";
     int box1w = 43; // menu box width (including borders)
-    int box2w = 34; // side box width (including borders)
+    int box2w = 32; // side box width (including borders)
     int pad1 = (box1w - strlen(title1)) / 2; // padding for menu box
     int pad2 = (box2w - strlen(title2)) / 2; // padding for side box
 
@@ -76,17 +76,23 @@ void appDisplayMenu(const Menu* menu) {
         description = "Select this option to proceed.";
     }
     
-    // Split description into two lines exactly like menuui.c
+    // Split description into two lines with better text fitting
     char *full = (char*)description;
-    int maxlinelen = box2w - 2; // setting max characters of description in first line
+    int maxlinelen = box2w - 6; // Adjust for borders and padding 
     char line1[100] = "";
     char line2[100] = "";
     int split = 0;
 
-    // Finding where to cut the description
-    for (int i = 0; i < (int)strlen(full) && i < maxlinelen; i++) {
-        if (full[i] == ' ')
-            split = i;
+    // Finding where to cut the description - improve text wrapping
+    if (strlen(full) <= maxlinelen) {
+        // If the description is short enough, put it all on the first line
+        split = strlen(full);
+    } else {
+        // Find a good splitting point (space)
+        for (int i = 0; i < (int)strlen(full) && i < maxlinelen; i++) {
+            if (full[i] == ' ')
+                split = i;
+        }
     }
 
     // First line of description
@@ -105,9 +111,9 @@ void appDisplayMenu(const Menu* menu) {
         printf("═");
     printf("╗\n");
 
-    // Box titles - exactly like menuui.c
-    printf("║%*s%s%*s ║", pad1, "", title1, pad1, " "); // menu
-    printf("║ %*s%s%*s║\n", pad2, " ", title2, (int)(box2w - pad2 - strlen(title2)), ""); // keys
+    // Box titles with improved alignment and highlighting
+    printf("║%*s" UI_HEADER "%s" TXT_RESET "%*s ║", pad1, "", title1, pad1, " "); // menu title with highlighting
+    printf("║%*s" UI_HEADER "%s" TXT_RESET "%*s║\n", pad2, " ", title2, (int)(box2w - pad2 - strlen(title2) - 1), ""); // keys title with highlighting
 
     // Title dividers - exactly like menuui.c
     printf("╠");
@@ -120,8 +126,8 @@ void appDisplayMenu(const Menu* menu) {
         printf("═");
     printf("╣\n");
 
-    // Display menu options with side boxes - exactly like menuui.c
-    int maxRows = menu->optionCount > 8 ? menu->optionCount : 8; // Ensure minimum 8 rows for side boxes
+    // Display menu options with side boxes - consistent alignment throughout
+    int maxRows = menu->optionCount > 9 ? menu->optionCount : 9; // Ensure minimum 9 rows for proper side boxes
     
     for (int i = 0; i < maxRows; i++) {
         // Menu box left border and content
@@ -145,37 +151,50 @@ void appDisplayMenu(const Menu* menu) {
         }
 
         // Right side box content based on row position - exactly like menuui.c
-        if (i == 3) { // Bottom border of keys box
-            printf("  ║╚");
-            for (int j = 0; j < box2w; j++)
-                printf("═"); 
+        // Right side of menu layout for each row
+        printf("  ║");
+        
+        if (i < 3) {
+            // Display shortcuts in KEYS box
+            printf("║ %-*s ║\n", box2w - 2, shortcuts[i]);
+        }
+        else if (i == 3) {
+            // Bottom border of keys box
+            printf("╚");
+            for (int j = 0; j < box2w - 2; j++) 
+                printf("═");
             printf("╝\n");
         }
-        else if (i == 4) { // Top border of description box
-            printf("  ║╔");
-            for (int j = 0; j < box2w; j++)
+        else if (i == 4) {
+            // Top border of description box
+            printf("╔");
+            for (int j = 0; j < box2w - 2; j++)
                 printf("═"); 
             printf("╗\n");
         }
-        else 
-            printf("  ║║"); // adds dividers 
-
-        if (i < 3)
-            printf(" %-*s  ║\n", box2w - 2, shortcuts[i]); // right border for keys box
-        else if (i == 5)
-            printf(" %-*s  ║\n", box2w - 2, line1); // for first line of description
-        else if(i == 6)
-            printf(" %-*s  ║\n", box2w - 2, line2); // for second line
-        else if (i == 7)
-            printf(" %-*s  ║\n", box2w - 2, "");  // third line is empty
-        else if (i == 8) { // Bottom border of description box
-            printf("  ║╚");
-            for (int j = 0; j < box2w; j++)
+        else if (i == 5) {
+            // First line of description
+            printf("║ %-*s ║\n", box2w - 4, line1);
+        }
+        else if (i == 6) {
+            // Second line of description
+            printf("║ %-*s ║\n", box2w - 4, line2);
+        }
+        else if (i == 7) {
+            // Empty line in description box
+            printf("║%*s║\n", box2w - 2, "");
+        }
+        else if (i == 8) {
+            // Bottom border of description box
+            printf("╚");
+            for (int j = 0; j < box2w - 2; j++)
                 printf("═"); 
             printf("╝\n");
         }
-        else if (i > 8)
-            printf(" %-*s  ║\n", box2w - 2, "");  // additional empty lines
+        else if (i > 8) {
+            // Empty space for alignment
+            printf("%*s\n", box2w, "");
+        }
     }
 
     // Bottom border for the main menu box - exactly like menuui.c
@@ -188,15 +207,17 @@ void appDisplayMenu(const Menu* menu) {
     // This ensures proper rendering of all components
     printf("\n");
 
-    // Bottom error message box - exactly like menuui.c
+    // Bottom error message box - consistent with other elements
     int fullboxw = box1w + box2w + 1; // +1 for the space between boxes
     printf("╔");
     for (int i = 0; i < fullboxw; i++) 
         printf("═");
     printf("╗\n");
 
+    // Empty error message box with consistent width
     printf("║%*s║\n", fullboxw, " ");
 
+    // Bottom border of error message box
     printf("╚");
     for (int i = 0; i < fullboxw; i++) 
         printf("═");
@@ -210,47 +231,64 @@ void appDisplayMenu(const Menu* menu) {
  * @brief Gets the right side box content for a specific row
  * @param relativeRow The row number relative to menu start
  * @param buffer The buffer to store the content
- * @param bufferSize The size of the buffer
- * @param box2w The width of the side box
+ * @param bufferSize The size of the character buffer.
+ * @param box2w The width of the side box.
  */
 static void getRightSideContent(int relativeRow, char* buffer, int bufferSize, int box2w) {
-    if (!buffer || bufferSize < 1) return;
+    // Clear buffer to avoid garbage
+    memset(buffer, 0, bufferSize);
     
-    buffer[0] = '\0';
+    // Hardcoded shortcuts
+    char shortcuts[3][30] = {
+        " \u2191\u2193     Move selection",
+        "Enter   Select",
+        " ESC    Exit"
+    };
+
+    // Calculate content width, leaving space for borders
+    int contentWidth = box2w - 2;
     
-    if (relativeRow == 3) { // Bottom border of keys box
-        snprintf(buffer, bufferSize, "╚");
-        for (int j = 0; j < box2w; j++) {
-            strcat(buffer, "═");
-        }
-        strcat(buffer, "╝");
-    }
-    else if (relativeRow == 4) { // Top border of description box
-        snprintf(buffer, bufferSize, "╔");
-        for (int j = 0; j < box2w; j++) {
-            strcat(buffer, "═");
-        }
-        strcat(buffer, "╗");
-    }
-    else if (relativeRow == 8) { // Bottom border of description box
-        snprintf(buffer, bufferSize, "╚");
-        for (int j = 0; j < box2w; j++) {
-            strcat(buffer, "═");
-        }
-        strcat(buffer, "╝");
-    }
-    else if (relativeRow < 3) {
-        // Navigation shortcuts for keys box
-        char shortcuts[3][40] = {
-            " ↑↓     Move selection",
-            "Enter   Select",
-            " ESC    Exit"
-        };
-        snprintf(buffer, bufferSize, "║ %-*s  ║", box2w - 2, shortcuts[relativeRow]);
-    }
+    // Draw top border of the first side box
+    if (relativeRow == 0) {
+        char title[] = "KEYS";
+        int pad = (contentWidth - strlen(title)) / 2;
+        snprintf(buffer, bufferSize, "╔%*s%s%*s╗\n", pad, "", title, contentWidth - pad - (int)strlen(title), "");
+    } 
+    // Draw content for the first side box
+    else if (relativeRow >= 1 && relativeRow <= 3) {
+        snprintf(buffer, bufferSize, "║ %-*s ║\n", contentWidth - 1, shortcuts[relativeRow - 1]);
+    } 
+    // Draw bottom border of the first side box
+    else if (relativeRow == 4) {
+        snprintf(buffer, bufferSize, "╚%*s╝\n", contentWidth, "");
+    } 
+    // Draw top border of the second side box
+    else if (relativeRow == 5) {
+        char title[] = "Save current list to";
+        int pad = (contentWidth - strlen(title)) / 2;
+        snprintf(buffer, bufferSize, "╔%*s%s%*s╗\n", pad, "", title, contentWidth - pad - (int)strlen(title), "");
+    } 
+    // Draw content for the second side box
+    else if (relativeRow == 6) {
+        char title[] = "file";
+        int pad = (contentWidth - strlen(title)) / 2;
+        snprintf(buffer, bufferSize, "║%*s%s%*s║\n", pad, "", title, contentWidth - pad - (int)strlen(title), "");
+    } 
+    // Draw middle separator of the second side box
+    else if (relativeRow == 7) {
+        snprintf(buffer, bufferSize, "╠%*s╣\n", contentWidth, "");
+    } 
+    // Draw empty content for the second side box
+    else if (relativeRow > 7 && relativeRow < 10) {
+        snprintf(buffer, bufferSize, "║%*s║\n", contentWidth, "");
+    } 
+    // Draw bottom border of the second side box
+    else if (relativeRow == 10) {
+        snprintf(buffer, bufferSize, "╚%*s╝\n", contentWidth, "");
+    } 
+    // Draw empty space for other rows
     else {
-        // Empty box content
-        snprintf(buffer, bufferSize, "║ %-*s  ║", box2w - 2, "");
+        snprintf(buffer, bufferSize, "%*s\n", box2w, "");
     }
 }
 
@@ -295,15 +333,17 @@ static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y
     // Add spacing between boxes
     printf("  ║");
     
-    // Calculate relative row and get right side content
-    int box2w = 35;
+    // Calculate relative row for consistent sizing with the main menu display
+    int box2w = 32; // Must match the box width in appDisplayMenu
     int headerLines = calculateMenuHeaderLines(menu);
     int menuStartY = headerLines;
     int relativeRow = y - menuStartY;
     
-    char rightContent[100];
-    getRightSideContent(relativeRow, rightContent, sizeof(rightContent), box2w);
-    printf("%s", rightContent);
+    // Only print the border for the right side - actual content is handled in appUpdateMenuSelection
+    printf(" ");
+    
+    // We don't render the full right side content here to avoid inconsistencies
+    // The main appDisplayMenu function handles the initial complete rendering
     
     // Restore cursor position if needed
     // winTermSetCursor(originalPos.x, originalPos.y);
@@ -356,16 +396,17 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     appDisplayMenuOption(menu, oldSelection, 0, menuStartY + oldSelection);
     appDisplayMenuOption(menu, newSelection, 0, menuStartY + newSelection);
     
-    // Update the description box when selection changes - with increased width
-    int box2w = 35; // side box width (matches main display function)
+    // Update the description box when selection changes - with standardized width
+    int box1w = 43; // menu box width (including borders) - must match appDisplayMenu
+    int box2w = 32; // side box width (including borders) - must match appDisplayMenu
     const char* description = menu->options[newSelection].description;
     if (!description || strlen(description) == 0) {
         description = "Select this option to proceed.";
     }
     
-    // Split description into two lines exactly like menuui.c
+    // Split description into two lines exactly
     char *full = (char*)description;
-    int maxlinelen = box2w - 2;
+    int maxlinelen = box2w - 6; // Account for borders and padding
     char line1[100] = "";
     char line2[100] = "";
     int split = 0;
@@ -381,13 +422,16 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     line1[split] = '\0';
     strcpy(line2, full + split + 1); // rest of description
     
-    // Update description box content (rows 5 and 6 in the side box)
-    // Cursor position: main box (43) + space (1) + side box border (1) = 45
-    winTermSetCursor(45, menuStartY + 5);
-    printf(" %-*s  ║", box2w - 2, line1);
+    // Calculate correct cursor position for the side box
+    // Cursor position: main box (43) + space (2) + side box left border (1) + padding (1) = 47
+    int rightBoxStart = box1w + 3;
     
-    winTermSetCursor(45, menuStartY + 6);
-    printf(" %-*s  ║", box2w - 2, line2);
+    // Update description box content (rows 5 and 6 in the side box)
+    winTermSetCursor(rightBoxStart, menuStartY + 5);
+    printf("║ %-*s ║", box2w - 4, line1);
+    
+    winTermSetCursor(rightBoxStart, menuStartY + 6);
+    printf("║ %-*s ║", box2w - 4, line2);
 }
 
 /**
@@ -404,12 +448,12 @@ static void appDisplayErrorMessage(const char* message, int errorY) {
     // Clear just this line to prepare for the error message
     winTermClearLine();
     
-    // Get maximum display width for the message - with increased side box width
+    // Get maximum display width for the message with standardized box widths
     int box1w = 43; // menu box width (including borders)
-    int box2w = 34; // side box width (including borders)
-    int fullboxw = box1w + box2w + 1; // Full width (including borders)
+    int box2w = 32; // side box width (including borders)
+    int fullboxw = box1w + box2w + 1; // Full width (including borders and separator)
     
-    // Format message to fit within the bottom box with proper padding
+    // Format message to fit within the bottom box with proper padding and warning symbol
     printf("║ ⚠ %-*s║", fullboxw - 4, message);
 }
 
