@@ -14,7 +14,7 @@ int g_programCount = 0;
  * @return Returns the number of programs loaded, or -1 on error
  */
 int loadProgramsFromConfig(void) {
-    char configPath[512];
+    char configPath[1024]; // Increased buffer size to prevent truncation
     
     // Get the full path of the executable
     char executablePath[512];

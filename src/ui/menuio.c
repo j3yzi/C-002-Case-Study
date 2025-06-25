@@ -104,6 +104,9 @@ void checkStates(void) {
  * @return Returns 1 if list exists and operation can proceed, 0 otherwise
  */
 static int checkActiveList(int isActiveList, int listSize, const char* errorMessage) {
+    // Mark listSize as unused to avoid compiler warning
+    (void)listSize; // Suppress unused parameter warning
+    
     if (!isActiveList) {
         winTermClearScreen();
         printf("╔═══════════════════════════════════════════════════════════════════╗\n");
@@ -293,6 +296,7 @@ void displaySystemStatistics(void) {
 
 /**
  * @brief Employee management submenu
+ * @return Returns 0 on normal exit, other values on error
  */
 int runEmployeeManagement(void) {
     char choice;
@@ -398,6 +402,7 @@ int runEmployeeManagement(void) {
 
 /**
  * @brief Student management submenu
+ * @return Returns 0 on normal exit, other values on error
  */
 int runStudentManagement(void) {
     char choice;
@@ -508,6 +513,7 @@ int runStudentManagement(void) {
 
 /**
  * @brief Creates a new employee list
+ * @return Returns 0 on success, other values on error
  */
 int handleCreateEmployeeList(void) {
     winTermClearScreen();
@@ -1256,8 +1262,8 @@ int handleUpdatePayrollSettings(void) {
     
     // Setup form fields with validation
     appFormField fields[] = {
-        { regularHoursPrompt, regularHoursStr, sizeof(regularHoursStr), IV_OPTIONAL, {0} },
-        { overtimeRatePrompt, overtimeRateStr, sizeof(overtimeRateStr), IV_OPTIONAL, {0} }
+        { regularHoursPrompt, regularHoursStr, sizeof(regularHoursStr), IV_OPTIONAL, {{0}} },
+        { overtimeRatePrompt, overtimeRateStr, sizeof(overtimeRateStr), IV_OPTIONAL, {{0}} }
     };
     
     // Get validated input
@@ -1345,9 +1351,9 @@ int handleUpdateAcademicSettings(void) {
     
     // Setup form fields with validation
     appFormField fields[] = {
-        { passingGradePrompt, passingGradeStr, sizeof(passingGradeStr), IV_OPTIONAL, {0} },
-        { minGradePrompt, minGradeStr, sizeof(minGradeStr), IV_OPTIONAL, {0} },
-        { maxGradePrompt, maxGradeStr, sizeof(maxGradeStr), IV_OPTIONAL, {0} }
+        { passingGradePrompt, passingGradeStr, sizeof(passingGradeStr), IV_OPTIONAL, {{0}} },
+        { minGradePrompt, minGradeStr, sizeof(minGradeStr), IV_OPTIONAL, {{0}} },
+        { maxGradePrompt, maxGradeStr, sizeof(maxGradeStr), IV_OPTIONAL, {{0}} }
     };
     
     // Get validated input

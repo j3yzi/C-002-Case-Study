@@ -84,7 +84,7 @@ void appDisplayMenu(const Menu* menu) {
     int split = 0;
 
     // Finding where to cut the description
-    for (int i = 0; i < strlen(full) && i < maxlinelen; i++) {
+    for (int i = 0; i < (int)strlen(full) && i < maxlinelen; i++) {
         if (full[i] == ' ')
             split = i;
     }
@@ -258,10 +258,13 @@ static void getRightSideContent(int relativeRow, char* buffer, int bufferSize, i
  * @brief Displays a single menu option at a specific screen location.
  * @param menu A const pointer to the Menu struct containing the option.
  * @param optionIndex The index of the option to display.
- * @param x The x-coordinate (column) where the option should be displayed.
+ * @param x The x-coordinate (column) where the option should be displayed (unused).
  * @param y The y-coordinate (row) where the option should be displayed.
  */
 static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y) {
+    // Mark x as unused to avoid compiler warning
+    (void)x;
+    
     // Validate parameters
     if (!menu || optionIndex < 0 || optionIndex >= menu->optionCount) return;
     
@@ -368,7 +371,7 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     int split = 0;
 
     // Finding where to cut the description
-    for (int i = 0; i < strlen(full) && i < maxlinelen; i++) {
+    for (int i = 0; i < (int)strlen(full) && i < maxlinelen; i++) {
         if (full[i] == ' ')
             split = i;
     }
