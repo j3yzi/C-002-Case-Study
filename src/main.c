@@ -11,15 +11,13 @@
 #include "../include/models/student.h"
 #include "ui/menuio.h"
 
-int main(int argc, char* argv[])
-{   
-    // Prevent unused parameter warnings
-    (void)argc;
-    (void)argv;
-    
-    // Get the directory where the executable is located
+/**
+ * @brief Gets the path to the configuration file
+ * @return A pointer to a static buffer containing the path
+ */
+static const char* getConfigPath(void) {
+    static char configPath[600];
     char executablePath[512];
-    char configPath[600];
     
     // Get the full path of the executable
     GetModuleFileName(NULL, executablePath, sizeof(executablePath));
@@ -34,7 +32,17 @@ int main(int argc, char* argv[])
         strcpy(configPath, "config.ini");
     }
     
-    // Load configuration first
+    return configPath;
+}
+
+int main(int argc, char* argv[])
+{   
+    // Prevent unused parameter warnings
+    (void)argc;
+    (void)argv;
+    
+    // Get configuration path and load configuration
+    const char* configPath = getConfigPath();
     printf("Loading configuration...\n");
     printf("Config path: %s\n", configPath);
     loadConfig(configPath);

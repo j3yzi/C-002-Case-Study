@@ -29,8 +29,7 @@ int getStudentDataFromUser(Student* newStudent) {
         if (!isNameValid) {
             printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
             printf("        less than %d characters to fit in the %d character full name format.\n", studentNameLen - 5, studentNameLen);
-            printf("Press any key to try again, or ESC to cancel...");
-            if (_getch() == 27) return -1; // ESC key
+            waitForKeypress(NULL);
         }
     }
 
@@ -89,11 +88,7 @@ int getStudentDataFromUser(Student* newStudent) {
     printf("Final Exam Grade: %.2f\n", newStudent->academic.finalExamGrade);
     printf("Final Grade: %.2f (%s)\n", newStudent->academic.finalGrade, newStudent->academic.remarks);
     
-    printf("\nConfirm this information? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm != 'Y' && confirm != 'y') {
+    if (!appYesNoPrompt("Confirm this information?")) {
         printf("Student creation cancelled.\n");
         return -1;
     }
@@ -278,11 +273,7 @@ int handleDeleteStudent(list* studentList) {
             displayStudentDetails(stu);
             
             printf("\n⚠️  WARNING: This action cannot be undone!\n");
-            printf("Are you sure you want to delete this student? (Y/N): ");
-            char confirm = _getch();
-            printf("%c\n", confirm);
-            
-            if (confirm == 'Y' || confirm == 'y') {
+            if (appYesNoPrompt("Are you sure you want to delete this student?")) {
                 printf("\nDeleting student...\n");
                 if (removeStudentFromList(studentList, stuNumber) == 0) {
                     printf("✅ Student '%s' deleted successfully!\n", stuNumber);
@@ -492,11 +483,7 @@ int editStudentDataFromUser(Student* student) {
     printf("Year Level: %d\n", student->personal.yearLevel);
     printf("Final Grade: %.2f (%s)\n", student->academic.finalGrade, student->academic.remarks);
     
-    printf("\nConfirm these changes? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm != 'Y' && confirm != 'y') {
+    if (!appYesNoPrompt("Confirm these changes?")) {
         printf("Changes cancelled. Reverting to original values.\n");
         memcpy(student, &backup, sizeof(Student));
         return -1;

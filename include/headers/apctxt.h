@@ -11,17 +11,28 @@
 // Configuration for business logic values (not struct sizes)
 typedef struct {
     // Payroll settings
-    float regular_hours;
-    float overtime_rate;
+    float regularHours;
+    float overtimeRate;
     
     // Academic settings
-    float passing_grade;
-    float min_grade;
-    float max_grade;
+    float passingGrade;
+    float minGrade;
+    float maxGrade;
 } Config;
 
 // Global configuration instance
 extern Config g_config;
+
+// Configuration functions
+void setDefaultConfig(void);
+int saveConfig(const char* config_file);
+int loadConfig(const char* config_file);
+void printCurrentConfig(void);
+
+// Convenience accessor functions
+float getRegularHours(void);
+float getOvertimeRate(void);
+float getPassingGrade(void);
 
 typedef struct {
     char* appName;
@@ -106,6 +117,7 @@ typedef struct {
 void appMenuSetColor(int textColor, int bgColor);
 void appDisplayMenu(const Menu* menu);
 char initMenu(Menu* m);
+bool appYesNoPrompt(const char* prompt);
 
 // Validation functions
 void enableAnsiSupport();
@@ -131,15 +143,21 @@ void winTermClearScreen();
 void winTermGetCursorPosition(winTermCursorPos* position);
 void winTermResetColors();
 
-// Configuration functions
-int loadConfig(const char* config_file);
-int saveConfig(const char* config_file);
-void setDefaultConfig(void);
-void printCurrentConfig(void);
+// Menu creation helper
+static inline MenuOption createMenuOption(char key, const char* text, bool disabled) {
+    return (MenuOption){
+        key, text, disabled, false, 
+        9, 0,  // highlight colors
+        7, 0,  // normal colors
+        8, 0,  // disabled colors
+        NULL   // no callback
+    };
+}
 
-// Convenience functions for accessing configurable values
-float getRegularHours(void);
-float getOvertimeRate(void);
-float getPassingGrade(void);
+// Common user interaction helper
+static inline void waitForKeypress(const char* message) {
+    printf("%s", message ? message : "Press any key to continue...");
+    _getch();
+}
 
 #endif // APCTXT_H

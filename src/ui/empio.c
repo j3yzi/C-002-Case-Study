@@ -60,11 +60,7 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
     printf("Hours Worked: %d\n", newEmployee->employment.hoursWorked);
     printf("Basic Rate: %.2f\n", newEmployee->employment.basicRate);
     
-    printf("\nConfirm this information? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm != 'Y' && confirm != 'y') {
+    if (!appYesNoPrompt("Confirm this information?")) {
         printf("Employee creation cancelled.\n");
         return -1;
     }
@@ -249,11 +245,7 @@ int handleDeleteEmployee(list* employeeList) {
             displayEmployeeDetails(emp);
             
             printf("\n⚠️  WARNING: This action cannot be undone!\n");
-            printf("Are you sure you want to delete this employee? (Y/N): ");
-            char confirm = _getch();
-            printf("%c\n", confirm);
-            
-            if (confirm == 'Y' || confirm == 'y') {
+            if (appYesNoPrompt("Are you sure you want to delete this employee?")) {
                 printf("\nDeleting employee...\n");
                 if (removeEmployeeFromList(employeeList, empNumber) == 0) {
                     printf("✅ Employee '%s' deleted successfully!\n", empNumber);
@@ -489,11 +481,7 @@ int editEmployeeDataFromUser(Employee* employee) {
     printf("Hours Worked: %d\n", employee->employment.hoursWorked);
     printf("Basic Rate: %.2f\n", employee->employment.basicRate);
     
-    printf("\nConfirm these changes? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm != 'Y' && confirm != 'y') {
+    if (!appYesNoPrompt("Confirm these changes?")) {
         printf("Changes cancelled. Reverting to original values.\n");
         memcpy(employee, &backup, sizeof(Employee));
         return -1;

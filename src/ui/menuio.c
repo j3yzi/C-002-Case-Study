@@ -22,8 +22,33 @@ Menu mainMenu = {1, "PUP Information Management System", (MenuOption[]){
     {'1', "Employee Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
     {'2', "Student Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
     {'3', "System Statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
-    {'4', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 4
+    {'4', "Configuration Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
+    {'5', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 5
 };
+
+/**
+ * @brief Gets the path to the configuration file
+ * @param buffer Buffer to store the path
+ * @param bufferSize Size of the buffer
+ */
+static void getConfigPath(char* buffer, size_t bufferSize) {
+    if (!buffer || bufferSize < 1) return;
+    
+    // Get the full path of the executable
+    char executablePath[512];
+    GetModuleFileName(NULL, executablePath, sizeof(executablePath));
+    
+    // Find the last backslash to get the directory
+    char* lastSlash = strrchr(executablePath, '\\');
+    if (lastSlash != NULL) {
+        *lastSlash = '\0'; // Remove the executable name, keep directory
+        snprintf(buffer, bufferSize, "%s\\config.ini", executablePath);
+    } else {
+        // Fallback to current directory
+        strncpy(buffer, "config.ini", bufferSize - 1);
+        buffer[bufferSize - 1] = '\0';
+    }
+}
 
 /**
  * @brief Initializes the multi-list management system
@@ -71,6 +96,65 @@ void checkStates(void) {
 }
 
 /**
+ * @brief Generic function to check if an active list exists and has items
+ * @param isActiveList Flag indicating if there's an active list
+ * @param listSize Size of the active list (0 if no active list)
+ * @param errorMessage Message to display if no active list
+ * @return Returns 1 if list exists and operation can proceed, 0 otherwise
+ */
+static int checkActiveList(int isActiveList, int listSize, const char* errorMessage) {
+    if (!isActiveList) {
+        printf("\n%s\n", errorMessage ? errorMessage : "No active list!");
+        printf("Press any key to continue...");
+        _getch();
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Updates menu option states based on list availability
+ * @param menu Pointer to the menu to update
+ * @param hasActiveList Flag indicating if there's an active list
+ * @param hasItems Flag indicating if the active list has items
+ * @param hasMultipleLists Flag indicating if there are multiple lists
+ */
+static void updateMenuStates(Menu* menu, int hasActiveList, int hasItems, int hasMultipleLists) {
+    // Create List (1) - Always available
+    menu->options[0].isDisabled = 0;
+    
+    // Switch List (2) - Only if multiple lists exist
+    menu->options[1].isDisabled = !hasMultipleLists;
+    
+    // Add Item (3) - Only if there's an active list
+    menu->options[2].isDisabled = !hasActiveList;
+    
+    // Edit Item (4) - Only if there are items in active list
+    menu->options[3].isDisabled = !hasItems;
+    
+    // Delete Item (5) - Only if there are items in active list
+    menu->options[4].isDisabled = !hasItems;
+    
+    // Search Item (6) - Only if there are items in active list
+    menu->options[5].isDisabled = !hasItems;
+    
+    // Display All Items (7) - Only if there are items in active list
+    menu->options[6].isDisabled = !hasItems;
+    
+    // Report (8) - Only if there are items in active list
+    menu->options[7].isDisabled = !hasItems;
+    
+    // Save List (9) - Only if there's an active list with items
+    menu->options[8].isDisabled = !hasItems;
+    
+    // Load List (A) - Always available
+    menu->options[9].isDisabled = 0;
+    
+    // Back to Main Menu (B) - Always available
+    menu->options[10].isDisabled = 0;
+}
+
+/**
  * @brief Updates employee menu option states based on current manager state
  * @param menu Pointer to the employee menu to update
  */
@@ -79,38 +163,7 @@ static void updateEmployeeMenuStates(Menu* menu) {
     int hasEmployees = hasActiveList && (empManager.employeeLists[empManager.activeEmployeeList]->size > 0);
     int hasMultipleLists = (empManager.employeeListCount > 1);
     
-    // Create Employee List (1) - Always available
-    menu->options[0].isDisabled = 0;
-    
-    // Switch Employee List (2) - Only if multiple lists exist
-    menu->options[1].isDisabled = !hasMultipleLists;
-    
-    // Add Employee (3) - Only if there's an active list
-    menu->options[2].isDisabled = !hasActiveList;
-    
-    // Edit Employee (4) - Only if there are employees in active list
-    menu->options[3].isDisabled = !hasEmployees;
-    
-    // Delete Employee (5) - Only if there are employees in active list
-    menu->options[4].isDisabled = !hasEmployees;
-    
-    // Search Employee (6) - Only if there are employees in active list
-    menu->options[5].isDisabled = !hasEmployees;
-    
-    // Display All Employees (7) - Only if there are employees in active list
-    menu->options[6].isDisabled = !hasEmployees;
-    
-    // Payroll Report (8) - Only if there are employees in active list
-    menu->options[7].isDisabled = !hasEmployees;
-    
-    // Save Employee List (9) - Only if there's an active list with employees
-    menu->options[8].isDisabled = !hasEmployees;
-    
-    // Load Employee List (A) - Always available
-    menu->options[9].isDisabled = 0;
-    
-    // Back to Main Menu (B) - Always available
-    menu->options[10].isDisabled = 0;
+    updateMenuStates(menu, hasActiveList, hasEmployees, hasMultipleLists);
 }
 
 /**
@@ -122,38 +175,7 @@ static void updateStudentMenuStates(Menu* menu) {
     int hasStudents = hasActiveList && (stuManager.studentLists[stuManager.activeStudentList]->size > 0);
     int hasMultipleLists = (stuManager.studentListCount > 1);
     
-    // Create Student List (1) - Always available
-    menu->options[0].isDisabled = 0;
-    
-    // Switch Student List (2) - Only if multiple lists exist
-    menu->options[1].isDisabled = !hasMultipleLists;
-    
-    // Add Student (3) - Only if there's an active list
-    menu->options[2].isDisabled = !hasActiveList;
-    
-    // Edit Student (4) - Only if there are students in active list
-    menu->options[3].isDisabled = !hasStudents;
-    
-    // Delete Student (5) - Only if there are students in active list
-    menu->options[4].isDisabled = !hasStudents;
-    
-    // Search Student (6) - Only if there are students in active list
-    menu->options[5].isDisabled = !hasStudents;
-    
-    // Display All Students (7) - Only if there are students in active list
-    menu->options[6].isDisabled = !hasStudents;
-    
-    // Student Report (8) - Only if there are students in active list
-    menu->options[7].isDisabled = !hasStudents;
-    
-    // Save Student List (9) - Only if there's an active list with students
-    menu->options[8].isDisabled = !hasStudents;
-    
-    // Load Student List (A) - Always available
-    menu->options[9].isDisabled = 0;
-    
-    // Back to Main Menu (B) - Always available
-    menu->options[10].isDisabled = 0;
+    updateMenuStates(menu, hasActiveList, hasStudents, hasMultipleLists);
 }
 
 /**
@@ -191,6 +213,9 @@ int menuLoop(void) {
                 displaySystemStatistics();
                 break;
             case '4':
+                runConfigurationManagement();
+                break;
+            case '5':
                 printf("\nExiting PUP Information Management System...\n");
                 return 0;
             default:
@@ -311,17 +336,14 @@ int runEmployeeManagement(void) {
             case '3':
                 handleAddEmployee();
                 break;
-            case '4':
-                if (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]) {
-                    // Call function from empio.c
-                    extern int handleEditEmployee(list* employeeList);
+            case '4': {
+                extern int handleEditEmployee(list* employeeList);
+                int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+                if (checkActiveList(hasActiveList, 0, "No active employee list!")) {
                     handleEditEmployee(empManager.employeeLists[empManager.activeEmployeeList]);
-                } else {
-                    printf("\nNo active employee list!\n");
-                    printf("Press any key to continue...");
-                    _getch();
                 }
                 break;
+            }
             case '5':
                 if (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]) {
                     // Call function from empio.c
@@ -584,17 +606,14 @@ int handleDisplayAllEmployees(void) {
     winTermClearScreen();
     printf("=== Display All Employees ===\n\n");
     
-    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
-        printf("No active employee list!\n");
-        printf("Press any key to continue...");
-        _getch();
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+    if (!checkActiveList(hasActiveList, 0, "No active employee list!")) {
         return -1;
     }
     
     printf("Active List: %s\n", empManager.employeeListNames[empManager.activeEmployeeList]);
     displayAllEmployees(empManager.employeeLists[empManager.activeEmployeeList]);
-    printf("\nPress any key to continue...");
-    _getch();
+    waitForKeypress("\nPress any key to continue...");
     return 0;
 }
 
@@ -602,10 +621,8 @@ int handlePayrollReport(void) {
     winTermClearScreen();
     printf("=== Payroll Report ===\n\n");
     
-    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
-        printf("No active employee list!\n");
-        printf("Press any key to continue...");
-        _getch();
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+    if (!checkActiveList(hasActiveList, 0, "No active employee list!")) {
         return -1;
     }
     
@@ -623,8 +640,7 @@ int handlePayrollReport(void) {
         printf("Failed to generate payroll report.\n");
     }
     
-    printf("Press any key to continue...");
-    _getch();
+    waitForKeypress(NULL);
     return 0;
 }
 
@@ -632,10 +648,8 @@ int handleSaveEmployeeList(void) {
     winTermClearScreen();
     printf("=== Save Employee List ===\n\n");
     
-    if (empManager.activeEmployeeList < 0 || !empManager.employeeLists[empManager.activeEmployeeList]) {
-        printf("No active employee list to save!\n");
-        printf("Press any key to continue...");
-        _getch();
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+    if (!checkActiveList(hasActiveList, 0, "No active employee list to save!")) {
         return -1;
     }
     
@@ -661,8 +675,7 @@ int handleSaveEmployeeList(void) {
         printf("Failed to save employee list.\n");
     }
     
-    printf("Press any key to continue...");
-    _getch();
+    waitForKeypress(NULL);
     return 0;
 }
 
@@ -808,17 +821,14 @@ int handleDisplayAllStudents(void) {
     winTermClearScreen();
     printf("=== Display All Students ===\n\n");
     
-    if (stuManager.activeStudentList < 0 || !stuManager.studentLists[stuManager.activeStudentList]) {
-        printf("No active student list!\n");
-        printf("Press any key to continue...");
-        _getch();
+    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+    if (!checkActiveList(hasActiveList, 0, "No active student list!")) {
         return -1;
     }
     
     printf("Active List: %s\n", stuManager.studentListNames[stuManager.activeStudentList]);
     displayAllStudents(stuManager.studentLists[stuManager.activeStudentList]);
-    printf("\nPress any key to continue...");
-    _getch();
+    waitForKeypress("\nPress any key to continue...");
     return 0;
 }
 
@@ -826,10 +836,8 @@ int handleStudentReport(void) {
     winTermClearScreen();
     printf("=== Student Report ===\n\n");
     
-    if (stuManager.activeStudentList < 0 || !stuManager.studentLists[stuManager.activeStudentList]) {
-        printf("No active student list!\n");
-        printf("Press any key to continue...");
-        _getch();
+    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+    if (!checkActiveList(hasActiveList, 0, "No active student list!")) {
         return -1;
     }
     
@@ -847,8 +855,7 @@ int handleStudentReport(void) {
         printf("Failed to generate student report.\n");
     }
     
-    printf("Press any key to continue...");
-    _getch();
+    waitForKeypress(NULL);
     return 0;
 }
 
@@ -856,10 +863,8 @@ int handleSaveStudentList(void) {
     winTermClearScreen();
     printf("=== Save Student List ===\n\n");
     
-    if (stuManager.activeStudentList < 0 || !stuManager.studentLists[stuManager.activeStudentList]) {
-        printf("No active student list to save!\n");
-        printf("Press any key to continue...");
-        _getch();
+    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+    if (!checkActiveList(hasActiveList, 0, "No active student list to save!")) {
         return -1;
     }
     
@@ -885,8 +890,7 @@ int handleSaveStudentList(void) {
         printf("Failed to save student list.\n");
     }
     
-    printf("Press any key to continue...");
-    _getch();
+    waitForKeypress(NULL);
     return 0;
 }
 
@@ -946,16 +950,14 @@ int handleSwitchEmployeeList(void) {
     if (empManager.employeeListCount == 0) {
         printf("No employee lists available!\n");
         printf("Create an employee list first.\n");
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return -1;
     }
     
     if (empManager.employeeListCount == 1) {
         printf("Only one employee list available: %s\n", empManager.employeeListNames[0]);
         printf("It is already active.\n");
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return 0;
     }
     
@@ -979,15 +981,13 @@ int handleSwitchEmployeeList(void) {
     
     if (choice < 0 || choice >= empManager.employeeListCount) {
         printf("Invalid choice! Please enter a number between 1 and %d.\n", empManager.employeeListCount);
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return -1;
     }
     
     if (choice == empManager.activeEmployeeList) {
         printf("List '%s' is already active!\n", empManager.employeeListNames[choice]);
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return 0;
     }
     
@@ -996,8 +996,7 @@ int handleSwitchEmployeeList(void) {
     
     printf("Successfully switched to employee list: %s\n", empManager.employeeListNames[choice]);
     printf("This list contains %d employees.\n", listSize);
-    printf("Press any key to continue...");
-    _getch();
+    waitForKeypress(NULL);
     return 0;
 }
 
@@ -1008,16 +1007,14 @@ int handleSwitchStudentList(void) {
     if (stuManager.studentListCount == 0) {
         printf("No student lists available!\n");
         printf("Create a student list first.\n");
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return -1;
     }
     
     if (stuManager.studentListCount == 1) {
         printf("Only one student list available: %s\n", stuManager.studentListNames[0]);
         printf("It is already active.\n");
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return 0;
     }
     
@@ -1041,15 +1038,13 @@ int handleSwitchStudentList(void) {
     
     if (choice < 0 || choice >= stuManager.studentListCount) {
         printf("Invalid choice! Please enter a number between 1 and %d.\n", stuManager.studentListCount);
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return -1;
     }
     
     if (choice == stuManager.activeStudentList) {
         printf("List '%s' is already active!\n", stuManager.studentListNames[choice]);
-        printf("Press any key to continue...");
-        _getch();
+        waitForKeypress(NULL);
         return 0;
     }
     
@@ -1058,7 +1053,305 @@ int handleSwitchStudentList(void) {
     
     printf("Successfully switched to student list: %s\n", stuManager.studentListNames[choice]);
     printf("This list contains %d students.\n", listSize);
-    printf("Press any key to continue...");
-    _getch();
+    waitForKeypress(NULL);
+    return 0;
+}
+
+/**
+ * @brief Configuration management menu
+ * @return Returns 0 on normal exit, other values on error
+ */
+int runConfigurationManagement(void) {
+    char choice;
+    char configPath[600];
+    
+    // Get the configuration file path
+    getConfigPath(configPath, sizeof(configPath));
+    
+    Menu configMenu = {1, "Configuration Settings", (MenuOption[]){
+        {'1', "Update Payroll Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Update Academic Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Save Configuration", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Reset to Default Configuration", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 5
+    };
+    
+    do {
+        winTermClearScreen();
+        
+        // Display current configuration
+        printf("=== Current Configuration Settings ===\n");
+        printf("Payroll Settings:\n");
+        printf("  Regular Hours: %.1f\n", g_config.regularHours);
+        printf("  Overtime Rate: %.1f\n", g_config.overtimeRate);
+        printf("\nAcademic Settings:\n");
+        printf("  Passing Grade: %.1f\n", g_config.passingGrade);
+        printf("  Min Grade: %.1f\n", g_config.minGrade);
+        printf("  Max Grade: %.1f\n\n", g_config.maxGrade);
+        
+        choice = initMenu(&configMenu);
+        
+        switch(choice) {
+            case '1':
+                handleUpdatePayrollSettings();
+                break;
+            case '2':
+                handleUpdateAcademicSettings();
+                break;
+            case '3':
+                handleSaveConfiguration(configPath);
+                break;
+            case '4':
+                handleResetConfiguration(configPath);
+                break;
+            case '5':
+                return 0;
+            default:
+                printf("\nInvalid option. Press any key to continue...");
+                _getch();
+                break;
+        }
+    } while (1);
+    
+    return 0;
+}
+
+/**
+ * @brief Handles updating payroll configuration settings
+ * @return Returns 0 on success, other values on error
+ */
+int handleUpdatePayrollSettings(void) {
+    char regularHoursStr[50] = "";
+    char overtimeRateStr[50] = "";
+    bool configChanged = false;
+    
+    winTermClearScreen();
+    printf("=== Update Payroll Settings ===\n\n");
+    
+    // Prepare prompts with current values
+    char regularHoursPrompt[100];
+    char overtimeRatePrompt[100];
+    sprintf(regularHoursPrompt, "Regular Hours (40-240, current: %.1f): ", g_config.regularHours);
+    sprintf(overtimeRatePrompt, "Overtime Rate (0.1-2.0, current: %.1f): ", g_config.overtimeRate);
+    
+    // Setup form fields with validation
+    appFormField fields[] = {
+        { regularHoursPrompt, regularHoursStr, sizeof(regularHoursStr), IV_OPTIONAL, {0} },
+        { overtimeRatePrompt, overtimeRateStr, sizeof(overtimeRateStr), IV_OPTIONAL, {0} }
+    };
+    
+    // Get validated input
+    appGetValidatedInput(fields, 2);
+    
+    // Process regular hours if provided
+    if (strlen(regularHoursStr) > 0) {
+        float newRegularHours = (float)atof(regularHoursStr);
+        
+        // Additional validation
+        if (newRegularHours >= 40.0f && newRegularHours <= 240.0f) {
+            g_config.regularHours = newRegularHours;
+            configChanged = true;
+            printf("Regular Hours updated to %.1f\n", g_config.regularHours);
+        } else {
+            printf("\nInvalid input! Regular Hours must be between 40 and 240.\n");
+            waitForKeypress("Press any key to continue...");
+            return -1;
+        }
+    }
+    
+    // Process overtime rate if provided
+    if (strlen(overtimeRateStr) > 0) {
+        float newOvertimeRate = (float)atof(overtimeRateStr);
+        
+        // Additional validation
+        if (newOvertimeRate >= 0.1f && newOvertimeRate <= 2.0f) {
+            g_config.overtimeRate = newOvertimeRate;
+            configChanged = true;
+            printf("Overtime Rate updated to %.1f\n", g_config.overtimeRate);
+        } else {
+            printf("\nInvalid input! Overtime Rate must be between 0.1 and 2.0.\n");
+            waitForKeypress("Press any key to continue...");
+            return -1;
+        }
+    }
+    
+    if (configChanged) {
+        printf("\nPayroll settings updated successfully!\n");
+        
+        // Ask if user wants to save changes
+        if (appYesNoPrompt("\nDo you want to save these changes to the configuration file?")) {
+            // Get the directory where the executable is located
+            char configPath[600];
+            getConfigPath(configPath, sizeof(configPath));
+            
+            if (saveConfig(configPath) == 0) {
+                printf("\nConfiguration saved successfully to: %s\n", configPath);
+            } else {
+                printf("\nError saving configuration to: %s\n", configPath);
+            }
+        } else {
+            printf("\nChanges are applied but not saved to the configuration file.\n");
+            printf("You can save them later from the Configuration Settings menu.\n");
+        }
+    } else {
+        printf("\nNo changes were made to the payroll settings.\n");
+    }
+    
+    waitForKeypress("\nPress any key to continue...");
+    return 0;
+}
+
+/**
+ * @brief Handles updating academic configuration settings
+ * @return Returns 0 on success, other values on error
+ */
+int handleUpdateAcademicSettings(void) {
+    char passingGradeStr[50] = "";
+    char minGradeStr[50] = "";
+    char maxGradeStr[50] = "";
+    bool configChanged = false;
+    
+    winTermClearScreen();
+    printf("=== Update Academic Settings ===\n\n");
+    
+    // Prepare prompts with current values
+    char passingGradePrompt[100];
+    char minGradePrompt[100];
+    char maxGradePrompt[100];
+    
+    sprintf(passingGradePrompt, "Passing Grade (50-90, current: %.1f): ", g_config.passingGrade);
+    sprintf(minGradePrompt, "Min Grade (0-50, current: %.1f): ", g_config.minGrade);
+    sprintf(maxGradePrompt, "Max Grade (90-100, current: %.1f): ", g_config.maxGrade);
+    
+    // Setup form fields with validation
+    appFormField fields[] = {
+        { passingGradePrompt, passingGradeStr, sizeof(passingGradeStr), IV_OPTIONAL, {0} },
+        { minGradePrompt, minGradeStr, sizeof(minGradeStr), IV_OPTIONAL, {0} },
+        { maxGradePrompt, maxGradeStr, sizeof(maxGradeStr), IV_OPTIONAL, {0} }
+    };
+    
+    // Get validated input
+    appGetValidatedInput(fields, 3);
+    
+    // Process passing grade if provided
+    if (strlen(passingGradeStr) > 0) {
+        float newPassingGrade = (float)atof(passingGradeStr);
+        
+        // Additional validation
+        if (newPassingGrade >= 50.0f && newPassingGrade <= 90.0f) {
+            g_config.passingGrade = newPassingGrade;
+            configChanged = true;
+            printf("Passing Grade updated to %.1f\n", g_config.passingGrade);
+        } else {
+            printf("\nInvalid input! Passing Grade must be between 50 and 90.\n");
+            waitForKeypress("Press any key to continue...");
+            return -1;
+        }
+    }
+    
+    // Process min grade if provided
+    if (strlen(minGradeStr) > 0) {
+        float newMinGrade = (float)atof(minGradeStr);
+        
+        // Additional validation
+        if (newMinGrade >= 0.0f && newMinGrade <= 50.0f) {
+            g_config.minGrade = newMinGrade;
+            configChanged = true;
+            printf("Min Grade updated to %.1f\n", g_config.minGrade);
+        } else {
+            printf("\nInvalid input! Min Grade must be between 0 and 50.\n");
+            waitForKeypress("Press any key to continue...");
+            return -1;
+        }
+    }
+    
+    // Process max grade if provided
+    if (strlen(maxGradeStr) > 0) {
+        float newMaxGrade = (float)atof(maxGradeStr);
+        
+        // Additional validation
+        if (newMaxGrade >= 90.0f && newMaxGrade <= 100.0f) {
+            g_config.maxGrade = newMaxGrade;
+            configChanged = true;
+            printf("Max Grade updated to %.1f\n", g_config.maxGrade);
+        } else {
+            printf("\nInvalid input! Max Grade must be between 90 and 100.\n");
+            waitForKeypress("Press any key to continue...");
+            return -1;
+        }
+    }
+    
+    if (configChanged) {
+        printf("\nAcademic settings updated successfully!\n");
+        
+        // Ask if user wants to save changes
+        if (appYesNoPrompt("\nDo you want to save these changes to the configuration file?")) {
+            char configPath[600];
+            getConfigPath(configPath, sizeof(configPath));
+            
+            if (saveConfig(configPath) == 0) {
+                printf("\nConfiguration saved successfully to: %s\n", configPath);
+            } else {
+                printf("\nError saving configuration to: %s\n", configPath);
+            }
+        } else {
+            printf("\nChanges are applied but not saved to the configuration file.\n");
+            printf("You can save them later from the Configuration Settings menu.\n");
+        }
+    } else {
+        printf("\nNo changes were made to the academic settings.\n");
+    }
+    
+    waitForKeypress("\nPress any key to continue...");
+    return 0;
+}
+
+/**
+ * @brief Handles saving the current configuration to file
+ * @param configPath Path to the configuration file
+ * @return Returns 0 on success, other values on error
+ */
+int handleSaveConfiguration(const char* configPath) {
+    winTermClearScreen();
+    printf("=== Save Configuration ===\n\n");
+    
+    if (saveConfig(configPath) == 0) {
+        printf("Configuration saved successfully to: %s\n", configPath);
+    } else {
+        printf("Error saving configuration to: %s\n", configPath);
+    }
+    
+    waitForKeypress("\nPress any key to continue...");
+    return 0;
+}
+
+/**
+ * @brief Handles resetting the configuration to default values
+ * @param configPath Path to the configuration file
+ * @return Returns 0 on success, other values on error
+ */
+int handleResetConfiguration(const char* configPath) {
+    winTermClearScreen();
+    printf("=== Reset Configuration ===\n\n");
+    
+    if (appYesNoPrompt("Are you sure you want to reset all configuration settings to default values?")) {
+        setDefaultConfig();
+        printf("\nConfiguration has been reset to default values.\n");
+        
+        if (appYesNoPrompt("\nDo you want to save these default values to the configuration file?")) {
+            if (saveConfig(configPath) == 0) {
+                printf("\nDefault configuration saved to: %s\n", configPath);
+            } else {
+                printf("\nWarning: Could not save default configuration to: %s\n", configPath);
+            }
+        } else {
+            printf("\nDefault values are applied but not saved to the configuration file.\n");
+            printf("You can save them later from the Configuration Settings menu.\n");
+        }
+    } else {
+        printf("\nReset operation cancelled.\n");
+    }
+    
+    waitForKeypress("\nPress any key to continue...");
     return 0;
 } 

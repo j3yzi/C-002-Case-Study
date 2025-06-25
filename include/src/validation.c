@@ -1,9 +1,7 @@
 #include "../headers/apctxt.h"
 
-void enableAnsiSupport();
-void readLine(char* buffer, int size);
-bool isValid(const char* input, IValidationType type, IValidationParams params, const char* fieldName);
-void appGetValidatedInput(appFormField* fields, int fieldCount);
+// Forward declaration for internal helper function
+static const char* extractFieldName(const char* prompt);
 
 /**
  * @brief Enables ANSI escape sequence processing on Windows consoles.
@@ -49,7 +47,7 @@ void readLine(char* buffer, int size) {
  * @param prompt The full prompt string (e.g., "Enter employee first name: ")
  * @return A simplified field name (e.g., "First Name")
  */
-const char* extractFieldName(const char* prompt) {
+static const char* extractFieldName(const char* prompt) {
     // Common field mappings for better user experience
     if (strstr(prompt, "first name") || strstr(prompt, "First Name")) return "First Name";
     if (strstr(prompt, "last name") || strstr(prompt, "Last Name")) return "Last Name";
