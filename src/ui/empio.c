@@ -74,7 +74,7 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
  * @param bufferSize Size of the buffer.
  * @return Returns 0 on success, -1 on cancel.
  */
-int getEmployeeNumberFromUser(char* buffer, int bufferSize) {
+int getEmployeeNumberFromUser(char* buffer, const int bufferSize) {
     fflush(stdout);
     
     if (fgets(buffer, bufferSize, stdin) == NULL) {
@@ -224,7 +224,11 @@ int handleDeleteEmployee(list* employeeList) {
         return 0; // Return 0 to continue program
     }
 
-    while (1) {
+    // Loop variables
+    bool shouldContinue = true;
+    bool operationSuccess = false;
+    
+    do {
         winTermClearScreen();
         printf("=== Delete Employee ===\n\n");
         printf("Enter the employee number to delete (or type 'back' to cancel):\n");
@@ -239,7 +243,7 @@ int handleDeleteEmployee(list* employeeList) {
             return 0;
         }
         
-        Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
+        const Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
         if (emp) {
             printf("\n=== Employee to Delete ===\n");
             displayEmployeeDetails(emp);
@@ -250,6 +254,7 @@ int handleDeleteEmployee(list* employeeList) {
                 if (removeEmployeeFromList(employeeList, empNumber) == 0) {
                     printf("✅ Employee '%s' deleted successfully!\n", empNumber);
                     printf("Employee count is now: %d\n", employeeList->size);
+                    operationSuccess = true;
                 } else {
                     printf("❌ Failed to delete employee from the system.\n");
                     printf("The employee may have already been removed.\n");
@@ -261,7 +266,7 @@ int handleDeleteEmployee(list* employeeList) {
             
             printf("\nPress any key to continue...");
             _getch();
-            return 0; // Exit loop
+            shouldContinue = false; // Exit loop
         } else {
             printf("\n❌ Employee with number '%s' was not found.\n", empNumber);
             printf("\nWhat would you like to do?\n");
@@ -275,20 +280,25 @@ int handleDeleteEmployee(list* employeeList) {
             
             switch (choice) {
                 case '1':
-                    continue; // Loop to try again
+                    shouldContinue = true; // Continue the loop
+                    break;
                 case '2':
                     winTermClearScreen();
                     printf("=== All Employees ===\n\n");
                     displayAllEmployees(employeeList);
                     printf("\nPress any key to continue...");
                     _getch();
-                    continue; // Loop back to delete prompt
+                    shouldContinue = true; // Continue the loop
+                    break;
                 case '3':
                 default:
-                    return 0; // Exit to employee menu
+                    shouldContinue = false; // Exit the loop
+                    break;
             }
         }
-    }
+    } while (shouldContinue);
+    
+    return operationSuccess ? 0 : -1;
 }
 
 /**

@@ -35,7 +35,7 @@ int listDataFiles(void) {
 }
 
 // Function to get current timestamp for filenames
-void getCurrentTimestamp(char* buffer, int bufferSize) {
+void getCurrentTimestamp(char* buffer, const int bufferSize) {
     time_t rawtime;
     struct tm * timeinfo;
     time(&rawtime);
@@ -45,7 +45,7 @@ void getCurrentTimestamp(char* buffer, int bufferSize) {
 }
 
 // Function to generate payroll report file
-int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, int pathBufferSize) {
+int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, const int pathBufferSize) {
     if (!employeeList || !employeeList->head || employeeList->size == 0) {
         return -1;
     }
@@ -117,7 +117,7 @@ int generatePayrollReportFile(const list* employeeList, char* generatedFilePath,
 }
 
 // Function to generate student report file
-int generateStudentReportFile(const list* studentList, char* generatedFilePath, int pathBufferSize) {
+int generateStudentReportFile(const list* studentList, char* generatedFilePath, const int pathBufferSize) {
     if (!studentList || !studentList->head || studentList->size == 0) {
         return -1;
     }
@@ -460,7 +460,7 @@ static node* mergeSortList(node* head, node* tail, int descending,
     return mergeSortedLists(leftSorted, rightSorted, tail, descending, compareFunc);
 }
 
-int sortStudentsByGrade(list* studentList, int descending) {
+int sortStudentsByGrade(list* studentList, const int descending) {
     if (!studentList || studentList->size <= 1) {
         return 0;
     }

@@ -6,7 +6,7 @@
 
 // Employee data input functions
 int getEmployeeDataFromUser(Employee* newEmployee);
-int getEmployeeNumberFromUser(char* buffer, int bufferSize);
+int getEmployeeNumberFromUser(char* buffer, const int bufferSize);
 int editEmployeeDataFromUser(Employee* employee);
 
 // Employee operations

@@ -9,18 +9,18 @@
 
 // Common data functions
 int listDataFiles(void);
-void getCurrentTimestamp(char* buffer, int bufferSize);
+void getCurrentTimestamp(char* buffer, const int bufferSize);
 
 // Employee data functions
-int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, int pathBufferSize);
-int saveEmployeeDataFromFile(list* employeeList, const char *filename);
+int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, const int pathBufferSize);
+int saveEmployeeDataFromFile(list* employeeList, const char* filename);
 list* loadEmployeeDataFromFile(const char* filename, ListType listType);
 
 // Student data functions
-int generateStudentReportFile(const list* studentList, char* generatedFilePath, int pathBufferSize);
-int saveStudentDataFromFile(list* studentList, const char *filename);
+int generateStudentReportFile(const list* studentList, char* generatedFilePath, const int pathBufferSize);
+int saveStudentDataFromFile(list* studentList, const char* filename);
 list* loadStudentDataFromFile(const char* filename, ListType listType);
-int sortStudentsByGrade(list* studentList, int descending);
+int sortStudentsByGrade(list* studentList, const int descending);
 
 // Multi-list management functions
 int listEmployeeDataFiles(void);
