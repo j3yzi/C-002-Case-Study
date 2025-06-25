@@ -6,17 +6,16 @@
 #include "../../include/models/employee.h"
 #include "../../include/models/student.h"
 #include "../../include/headers/list.h"
+#include "../../include/headers/apctxt.h"
 
 // Function to create data directory if it doesn't exist
 static int createDataDirectory(void) {
-    system("mkdir data 2>nul"); // Windows: redirect error to null
-    return 0;
+    return appCreateDirectory("data");
 }
 
 // Function to create output directory if it doesn't exist
 static int createOutputDirectory(void) {
-    system("mkdir output 2>nul"); // Windows: redirect error to null
-    return 0;
+    return appCreateDirectory("output");
 }
 
 // Function to list all .dat files in the data directory
@@ -25,8 +24,8 @@ int listDataFiles(void) {
     
     printf("=== Available Data Files ===\n");
     
-    int result = system("dir data\\*.dat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*.dat");
+    if (result != 1) {
         printf("No .dat files found in the data directory.\n");
         return 0;
     }
@@ -494,8 +493,8 @@ int sortStudentsByGrade(list* studentList, int descending) {
 
 int listEmployeeDataFiles(void) {
     printf("=== Available Employee Data Files ===\n");
-    int result = system("dir data\\*employee*.dat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*employee*.dat");
+    if (result != 1) {
         printf("No employee .dat files found.\n");
         return 0;
     }
@@ -504,8 +503,8 @@ int listEmployeeDataFiles(void) {
 
 int listStudentDataFiles(void) {
     printf("=== Available Student Data Files ===\n");
-    int result = system("dir data\\*student*.dat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*student*.dat");
+    if (result != 1) {
         printf("No student .dat files found.\n");
         return 0;
     }

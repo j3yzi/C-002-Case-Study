@@ -180,11 +180,11 @@ int handleCreateCourseCatalog(void) {
  */
 int listCourseCatalogFiles(void) {
     // Create data directory if it doesn't exist
-    system("mkdir data 2>nul");
+    appCreateDirectory("data");
     
     // List .cat files
-    int result = system("dir data\\*.cat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*.cat");
+    if (result != 1) {
         return 0;
     }
     

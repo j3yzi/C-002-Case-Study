@@ -34,6 +34,10 @@ float getRegularHours(void);
 float getOvertimeRate(void);
 float getPassingGrade(void);
 
+// File system utility functions (replacements for system() calls)
+int appCreateDirectory(const char* dirPath);
+int appListFiles(const char* directory, const char* pattern);
+
 typedef struct {
     char* appName;
     char* appVersion;

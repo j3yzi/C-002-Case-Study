@@ -267,7 +267,7 @@ int saveCatalog(const CourseCatalog* catalog, const char* filename) {
     }
     
     // Create data directory if it doesn't exist
-    system("mkdir data 2>nul");
+    appCreateDirectory("data");
     
     // Construct the full path
     char fullPath[256];

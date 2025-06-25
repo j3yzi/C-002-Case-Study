@@ -13,6 +13,7 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
 static void appDisplayErrorMessage(const char* message, int errorY);
 static void appClearErrorMessage(int errorY);
 static int calculateMenuHeaderLines(const Menu* menu);
+static void getRightSideContent(int relativeRow, char* buffer, int bufferSize, int box2w);
 
 /**
  * @brief Sets the text and background colors for the console.
@@ -48,8 +49,8 @@ void appDisplayMenu(const Menu* menu) {
     // Box dimensions - increased side box width for better description display
     char title1[] = "MENU";
     char title2[] = "KEYS";
-    int box1w = 42; // menu box width
-    int box2w = 35; // side box width (increased from 24 to 35 for better text fit)
+    int box1w = 43; // menu box width (including borders)
+    int box2w = 34; // side box width (including borders)
     int pad1 = (box1w - strlen(title1)) / 2; // padding for menu box
     int pad2 = (box2w - strlen(title2)) / 2; // padding for side box
 
@@ -95,27 +96,27 @@ void appDisplayMenu(const Menu* menu) {
 
     // Top boxes borders - exactly like menuui.c
     printf("╔");
-    for (int i = 0; i <= box1w; i++) 
+    for (int i = 0; i < box1w; i++) 
         printf("═");
     printf("╗");
 
     printf("╔");
-    for (int i = 0; i <= box2w; i++) 
+    for (int i = 0; i < box2w; i++) 
         printf("═");
     printf("╗\n");
 
     // Box titles - exactly like menuui.c
     printf("║%*s%s%*s ║", pad1, "", title1, pad1, " "); // menu
-    printf("║ %*s%s%*s║\n", pad2, " ", title2, box2w - pad2 - strlen(title2), ""); // keys
+    printf("║ %*s%s%*s║\n", pad2, " ", title2, (int)(box2w - pad2 - strlen(title2)), ""); // keys
 
     // Title dividers - exactly like menuui.c
     printf("╠");
-    for (int i = 0; i <= box1w; i++) 
+    for (int i = 0; i < box1w; i++) 
         printf("═");
     printf("╣");
 
     printf("╠");
-    for (int i = 0; i <= box2w; i++) 
+    for (int i = 0; i < box2w; i++) 
         printf("═");
     printf("╣\n");
 
@@ -146,13 +147,13 @@ void appDisplayMenu(const Menu* menu) {
         // Right side box content based on row position - exactly like menuui.c
         if (i == 3) { // Bottom border of keys box
             printf("  ║╚");
-            for (int j = 0; j <= box2w; j++)
+            for (int j = 0; j < box2w; j++)
                 printf("═"); 
             printf("╝\n");
         }
         else if (i == 4) { // Top border of description box
             printf("  ║╔");
-            for (int j = 0; j <= box2w; j++)
+            for (int j = 0; j < box2w; j++)
                 printf("═"); 
             printf("╗\n");
         }
@@ -167,37 +168,90 @@ void appDisplayMenu(const Menu* menu) {
             printf(" %-*s  ║\n", box2w - 2, line2); // for second line
         else if (i == 7)
             printf(" %-*s  ║\n", box2w - 2, "");  // third line is empty
-        else if (i > 7)
+        else if (i == 8) { // Bottom border of description box
+            printf("  ║╚");
+            for (int j = 0; j < box2w; j++)
+                printf("═"); 
+            printf("╝\n");
+        }
+        else if (i > 8)
             printf(" %-*s  ║\n", box2w - 2, "");  // additional empty lines
     }
 
-    // Bottom borders for both boxes - exactly like menuui.c
+    // Bottom border for the main menu box - exactly like menuui.c
     printf("╚");
-    for (int i = 0; i <= box1w; i++) 
+    for (int i = 0; i < box1w; i++) 
         printf("═");
     printf("╝");
+    
+    // Note: The bottom border for the description box is now handled in the loop above
+    // This ensures proper rendering of all components
+    printf("\n");
 
-    printf("╚");
-    for (int i = 0; i <= box2w; i++) 
-        printf("═");
-    printf("╝\n");
-
-    // Bottom box - exactly like menuui.c
-    int fullboxw = box1w + box2w + 3;
+    // Bottom error message box - exactly like menuui.c
+    int fullboxw = box1w + box2w + 1; // +1 for the space between boxes
     printf("╔");
-    for (int i = 0; i <= fullboxw; i++) 
+    for (int i = 0; i < fullboxw; i++) 
         printf("═");
     printf("╗\n");
 
-    printf("║%*s ║\n", fullboxw, " ");
+    printf("║%*s║\n", fullboxw, " ");
 
     printf("╚");
-    for (int i = 0; i <= fullboxw; i++) 
+    for (int i = 0; i < fullboxw; i++) 
         printf("═");
     printf("╝\n");
     
     // Force flush of all content to ensure complete rendering
     fflush(stdout);
+}
+
+/**
+ * @brief Gets the right side box content for a specific row
+ * @param relativeRow The row number relative to menu start
+ * @param buffer The buffer to store the content
+ * @param bufferSize The size of the buffer
+ * @param box2w The width of the side box
+ */
+static void getRightSideContent(int relativeRow, char* buffer, int bufferSize, int box2w) {
+    if (!buffer || bufferSize < 1) return;
+    
+    buffer[0] = '\0';
+    
+    if (relativeRow == 3) { // Bottom border of keys box
+        snprintf(buffer, bufferSize, "╚");
+        for (int j = 0; j < box2w; j++) {
+            strcat(buffer, "═");
+        }
+        strcat(buffer, "╝");
+    }
+    else if (relativeRow == 4) { // Top border of description box
+        snprintf(buffer, bufferSize, "╔");
+        for (int j = 0; j < box2w; j++) {
+            strcat(buffer, "═");
+        }
+        strcat(buffer, "╗");
+    }
+    else if (relativeRow == 8) { // Bottom border of description box
+        snprintf(buffer, bufferSize, "╚");
+        for (int j = 0; j < box2w; j++) {
+            strcat(buffer, "═");
+        }
+        strcat(buffer, "╝");
+    }
+    else if (relativeRow < 3) {
+        // Navigation shortcuts for keys box
+        char shortcuts[3][40] = {
+            " ↑↓     Move selection",
+            "Enter   Select",
+            " ESC    Exit"
+        };
+        snprintf(buffer, bufferSize, "║ %-*s  ║", box2w - 2, shortcuts[relativeRow]);
+    }
+    else {
+        // Empty box content
+        snprintf(buffer, bufferSize, "║ %-*s  ║", box2w - 2, "");
+    }
 }
 
 /**
@@ -211,12 +265,16 @@ static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y
     // Validate parameters
     if (!menu || optionIndex < 0 || optionIndex >= menu->optionCount) return;
     
-    // Position cursor at the start of the menu option line
-    winTermSetCursor(0, y);
-    
     MenuOption* option = &menu->options[optionIndex];
     
-    // Start with the box border and spacing - exactly like menuui.c
+    // Save current cursor position
+    winTermCursorPos originalPos;
+    winTermGetCursorPosition(&originalPos);
+    
+    // Position cursor at the start of the line
+    winTermSetCursor(0, y);
+    
+    // Draw the left border and menu option
     printf("║   ");
     
     if (option->isDisabled) {
@@ -231,8 +289,24 @@ static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y
     }
     winTermResetColors();
     
-    // Add the right border - exactly like menuui.c
+    // Add spacing between boxes
     printf("  ║");
+    
+    // Calculate relative row and get right side content
+    int box2w = 35;
+    int headerLines = calculateMenuHeaderLines(menu);
+    int menuStartY = headerLines;
+    int relativeRow = y - menuStartY;
+    
+    char rightContent[100];
+    getRightSideContent(relativeRow, rightContent, sizeof(rightContent), box2w);
+    printf("%s", rightContent);
+    
+    // Restore cursor position if needed
+    // winTermSetCursor(originalPos.x, originalPos.y);
+    
+    // Force output
+    fflush(stdout);
 }
 
 /**
@@ -328,12 +402,12 @@ static void appDisplayErrorMessage(const char* message, int errorY) {
     winTermClearLine();
     
     // Get maximum display width for the message - with increased side box width
-    int box1w = 42; // menu box width
-    int box2w = 35; // side box width (matches main display function)
-    int fullboxw = box1w + box2w + 3; // Full width
+    int box1w = 43; // menu box width (including borders)
+    int box2w = 34; // side box width (including borders)
+    int fullboxw = box1w + box2w + 1; // Full width (including borders)
     
     // Format message to fit within the bottom box with proper padding
-    printf("║ ⚠ %-*s ║", fullboxw - 5, message);
+    printf("║ ⚠ %-*s║", fullboxw - 4, message);
 }
 
 /**
@@ -348,12 +422,12 @@ static void appClearErrorMessage(int errorY) {
     winTermClearLine();
     
     // Get maximum display width for the cleared space - with increased side box width
-    int box1w = 42; // menu box width
-    int box2w = 35; // side box width (matches main display function)
-    int fullboxw = box1w + box2w + 3; // Full width
+    int box1w = 43; // menu box width (including borders)
+    int box2w = 34; // side box width (including borders)
+    int fullboxw = box1w + box2w + 1; // Full width (including borders)
     
     // Redraw the box border characters - exactly like menuui.c
-    printf("║%*s ║", fullboxw, " ");
+    printf("║%*s║", fullboxw, " ");
 }
 
 /**
