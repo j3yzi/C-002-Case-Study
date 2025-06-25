@@ -55,8 +55,12 @@ int handleCreateStudentList(void);
 int handleSwitchStudentList(void);
 int handleAddStudent(void);
 int handleDisplayAllStudents(void);
+int handleSortStudentsByGrade(void);
 int handleStudentReport(void);
 int handleSaveStudentList(void);
 int handleLoadStudentList(void);
+
+// Course management function (implemented in courseio.c)
+int runCourseManagement(void);
 
 #endif 

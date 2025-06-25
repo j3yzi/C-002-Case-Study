@@ -455,8 +455,10 @@ bool appYesNoPrompt(const char* prompt) {
     winTermCursorPos pos;
     winTermGetCursorPosition(&pos);
     
-    // Display the prompt
+    // Display the prompt - make sure it's visible with appropriate formatting
+    winTermClearLine();
     printf("%s%s%s\n", UI_PROMPT, prompt, TXT_RESET);
+    fflush(stdout); // Ensure the prompt is displayed
     
     // Display initial options
     while (true) {

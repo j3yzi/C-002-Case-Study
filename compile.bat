@@ -10,10 +10,12 @@ gcc -o bin/PUP-InformationManagementSystem.exe ^
     src/ui/menuio.c ^
     src/ui/empio.c ^
     src/ui/stuio.c ^
+    src/ui/courseio.c ^
     src/modules/data.c ^
     src/modules/payroll.c ^
     include/models/employee.c ^
     include/models/student.c ^
+    include/models/course.c ^
     include/src/apctxt.c ^
     include/src/appwnd.c ^
     include/src/auth.c ^

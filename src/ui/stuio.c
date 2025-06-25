@@ -36,14 +36,32 @@ int getStudentDataFromUser(Student* newStudent) {
     winTermClearScreen();
     printf("=== Enter Student Details ===\n\n");
     
-    char genderInput[3], programInput[3];
+    char genderInput[3], programInput[programCodeLen];
     char yearBuffer[3], unitsBuffer[3];
     char prelimBuffer[10], midtermBuffer[10], finalExamBuffer[10];
+    
+    // Load available programs if not already loaded
+    if (g_programCount == 0) {
+        loadProgramsFromConfig();
+    }
+    
+    // Display available programs
+    printf("Available Programs:\n");
+    for (int i = 0; i < g_programCount; i++) {
+        printf("%s = %s\n", g_programs[i].code, g_programs[i].name);
+    }
+    printf("\n");
+    
+    // Create program choices array for validation
+    const char* programChoices[maxProgramCount];
+    for (int i = 0; i < g_programCount; i++) {
+        programChoices[i] = g_programs[i].code;
+    }
     
     appFormField detailFields[] = {
         { "Enter Student Number (10 digits): ", newStudent->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} },
         { "Enter Gender (M/F): ", genderInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"M", "F", "m", "f"}, .count = 4}} },
-        { "Enter Program (IT/CS): ", programInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"IT", "CS", "it", "cs"}, .count = 4}} },
+        { "Enter Program Code: ", programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} },
         { "Enter Year Level (1-4): ", yearBuffer, 2, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} },
         { "Enter Units Enrolled (1-30): ", unitsBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 30}} }
     };
@@ -51,7 +69,8 @@ int getStudentDataFromUser(Student* newStudent) {
 
     // Convert string inputs to appropriate data types
     newStudent->personal.gender = (genderInput[0] == 'M' || genderInput[0] == 'm') ? genderMale : genderFemale;
-    newStudent->personal.programCode = (programInput[0] == 'I' || programInput[0] == 'i') ? PROG_IT : PROG_CS;
+    strncpy(newStudent->personal.programCode, programInput, programCodeLen - 1);
+    newStudent->personal.programCode[programCodeLen - 1] = '\0';
     newStudent->personal.yearLevel = atoi(yearBuffer);
     newStudent->academic.unitsEnrolled = atoi(unitsBuffer);
 
@@ -80,7 +99,7 @@ int getStudentDataFromUser(Student* newStudent) {
     printf("Name: %s\n", newStudent->personal.name.fullName);
     printf("Student Number: %s\n", newStudent->personal.studentNumber);
     printf("Gender: %s\n", (newStudent->personal.gender == genderMale) ? "Male" : "Female");
-    printf("Program: %s\n", (newStudent->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Program: %s (%s)\n", newStudent->personal.programCode, getProgramName(newStudent->personal.programCode));
     printf("Year Level: %d\n", newStudent->personal.yearLevel);
     printf("Units Enrolled: %d\n", newStudent->academic.unitsEnrolled);
     printf("Prelim Grade: %.2f\n", newStudent->academic.prelimGrade);
@@ -344,7 +363,7 @@ int editStudentDataFromUser(Student* student) {
     printf("  Last Name: %s\n", student->personal.name.lastName);
     printf("Student Number: %s\n", student->personal.studentNumber);
     printf("Gender: %s\n", (student->personal.gender == genderMale) ? "Male" : "Female");
-    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Program: %s (%s)\n", student->personal.programCode, getProgramName(student->personal.programCode));
     printf("Year Level: %d\n", student->personal.yearLevel);
     printf("Academic Information:\n");
     printf("  Units Enrolled: %d\n", student->academic.unitsEnrolled);
@@ -400,20 +419,39 @@ int editStudentDataFromUser(Student* student) {
         }
         case '3': {
             printf("=== Edit Program ===\n");
-            char programInput[3];
+            char programInput[programCodeLen];
             char programPrompt[64];
             
-            sprintf(programPrompt, "Enter Program (IT/CS) [%s]: ", 
-                   (student->personal.programCode == PROG_IT) ? "IT" : "CS");
+            // Load available programs if not already loaded
+            if (g_programCount == 0) {
+                loadProgramsFromConfig();
+            }
+            
+            // Display available programs
+            printf("Available Programs:\n");
+            for (int i = 0; i < g_programCount; i++) {
+                printf("%s = %s\n", g_programs[i].code, g_programs[i].name);
+            }
+            printf("\n");
+            
+            // Create program choices array for validation
+            const char* programChoices[maxProgramCount];
+            for (int i = 0; i < g_programCount; i++) {
+                programChoices[i] = g_programs[i].code;
+            }
+            
+            sprintf(programPrompt, "Enter Program Code [%s]: ", student->personal.programCode);
             
             // Initialize with current value
-            programInput[0] = (student->personal.programCode == PROG_IT) ? 'I' : 'C';
-            programInput[1] = (student->personal.programCode == PROG_IT) ? 'T' : 'S';
-            programInput[2] = '\0';
+            strncpy(programInput, student->personal.programCode, programCodeLen - 1);
+            programInput[programCodeLen - 1] = '\0';
             
-            appFormField field = { programPrompt, programInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"IT", "CS", "it", "cs"}, .count = 4}} };
+            appFormField field = { programPrompt, programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} };
             appGetValidatedInput(&field, 1);
-            student->personal.programCode = (programInput[0] == 'I' || programInput[0] == 'i') ? PROG_IT : PROG_CS;
+            
+            // Update program code
+            strncpy(student->personal.programCode, programInput, programCodeLen - 1);
+            student->personal.programCode[programCodeLen - 1] = '\0';
             break;
         }
         case '4': {
@@ -479,7 +517,7 @@ int editStudentDataFromUser(Student* student) {
     printf("\n=== Updated Information ===\n");
     printf("Name: %s\n", student->personal.name.fullName);
     printf("Student Number: %s\n", student->personal.studentNumber);
-    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Program: %s (%s)\n", student->personal.programCode, getProgramName(student->personal.programCode));
     printf("Year Level: %d\n", student->personal.yearLevel);
     printf("Final Grade: %.2f (%s)\n", student->academic.finalGrade, student->academic.remarks);
     

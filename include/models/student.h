@@ -12,6 +12,9 @@
 #define studentLastNameLen 32
 #define studentRemarksLen 8 // "Passed" or "Failed" + null terminator
 #define maxStudentCreationCount 10
+#define programCodeLen 8    // Program code length (e.g., "IT", "CS") + null terminator
+#define programNameLen 64   // Program name length + null terminator
+#define maxProgramCount 20  // Maximum number of programs that can be defined
 
 // Configurable business values (loaded from config.ini)
 // Use getPassingGrade() function instead of hard-coded threshold
@@ -21,11 +24,15 @@ typedef enum {
     genderFemale
 } Gender;
 
-typedef enum {
-    PROG_IT, // Information Technology
-    PROG_CS, // Computer Science
-    // Add other programs as needed
-} ProgramCode;
+// Program structure for configurable programs
+typedef struct {
+    char code[programCodeLen];
+    char name[programNameLen];
+} Program;
+
+// Global program list
+extern Program g_programs[maxProgramCount];
+extern int g_programCount;
 
 typedef enum {
     YEAR_FIRST = 1,
@@ -51,7 +58,7 @@ typedef struct {
     char studentNumber[studentNumberLen];
     StudentName name;
     Gender gender;
-    ProgramCode programCode;
+    char programCode[programCodeLen]; // Changed from enum to string
     YearLevel yearLevel;
 } StudentInfo;
 
@@ -69,6 +76,14 @@ typedef struct {
     AcademicInfo academic;
     AcademicStanding standing;
 } Student;
+
+// Program management functions
+int loadProgramsFromConfig(void);
+const char* getProgramName(const char* programCode);
+int getProgramCount(void);
+const Program* getPrograms(void);
+int addProgram(const char* code, const char* name);
+int removeProgram(const char* code);
 
 // Function declarations  
 int composeStudentName(StudentName* name);

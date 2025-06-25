@@ -1,8 +1,208 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <windows.h>
 #include "../models/student.h"
 #include "../headers/apctxt.h"
-#include <string.h>
-#include <stdlib.h>
+
+// Global program list
+Program g_programs[maxProgramCount];
+int g_programCount = 0;
+
+/**
+ * @brief Loads program definitions from config.ini
+ * @return Returns the number of programs loaded, or -1 on error
+ */
+int loadProgramsFromConfig(void) {
+    char configPath[512];
+    
+    // Get the full path of the executable
+    char executablePath[512];
+    GetModuleFileName(NULL, executablePath, sizeof(executablePath));
+    
+    // Find the last backslash to get the directory
+    char* lastSlash = strrchr(executablePath, '\\');
+    if (lastSlash != NULL) {
+        *lastSlash = '\0'; // Remove the executable name, keep directory
+        snprintf(configPath, sizeof(configPath), "%s\\config.ini", executablePath);
+    } else {
+        // Fallback to current directory
+        strncpy(configPath, "config.ini", sizeof(configPath) - 1);
+        configPath[sizeof(configPath) - 1] = '\0';
+    }
+    
+    FILE* file = fopen(configPath, "r");
+    if (!file) {
+        return -1;
+    }
+    
+    // Reset program count
+    g_programCount = 0;
+    
+    char line[256];
+    int inProgramSection = 0;
+    
+    while (fgets(line, sizeof(line), file) && g_programCount < maxProgramCount) {
+        // Remove trailing newline
+        char* newline = strchr(line, '\n');
+        if (newline) *newline = '\0';
+        
+        // Skip empty lines and comments
+        if (line[0] == '\0' || line[0] == '#') continue;
+        
+        // Check for section header
+        if (line[0] == '[') {
+            inProgramSection = (strncmp(line, "[Programs]", 10) == 0);
+            continue;
+        }
+        
+        // Process program definitions
+        if (inProgramSection) {
+            char* equals = strchr(line, '=');
+            if (equals) {
+                // Extract program code and name
+                *equals = '\0';
+                char* code = line;
+                char* name = equals + 1;
+                
+                // Trim whitespace
+                while (*code && (*code == ' ' || *code == '\t')) code++;
+                while (*name && (*name == ' ' || *name == '\t')) name++;
+                
+                char* end = code + strlen(code) - 1;
+                while (end > code && (*end == ' ' || *end == '\t')) {
+                    *end = '\0';
+                    end--;
+                }
+                
+                end = name + strlen(name) - 1;
+                while (end > name && (*end == ' ' || *end == '\t')) {
+                    *end = '\0';
+                    end--;
+                }
+                
+                // Add to program list if valid
+                if (*code && *name) {
+                    strncpy(g_programs[g_programCount].code, code, programCodeLen - 1);
+                    g_programs[g_programCount].code[programCodeLen - 1] = '\0';
+                    
+                    strncpy(g_programs[g_programCount].name, name, programNameLen - 1);
+                    g_programs[g_programCount].name[programNameLen - 1] = '\0';
+                    
+                    g_programCount++;
+                }
+            }
+        }
+    }
+    
+    fclose(file);
+    
+    // If no programs were loaded, add defaults
+    if (g_programCount == 0) {
+        strcpy(g_programs[0].code, "IT");
+        strcpy(g_programs[0].name, "Information Technology");
+        strcpy(g_programs[1].code, "CS");
+        strcpy(g_programs[1].name, "Computer Science");
+        g_programCount = 2;
+    }
+    
+    return g_programCount;
+}
+
+/**
+ * @brief Gets the program name for a given program code
+ * @param programCode The program code to look up
+ * @return The program name or "Unknown Program" if not found
+ */
+const char* getProgramName(const char* programCode) {
+    if (!programCode) return "Unknown Program";
+    
+    for (int i = 0; i < g_programCount; i++) {
+        if (strcmp(g_programs[i].code, programCode) == 0) {
+            return g_programs[i].name;
+        }
+    }
+    
+    return "Unknown Program";
+}
+
+/**
+ * @brief Gets the number of defined programs
+ * @return The number of programs
+ */
+int getProgramCount(void) {
+    return g_programCount;
+}
+
+/**
+ * @brief Gets the array of defined programs
+ * @return Pointer to the program array
+ */
+const Program* getPrograms(void) {
+    return g_programs;
+}
+
+/**
+ * @brief Adds a new program to the program list
+ * @param code The program code
+ * @param name The program name
+ * @return 0 on success, -1 on failure
+ */
+int addProgram(const char* code, const char* name) {
+    if (!code || !name || g_programCount >= maxProgramCount) {
+        return -1;
+    }
+    
+    // Check if program code already exists
+    for (int i = 0; i < g_programCount; i++) {
+        if (strcmp(g_programs[i].code, code) == 0) {
+            return -1; // Program code already exists
+        }
+    }
+    
+    // Add new program
+    strncpy(g_programs[g_programCount].code, code, programCodeLen - 1);
+    g_programs[g_programCount].code[programCodeLen - 1] = '\0';
+    
+    strncpy(g_programs[g_programCount].name, name, programNameLen - 1);
+    g_programs[g_programCount].name[programNameLen - 1] = '\0';
+    
+    g_programCount++;
+    return 0;
+}
+
+/**
+ * @brief Removes a program from the program list
+ * @param code The program code to remove
+ * @return 0 on success, -1 on failure
+ */
+int removeProgram(const char* code) {
+    if (!code || g_programCount <= 0) {
+        return -1;
+    }
+    
+    // Find the program to remove
+    int index = -1;
+    for (int i = 0; i < g_programCount; i++) {
+        if (strcmp(g_programs[i].code, code) == 0) {
+            index = i;
+            break;
+        }
+    }
+    
+    if (index == -1) {
+        return -1; // Program not found
+    }
+    
+    // Remove program by shifting remaining programs
+    for (int i = index; i < g_programCount - 1; i++) {
+        strcpy(g_programs[i].code, g_programs[i + 1].code);
+        strcpy(g_programs[i].name, g_programs[i + 1].name);
+    }
+    
+    g_programCount--;
+    return 0;
+}
 
 /**
  * @brief Composes the student's full name based on their name parts.
@@ -170,7 +370,7 @@ void displayStudentDetails(const Student* student) {
     printf("Middle Name: %s\n", student->personal.name.middleName);
     printf("Last Name: %s\n", student->personal.name.lastName);
     printf("Gender: %s\n", (student->personal.gender == genderMale) ? "Male" : "Female");
-    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Program: %s (%s)\n", student->personal.programCode, getProgramName(student->personal.programCode));
     printf("Year Level: %d\n", student->personal.yearLevel);
     printf("Units Enrolled: %d\n", student->academic.unitsEnrolled);
     printf("Prelim Grade: %.2f\n", student->academic.prelimGrade);
@@ -192,7 +392,7 @@ void displayAllStudents(const list* studentList) {
     }
     
     printf("%-12s | %-25s | %-8s | %-4s | %-11s | %-7s\n",
-           "Student No.", "Full Name", "Course", "Year", "Final Grade", "Remarks");
+           "Student No.", "Full Name", "Program", "Year", "Final Grade", "Remarks");
     printf("------------------------------------------------------------------------------\n");
     
     node* current = studentList->head;
@@ -206,7 +406,7 @@ void displayAllStudents(const list* studentList) {
                 printf("%-12s | %-25s | %-8s | %-4d | %11.2f | %-7s\n",
                        student->personal.studentNumber,
                        student->personal.name.fullName,
-                       (student->personal.programCode == PROG_IT) ? "IT" : "CS",
+                       student->personal.programCode,
                        student->personal.yearLevel,
                        student->academic.finalGrade,
                        student->academic.remarks);
@@ -223,7 +423,7 @@ void displayAllStudents(const list* studentList) {
                     printf("%-12s | %-25s | %-8s | %-4d | %11.2f | %-7s\n",
                            student->personal.studentNumber,
                            student->personal.name.fullName,
-                           (student->personal.programCode == PROG_IT) ? "IT" : "CS",
+                           student->personal.programCode,
                            student->personal.yearLevel,
                            student->academic.finalGrade,
                            student->academic.remarks);

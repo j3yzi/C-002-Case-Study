@@ -159,7 +159,7 @@ int generateStudentReportFile(const list* studentList, char* generatedFilePath, 
                 fprintf(file, "%-12s | %-20s | %-8s | %6d | %6.2f | %6.2f | %6.2f | %-8s\n",
                        stu->personal.studentNumber,
                        stu->personal.name.fullName,
-                       (stu->personal.programCode == PROG_IT) ? "IT" : "CS",
+                       stu->personal.programCode,
                        stu->personal.yearLevel,
                        stu->academic.prelimGrade,
                        stu->academic.midtermGrade,
@@ -380,39 +380,114 @@ list* loadStudentDataFromFile(const char* filename, ListType listType) {
     return studentList;
 }
 
+// Function to find the middle node of a linked list using fast/slow pointer approach
+static node* findMiddleNode(node* head, node* tail) {
+    if (!head || head == tail) {
+        return head;
+    }
+    
+    node* slow = head;
+    node* fast = head->next;
+    
+    // Fast pointer moves twice as fast as slow pointer
+    while (fast != tail && fast->next != tail) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    
+    return slow;
+}
+
+// Function to merge two sorted linked lists
+static node* mergeSortedLists(node* left, node* right, node* tail, int descending, 
+                             int (*compareFunc)(void*, void*, int)) {
+    node dummy;
+    node* current = &dummy;
+    
+    // Merge the two lists
+    while (left != NULL && right != NULL && left != tail && right != tail) {
+        if (compareFunc(left->data, right->data, descending)) {
+            current->next = left;
+            left = left->next;
+        } else {
+            current->next = right;
+            right = right->next;
+        }
+        current = current->next;
+    }
+    
+    // Attach the remaining nodes
+    if (left != NULL && left != tail) {
+        current->next = left;
+    } else if (right != NULL && right != tail) {
+        current->next = right;
+    }
+    
+    return dummy.next;
+}
+
+// Compare function for student grades
+static int compareStudentGrades(void* data1, void* data2, int descending) {
+    Student* stu1 = (Student*)data1;
+    Student* stu2 = (Student*)data2;
+    
+    if (descending) {
+        return stu1->academic.finalGrade >= stu2->academic.finalGrade;
+    } else {
+        return stu1->academic.finalGrade <= stu2->academic.finalGrade;
+    }
+}
+
+// Recursive merge sort implementation for linked list
+static node* mergeSortList(node* head, node* tail, int descending, 
+                          int (*compareFunc)(void*, void*, int)) {
+    // Base case: empty list or single node
+    if (!head || head == tail || head->next == tail) {
+        return head;
+    }
+    
+    // Find the middle node
+    node* middle = findMiddleNode(head, tail);
+    node* right = middle->next;
+    
+    // Split the list into two halves
+    middle->next = NULL;
+    
+    // Recursively sort both halves
+    node* leftSorted = mergeSortList(head, NULL, descending, compareFunc);
+    node* rightSorted = mergeSortList(right, tail, descending, compareFunc);
+    
+    // Merge the sorted halves
+    return mergeSortedLists(leftSorted, rightSorted, tail, descending, compareFunc);
+}
+
 int sortStudentsByGrade(list* studentList, int descending) {
     if (!studentList || studentList->size <= 1) {
         return 0;
     }
     
-    // Simple bubble sort for students by final grade
-    int swapped;
-    node* current;
-    node* last = NULL;
+    // Handle circular lists by temporarily breaking the circle
+    node* oldTail = NULL;
     
-    do {
-        swapped = 0;
-        current = studentList->head;
-        
-        while (current->next != last && current->next != studentList->head) {
-            Student* stu1 = (Student*)current->data;
-            Student* stu2 = (Student*)current->next->data;
-            
-            int shouldSwap = descending ? 
-                (stu1->academic.finalGrade < stu2->academic.finalGrade) :
-                (stu1->academic.finalGrade > stu2->academic.finalGrade);
-                
-            if (shouldSwap) {
-                // Swap data pointers
-                void* temp = current->data;
-                current->data = current->next->data;
-                current->next->data = temp;
-                swapped = 1;
-            }
-            current = current->next;
-        }
-        last = current;
-    } while (swapped);
+    if (studentList->type == SINGLY_CIRCULAR || studentList->type == DOUBLY_CIRCULAR) {
+        oldTail = studentList->tail;
+        studentList->tail->next = NULL;  // Break the circle
+    }
+    
+    // Apply merge sort
+    studentList->head = mergeSortList(studentList->head, NULL, descending, compareStudentGrades);
+    
+    // Update the tail pointer
+    node* current = studentList->head;
+    while (current && current->next) {
+        current = current->next;
+    }
+    studentList->tail = current;
+    
+    // Restore circular structure if needed
+    if (oldTail) {
+        studentList->tail->next = studentList->head;  // Restore the circle
+    }
     
     return 1;
 }

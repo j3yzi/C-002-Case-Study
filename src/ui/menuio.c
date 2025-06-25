@@ -173,9 +173,13 @@ static void updateEmployeeMenuStates(Menu* menu) {
 static void updateStudentMenuStates(Menu* menu) {
     int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList] != 0);
     int hasStudents = hasActiveList && (stuManager.studentLists[stuManager.activeStudentList]->size > 0);
+    int hasMultipleStudents = hasActiveList && (stuManager.studentLists[stuManager.activeStudentList]->size > 1);
     int hasMultipleLists = (stuManager.studentListCount > 1);
     
     updateMenuStates(menu, hasActiveList, hasStudents, hasMultipleLists);
+    
+    // Update Sort Students option (menu option 8) - needs at least 2 students
+    menu->options[7].isDisabled = !hasMultipleStudents;
 }
 
 /**
@@ -210,12 +214,15 @@ int menuLoop(void) {
                 runStudentManagement();
                 break;
             case '3':
-                displaySystemStatistics();
+                runCourseManagement();
                 break;
             case '4':
-                runConfigurationManagement();
+                displaySystemStatistics();
                 break;
             case '5':
+                runConfigurationManagement();
+                break;
+            case '6':
                 printf("\nExiting PUP Information Management System...\n");
                 return 0;
             default:
@@ -415,10 +422,11 @@ int runStudentManagement(void) {
         {'5', "Delete Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'6', "Search Student", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'7', "Display All Students", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'8', "Student Report", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'9', "Save Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'A', "Load Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
+        {'8', "Sort Students by Grade", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'9', "Student Report", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'S', "Save Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'L', "Load Student List", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'B', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 12};
     
     do {
         // Update menu title with current active list info before displaying menu
@@ -484,13 +492,17 @@ int runStudentManagement(void) {
                 handleDisplayAllStudents();
                 break;
             case '8':
-                handleStudentReport();
+                handleSortStudentsByGrade();
                 break;
             case '9':
+                handleStudentReport();
+                break;
+            case 'S':
+            case 's':
                 handleSaveStudentList();
                 break;
-            case 'A':
-            case 'a':
+            case 'L':
+            case 'l':
                 handleLoadStudentList();
                 break;
             case 'B':
@@ -635,7 +647,51 @@ int handlePayrollReport(void) {
     if (reportResult > 0) {
         printf("Successfully generated payroll report!\n");
         printf("Report saved to: %s\n", reportFilePath);
-        printf("Processed %d employees\n", reportResult);
+        printf("Processed %d employees\n\n", reportResult);
+        
+        // Display the report content in the terminal
+        printf("=== Employee Payroll Report ===\n");
+        printf("%-12s | %-20s | %-8s | %-10s | %-10s | %-10s | %-10s | %-6s\n",
+               "Emp. Number", "Employee Name", "Status", "Basic Pay", "Overtime", "Deductions", "Net Pay", "Hours");
+        printf("------------------------------------------------------------------------------------------------------\n");
+        
+        list* employeeList = empManager.employeeLists[empManager.activeEmployeeList];
+        node* current = employeeList->head;
+        int count = 0;
+        double totalBasicPay = 0.0;
+        double totalOvertimePay = 0.0;
+        double totalDeductions = 0.0;
+        double totalNetPay = 0.0;
+        
+        if (current != NULL) {
+            do {
+                Employee* emp = (Employee*)current->data;
+                if (emp != NULL) {
+                    count++;
+                    
+                    printf("%-12s | %-20s | %-8s | %10.2f | %10.2f | %10.2f | %10.2f | %6d\n",
+                           emp->personal.employeeNumber,
+                           emp->personal.name.fullName,
+                           (emp->employment.status == statusRegular) ? "Regular" : "Casual",
+                           emp->payroll.basicPay,
+                           emp->payroll.overtimePay,
+                           emp->payroll.deductions,
+                           emp->payroll.netPay,
+                           emp->employment.hoursWorked);
+                           
+                    totalBasicPay += emp->payroll.basicPay;
+                    totalOvertimePay += emp->payroll.overtimePay;
+                    totalDeductions += emp->payroll.deductions;
+                    totalNetPay += emp->payroll.netPay;
+                }
+                current = current->next;
+            } while (current != employeeList->head && current != NULL);
+        }
+        
+        printf("------------------------------------------------------------------------------------------------------\n");
+        printf("%-32s | %10.2f | %10.2f | %10.2f | %10.2f |\n",
+               "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
+        printf("------------------------------------------------------------------------------------------------------\n");
     } else {
         printf("Failed to generate payroll report.\n");
     }
@@ -832,6 +888,39 @@ int handleDisplayAllStudents(void) {
     return 0;
 }
 
+int handleSortStudentsByGrade(void) {
+    winTermClearScreen();
+    printf("=== Sort Students by Grade ===\n\n");
+    
+    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+    if (!checkActiveList(hasActiveList, 0, "No active student list!")) {
+        return -1;
+    }
+    
+    // Check if there are enough students to sort
+    list* studentList = stuManager.studentLists[stuManager.activeStudentList];
+    if (studentList->size <= 1) {
+        printf("Not enough students to sort. Need at least 2 students.\n");
+        waitForKeypress(NULL);
+        return 0;
+    }
+    
+    printf("Sorting students by final grade (descending order)...\n\n");
+    
+    // Sort the students using the existing sortStudentsByGrade function
+    // The second parameter is set to 1 for descending order
+    if (sortStudentsByGrade(studentList, 1)) {
+        printf("Students sorted successfully!\n");
+        printf("\nSorted student list:\n");
+        displayAllStudents(studentList);
+    } else {
+        printf("Failed to sort students.\n");
+    }
+    
+    waitForKeypress(NULL);
+    return 0;
+}
+
 int handleStudentReport(void) {
     winTermClearScreen();
     printf("=== Student Report ===\n\n");
@@ -850,7 +939,50 @@ int handleStudentReport(void) {
     if (reportResult > 0) {
         printf("Successfully generated student report!\n");
         printf("Report saved to: %s\n", reportFilePath);
-        printf("Processed %d students\n", reportResult);
+        printf("Processed %d students\n\n", reportResult);
+        
+        // Display the report content in the terminal
+        printf("=== Student Academic Report ===\n");
+        printf("%-12s | %-20s | %-8s | %-6s | %-6s | %-6s | %-6s | %-8s\n",
+               "Student No.", "Student Name", "Program", "Year", "Prelim", "Midterm", "Final", "Remarks");
+        printf("-------------------------------------------------------------------------------------\n");
+        
+        list* studentList = stuManager.studentLists[stuManager.activeStudentList];
+        node* current = studentList->head;
+        int count = 0;
+        double totalFinalGrade = 0.0;
+        int passedCount = 0;
+        
+        if (current != NULL) {
+            do {
+                Student* stu = (Student*)current->data;
+                if (stu != NULL) {
+                    count++;
+                    
+                    printf("%-12s | %-20s | %-8s | %6d | %6.2f | %6.2f | %6.2f | %-8s\n",
+                           stu->personal.studentNumber,
+                           stu->personal.name.fullName,
+                           stu->personal.programCode,
+                           stu->personal.yearLevel,
+                           stu->academic.prelimGrade,
+                           stu->academic.midtermGrade,
+                           stu->academic.finalExamGrade,
+                           stu->academic.remarks);
+                           
+                    totalFinalGrade += stu->academic.finalGrade;
+                    if (strcmp(stu->academic.remarks, "Passed") == 0) {
+                        passedCount++;
+                    }
+                }
+                current = current->next;
+            } while (current != studentList->head && current != NULL);
+        }
+        
+        printf("-------------------------------------------------------------------------------------\n");
+        printf("Total students: %d\n", count);
+        printf("Average grade: %.2f\n", totalFinalGrade / count);
+        printf("Passed: %d (%.1f%%)\n", passedCount, (passedCount * 100.0) / count);
+        printf("Failed: %d (%.1f%%)\n", count - passedCount, ((count - passedCount) * 100.0) / count);
     } else {
         printf("Failed to generate student report.\n");
     }
