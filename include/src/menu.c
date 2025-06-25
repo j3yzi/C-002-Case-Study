@@ -45,11 +45,11 @@ void appDisplayMenu(const Menu* menu) {
     // Set console to UTF-8 encoding (in a more robust way)
     SetConsoleOutputCP(65001); // Set output to UTF-8 (CP_UTF8)
     
-    // Box dimensions - exactly like menuui.c printMenu
+    // Box dimensions - increased side box width for better description display
     char title1[] = "MENU";
     char title2[] = "KEYS";
     int box1w = 42; // menu box width
-    int box2w = box1w / 2 + 3; // side box width (24)
+    int box2w = 35; // side box width (increased from 24 to 35 for better text fit)
     int pad1 = (box1w - strlen(title1)) / 2; // padding for menu box
     int pad2 = (box2w - strlen(title2)) / 2; // padding for side box
 
@@ -279,8 +279,8 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     appDisplayMenuOption(menu, oldSelection, 0, menuStartY + oldSelection);
     appDisplayMenuOption(menu, newSelection, 0, menuStartY + newSelection);
     
-    // Update the description box when selection changes - exactly like menuui.c
-    int box2w = 42 / 2 + 3; // side box width (24)
+    // Update the description box when selection changes - with increased width
+    int box2w = 35; // side box width (matches main display function)
     const char* description = menu->options[newSelection].description;
     if (!description || strlen(description) == 0) {
         description = "Select this option to proceed.";
@@ -305,10 +305,11 @@ static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelectio
     strcpy(line2, full + split + 1); // rest of description
     
     // Update description box content (rows 5 and 6 in the side box)
-    winTermSetCursor(46, menuStartY + 5);
+    // Cursor position: main box (43) + space (1) + side box border (1) = 45
+    winTermSetCursor(45, menuStartY + 5);
     printf(" %-*s  ║", box2w - 2, line1);
     
-    winTermSetCursor(46, menuStartY + 6);
+    winTermSetCursor(45, menuStartY + 6);
     printf(" %-*s  ║", box2w - 2, line2);
 }
 
@@ -326,9 +327,9 @@ static void appDisplayErrorMessage(const char* message, int errorY) {
     // Clear just this line to prepare for the error message
     winTermClearLine();
     
-    // Get maximum display width for the message - exactly like menuui.c
+    // Get maximum display width for the message - with increased side box width
     int box1w = 42; // menu box width
-    int box2w = box1w / 2 + 3; // side box width
+    int box2w = 35; // side box width (matches main display function)
     int fullboxw = box1w + box2w + 3; // Full width
     
     // Format message to fit within the bottom box with proper padding
@@ -346,9 +347,9 @@ static void appClearErrorMessage(int errorY) {
     // Clear the entire line using winTermClearLine function
     winTermClearLine();
     
-    // Get maximum display width for the cleared space - exactly like menuui.c
+    // Get maximum display width for the cleared space - with increased side box width
     int box1w = 42; // menu box width
-    int box2w = box1w / 2 + 3; // side box width
+    int box2w = 35; // side box width (matches main display function)
     int fullboxw = box1w + box2w + 3; // Full width
     
     // Redraw the box border characters - exactly like menuui.c
