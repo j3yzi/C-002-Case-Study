@@ -3,29 +3,25 @@
 #ifndef EMPLOYEE_H
 #define EMPLOYEE_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-
 #include "../headers/list.h"
+#include "../headers/apctxt.h"
 
 // Forward declaration to avoid circular dependency
 typedef struct AppContext AppContext;
 
+// Fixed-size definitions for struct compatibility
 #define employeeNumberLen 11
 #define employeeNameLen 16
-
 #define employeeFirstNameLen 32
 #define employeeMiddleNameLen 32
 #define employeeLastNameLen 32
-
 #define maxEmployeeCreationCount 5
 #define maxEmployeeRecords 50
 
 #define payrollFileName "payroll.dat"
-#define regularHours 160.0f
-#define overtimeRate 0.5f
+
+// Configurable business values (loaded from config.ini)
+// Use getRegularHours() and getOvertimeRate() functions instead of direct macros
 
 typedef struct {
     char firstName[employeeFirstNameLen];

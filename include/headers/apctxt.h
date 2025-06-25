@@ -8,6 +8,32 @@
 #include <conio.h>
 #include <windows.h>
 
+// Configuration for business logic values (not struct sizes)
+typedef struct {
+    // Payroll settings
+    float regularHours;
+    float overtimeRate;
+    
+    // Academic settings
+    float passingGrade;
+    float minGrade;
+    float maxGrade;
+} Config;
+
+// Global configuration instance
+extern Config g_config;
+
+// Configuration functions
+void setDefaultConfig(void);
+int saveConfig(const char* config_file);
+int loadConfig(const char* config_file);
+void printCurrentConfig(void);
+
+// Convenience accessor functions
+float getRegularHours(void);
+float getOvertimeRate(void);
+float getPassingGrade(void);
+
 typedef struct {
     char* appName;
     char* appVersion;
@@ -51,6 +77,7 @@ typedef enum {
     IV_MAX_LEN_CHARS,
     IV_ALPHA_ONLY,
     IV_ALPHA_ONLY_MAX_LEN,
+    IV_OPTIONAL_ALPHA_ONLY_MAX_LEN,
 } IValidationType;
 
 typedef union {
@@ -90,6 +117,7 @@ typedef struct {
 void appMenuSetColor(int textColor, int bgColor);
 void appDisplayMenu(const Menu* menu);
 char initMenu(Menu* m);
+bool appYesNoPrompt(const char* prompt);
 
 // Validation functions
 void enableAnsiSupport();
@@ -115,7 +143,21 @@ void winTermClearScreen();
 void winTermGetCursorPosition(winTermCursorPos* position);
 void winTermResetColors();
 
-// void winTermPrintLine(char ch, int width);
-// void winTermPrintCentered(const char* text, int width);
+// Menu creation helper
+static inline MenuOption createMenuOption(char key, const char* text, bool disabled) {
+    return (MenuOption){
+        key, text, disabled, false, 
+        9, 0,  // highlight colors
+        7, 0,  // normal colors
+        8, 0,  // disabled colors
+        NULL   // no callback
+    };
+}
+
+// Common user interaction helper
+static inline void waitForKeypress(const char* message) {
+    printf("%s", message ? message : "Press any key to continue...");
+    _getch();
+}
 
 #endif // APCTXT_H

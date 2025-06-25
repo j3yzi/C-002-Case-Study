@@ -63,25 +63,40 @@ int composeEmployeeName(EmployeeName* name) {
     if (!name) {
         return 0;
     }
-
+    
     size_t fnLen = strlen(name->firstName);
-    size_t mnLen = strlen(name->middleName);
     size_t lnLen = strlen(name->lastName);
-    size_t totalLen = fnLen + mnLen + lnLen;
+    
+    // Add validation check: If the first name or last name is excessive in length, reject it
+    // This prevents accepting extremely long names that would be unreadable when truncated
+    if (fnLen > employeeNameLen - 5 || lnLen > employeeNameLen - 5) {
+        return 0;  // Names too long, reject
+    }
 
-    // If total length is exactly 15, use LastName+FirstName+MiddleName.
-    if (totalLen == (employeeNameLen - 1)) {
-        snprintf(name->fullName, employeeNameLen, "%s%s%s", name->lastName, name->firstName, name->middleName);
+    // Format 1: "Last, First" format (most compact)
+    if ((lnLen + fnLen + 3) < employeeNameLen) { // +3 for ", " and null
+        snprintf(name->fullName, employeeNameLen, "%.*s, %.*s", 
+                (int)lnLen, name->lastName,
+                (int)fnLen, name->firstName);
+        return 1;
+    }
+    
+    // Format 2: Use initials for first name if full name is too long
+    if ((lnLen + 3) < employeeNameLen) { // +3 for ", " and initial and null
+        snprintf(name->fullName, employeeNameLen, "%.*s, %c.", 
+                (int)lnLen, name->lastName,
+                name->firstName[0]);
+        return 1;
+    }
+    
+    // Format 3: Truncate last name if it's still too long
+    if (employeeNameLen > 5) { // Make sure we have at least a few characters
+        snprintf(name->fullName, employeeNameLen, "%.*s...", 
+                (int)(employeeNameLen - 4), name->lastName);
         return 1;
     }
 
-    // For all other cases, try LastName+FirstName.
-    if ((lnLen + fnLen) < employeeNameLen) {
-        snprintf(name->fullName, employeeNameLen, "%s%s", name->lastName, name->firstName);
-        return 1;
-    }
-
-    // If LastName+FirstName is too long, or the name is invalid, reject.
+    // If everything fails, which shouldn't happen given the constraints above
     return 0;
 }
 

@@ -23,30 +23,45 @@ int getStudentDataFromUser(Student* newStudent) {
         
         appFormField nameFields[] = {
             { "Enter First Name: ", newStudent->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
-            { "Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
+            { "Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
             { "Enter Last Name: ", newStudent->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
-        };
-        appGetValidatedInput(nameFields, 3);
-
-        isNameValid = composeStudentName(&newStudent->personal.name);
+        };        appGetValidatedInput(nameFields, 3);        isNameValid = composeStudentName(&newStudent->personal.name);
         if (!isNameValid) {
-            printf("\n[Error] Invalid name combination. It must be less than %d chars, or exactly %d with a middle name.\n", studentNameLen, studentNameLen - 1);
-            printf("Press any key to try again, or ESC to cancel...");
-            if (_getch() == 27) return -1; // ESC key
+            printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+            printf("        less than %d characters to fit in the %d character full name format.\n", studentNameLen - 5, studentNameLen);
+            waitForKeypress(NULL);
         }
     }
 
     winTermClearScreen();
     printf("=== Enter Student Details ===\n\n");
     
-    char genderInput[3], programInput[3];
+    char genderInput[3], programInput[programCodeLen];
     char yearBuffer[3], unitsBuffer[3];
     char prelimBuffer[10], midtermBuffer[10], finalExamBuffer[10];
+    
+    // Load available programs if not already loaded
+    if (g_programCount == 0) {
+        loadProgramsFromConfig();
+    }
+    
+    // Display available programs
+    printf("Available Programs:\n");
+    for (int i = 0; i < g_programCount; i++) {
+        printf("%s = %s\n", g_programs[i].code, g_programs[i].name);
+    }
+    printf("\n");
+    
+    // Create program choices array for validation
+    const char* programChoices[maxProgramCount];
+    for (int i = 0; i < g_programCount; i++) {
+        programChoices[i] = g_programs[i].code;
+    }
     
     appFormField detailFields[] = {
         { "Enter Student Number (10 digits): ", newStudent->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} },
         { "Enter Gender (M/F): ", genderInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"M", "F", "m", "f"}, .count = 4}} },
-        { "Enter Program (IT/CS): ", programInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"IT", "CS", "it", "cs"}, .count = 4}} },
+        { "Enter Program Code: ", programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} },
         { "Enter Year Level (1-4): ", yearBuffer, 2, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} },
         { "Enter Units Enrolled (1-30): ", unitsBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 30}} }
     };
@@ -54,7 +69,8 @@ int getStudentDataFromUser(Student* newStudent) {
 
     // Convert string inputs to appropriate data types
     newStudent->personal.gender = (genderInput[0] == 'M' || genderInput[0] == 'm') ? genderMale : genderFemale;
-    newStudent->personal.programCode = (programInput[0] == 'I' || programInput[0] == 'i') ? PROG_IT : PROG_CS;
+    strncpy(newStudent->personal.programCode, programInput, programCodeLen - 1);
+    newStudent->personal.programCode[programCodeLen - 1] = '\0';
     newStudent->personal.yearLevel = atoi(yearBuffer);
     newStudent->academic.unitsEnrolled = atoi(unitsBuffer);
 
@@ -83,7 +99,7 @@ int getStudentDataFromUser(Student* newStudent) {
     printf("Name: %s\n", newStudent->personal.name.fullName);
     printf("Student Number: %s\n", newStudent->personal.studentNumber);
     printf("Gender: %s\n", (newStudent->personal.gender == genderMale) ? "Male" : "Female");
-    printf("Program: %s\n", (newStudent->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Program: %s (%s)\n", newStudent->personal.programCode, getProgramName(newStudent->personal.programCode));
     printf("Year Level: %d\n", newStudent->personal.yearLevel);
     printf("Units Enrolled: %d\n", newStudent->academic.unitsEnrolled);
     printf("Prelim Grade: %.2f\n", newStudent->academic.prelimGrade);
@@ -91,11 +107,7 @@ int getStudentDataFromUser(Student* newStudent) {
     printf("Final Exam Grade: %.2f\n", newStudent->academic.finalExamGrade);
     printf("Final Grade: %.2f (%s)\n", newStudent->academic.finalGrade, newStudent->academic.remarks);
     
-    printf("\nConfirm this information? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm != 'Y' && confirm != 'y') {
+    if (!appYesNoPrompt("Confirm this information?")) {
         printf("Student creation cancelled.\n");
         return -1;
     }
@@ -110,8 +122,22 @@ int getStudentDataFromUser(Student* newStudent) {
  * @return Returns 0 on success, -1 on cancel.
  */
 int getStudentNumberFromUser(char* buffer, int bufferSize) {
-    appFormField field = { "Enter Student Number: ", buffer, bufferSize, IV_MAX_LEN, {.rangeInt = {.max = bufferSize - 1}} };
-    appGetValidatedInput(&field, 1);
+    fflush(stdout);
+    
+    if (fgets(buffer, bufferSize, stdin) == NULL) {
+        return -1; // Handle EOF or read error
+    }
+
+    // Remove newline character if present
+    char* newline = strchr(buffer, '\n');
+    if (newline) {
+        *newline = '\0';
+    } else {
+        // Clear any remaining input from the buffer if it was too long
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+    }
+    
     return 0;
 }
 
@@ -122,15 +148,15 @@ int getStudentNumberFromUser(char* buffer, int bufferSize) {
  */
 int handleSearchStudent(const list* studentList) {
     winTermClearScreen();
-    printf("=== Search Student ===\n\n");
-    printf("1. Search by Student Number\n");
-    printf("2. Search by Name\n");
-    printf("3. Display All Students\n");
-    printf("4. Back to Main Menu\n");
-    printf("\nEnter choice (1-4): ");
     
-    char choice = _getch();
-    printf("%c\n\n", choice);
+    Menu searchMenu = {1, "Search Student", (MenuOption[]){
+        {'1', "Search by Student Number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Display All Students", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
+    }, 4};
+    
+    char choice = initMenu(&searchMenu);
     
     switch (choice) {
         case '1': {
@@ -230,10 +256,6 @@ int handleEditStudent(list* studentList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleDeleteStudent(list* studentList) {
-    winTermClearScreen();
-    printf("=== Delete Student ===\n\n");
-    
-    // Validate student list first
     if (!studentList) {
         printf("Error: Student list is not available.\n");
         printf("Press any key to continue...");
@@ -248,71 +270,72 @@ int handleDeleteStudent(list* studentList) {
         _getch();
         return 0;
     }
-    
-    char stuNumber[studentNumberLen];
-    printf("Enter the student number you want to delete:\n");
-    if (getStudentNumberFromUser(stuNumber, studentNumberLen) != 0) {
-        printf("Operation cancelled.\n");
-        printf("Press any key to continue...");
-        _getch();
-        return 0;
-    }
-    
-    Student* stu = searchStudentByNumber(studentList, stuNumber);
-    if (!stu) {
-        printf("\n❌ Student with number '%s' was not found.\n", stuNumber);
-        printf("\nWould you like to:\n");
-        printf("1. Try a different student number\n");
-        printf("2. View all students\n");
-        printf("3. Return to main menu\n");
-        printf("\nEnter choice (1-3): ");
+
+    while (1) {
+        winTermClearScreen();
+        printf("=== Delete Student ===\n\n");
+        printf("Enter the student number to delete (or type 'back' to cancel):\n");
         
-        char choice = _getch();
-        printf("%c\n", choice);
-        
-        switch (choice) {
-            case '1':
-                return handleDeleteStudent(studentList);
-            case '2':
-                printf("\n=== Current Students ===\n");
-                displayAllStudents(studentList);
-                printf("\nPress any key to continue...");
-                _getch();
-                return 0;
-            case '3':
-            default:
-                printf("Returning to main menu...\n");
-                printf("Press any key to continue...");
-                _getch();
-                return 0;
+        char stuNumber[studentNumberLen];
+        getStudentNumberFromUser(stuNumber, studentNumberLen);
+
+        if (strcmp(stuNumber, "back") == 0) {
+            printf("\nOperation Cancelled.\n");
+            printf("Press any key to continue...");
+            _getch();
+            return 0;
         }
-    }
-    
-    printf("\n=== Student to Delete ===\n");
-    displayStudentDetails(stu);
-    
-    printf("\n⚠️  WARNING: This action cannot be undone!\n");
-    printf("Are you sure you want to delete this student? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm == 'Y' || confirm == 'y') {
-        printf("\nDeleting student...\n");
-        if (removeStudentFromList(studentList, stuNumber) == 0) {
-            printf("✅ Student '%s' deleted successfully!\n", stuNumber);
-            printf("Student count is now: %d\n", studentList->size);
+        
+          Student* stu = searchStudentByNumber(studentList, stuNumber);
+        if (stu) {
+            printf("\n=== Student to Delete ===\n");
+            displayStudentDetails(stu);
+            
+            printf("\n⚠️  WARNING: This action cannot be undone!\n");
+            if (appYesNoPrompt("Are you sure you want to delete this student?")) {
+                printf("\nDeleting student...\n");
+                if (removeStudentFromList(studentList, stuNumber) == 0) {
+                    printf("✅ Student '%s' deleted successfully!\n", stuNumber);
+                    printf("Student count is now: %d\n", studentList->size);
+                } else {
+                    printf("❌ Failed to delete student from the system.\n");
+                    printf("The student may have already been removed.\n");
+                }
+            } else {
+                printf("Delete operation cancelled.\n");
+                printf("Student '%s' was not deleted.\n", stuNumber);
+            }
+            
+            printf("\nPress any key to continue...");
+            _getch();
+            return 0; // Exit loop
         } else {
-            printf("❌ Failed to delete student from the system.\n");
-            printf("The student may have already been removed.\n");
+            printf("\n❌ Student with number '%s' was not found.\n", stuNumber);
+            printf("\nWhat would you like to do?\n");
+            printf("1. Try again\n");
+            printf("2. View all students\n");
+            printf("3. Back to Student Menu\n");
+            printf("\nSelect an option (1-3): ");
+            
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            switch (choice) {
+                case '1':
+                    continue; // Loop to try again
+                case '2':
+                    winTermClearScreen();
+                    printf("=== All Students ===\n\n");
+                    displayAllStudents(studentList);
+                    printf("\nPress any key to continue...");
+                    _getch();
+                    continue; // Loop back to delete prompt
+                case '3':
+                default:
+                    return 0; // Exit to student menu
+            }
         }
-    } else {
-        printf("Delete operation cancelled.\n");
-        printf("Student '%s' was not deleted.\n", stuNumber);
     }
-    
-    printf("\nPress any key to continue...");
-    _getch();
-    return 0;
 }
 
 /**
@@ -323,42 +346,64 @@ int handleDeleteStudent(list* studentList) {
 int editStudentDataFromUser(Student* student) {
     Student backup;
     memcpy(&backup, student, sizeof(Student)); // Backup original data
+
+    // Create a menu for editing options
+    char menuTitle[100];
+    sprintf(menuTitle, "Edit Student: %s", student->personal.studentNumber);
     
     winTermClearScreen();
-    printf("=== Edit Student Data ===\n\n");
-    printf("Current Student Information:\n");
-    printf("Name: %s %s %s\n", student->personal.name.firstName, 
-           student->personal.name.middleName, student->personal.name.lastName);
-    printf("Student Number: %s\n", student->personal.studentNumber);
-    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "IT" : "CS");
-    printf("Year Level: %d\n", student->personal.yearLevel);
-    printf("Final Grade: %.2f\n\n", student->academic.finalGrade);
+    printf("====================================\n");
+    printf("%s\n", menuTitle);
+    printf("====================================\n\n");
     
-    printf("Choose what to edit:\n");
-    printf("1. Name\n");
-    printf("2. Student Number\n");
-    printf("3. Program\n");
-    printf("4. Year Level\n");
-    printf("5. Grades\n");
-    printf("6. Edit All Fields\n");
-    printf("7. Cancel\n");
-    printf("\nEnter choice (1-7): ");
+    printf("Current Student Information:\n");
+    printf("Name: %s\n", student->personal.name.fullName);
+    printf("  First Name: %s\n", student->personal.name.firstName);
+    printf("  Middle Name: %s\n", student->personal.name.middleName);
+    printf("  Last Name: %s\n", student->personal.name.lastName);
+    printf("Student Number: %s\n", student->personal.studentNumber);
+    printf("Gender: %s\n", (student->personal.gender == genderMale) ? "Male" : "Female");
+    printf("Program: %s (%s)\n", student->personal.programCode, getProgramName(student->personal.programCode));
+    printf("Year Level: %d\n", student->personal.yearLevel);
+    printf("Academic Information:\n");
+    printf("  Units Enrolled: %d\n", student->academic.unitsEnrolled);
+    printf("  Prelim Grade: %.2f\n", student->academic.prelimGrade);
+    printf("  Midterm Grade: %.2f\n", student->academic.midtermGrade);
+    printf("  Final Exam Grade: %.2f\n", student->academic.finalExamGrade);
+    printf("  Final Grade: %.2f (%s)\n\n", student->academic.finalGrade, student->academic.remarks);
+    
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf(">> Edit Name\n");
+    printf(" Edit Student Number\n");
+    printf(" Edit Program\n");
+    printf(" Edit Year Level\n");
+    printf(" Edit Grades\n");
+    printf(" Edit All Fields\n");
+    printf(" Cancel\n");
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+    printf("\nSelect an option (1-7): ");
     
     char choice = _getch();
-    printf("%c\n\n", choice);
+    printf("%c\n", choice);
     
     switch (choice) {
         case '1': {
             printf("=== Edit Name ===\n");
+            char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];
+            sprintf(firstNamePrompt, "Enter First Name [%s]: ", student->personal.name.firstName);
+            sprintf(middleNamePrompt, "Enter Middle Name (optional) [%s]: ", student->personal.name.middleName);
+            sprintf(lastNamePrompt, "Enter Last Name [%s]: ", student->personal.name.lastName);
+            
             appFormField nameFields[] = {
-                { "Enter First Name: ", student->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
-                { "Enter Middle Name (optional): ", student->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
-                { "Enter Last Name: ", student->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
+                { firstNamePrompt, student->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
+                { middleNamePrompt, student->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
+                { lastNamePrompt, student->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
             };
             appGetValidatedInput(nameFields, 3);
             
             if (!composeStudentName(&student->personal.name)) {
-                printf("\n[Error] Invalid name combination. Changes reverted.\n");
+                printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
+                printf("        less than %d characters to fit in the %d character full name format. Changes reverted.\n", studentNameLen - 5, studentNameLen);
                 memcpy(&student->personal.name, &backup.personal.name, sizeof(StudentName));
                 return -1;
             }
@@ -366,22 +411,58 @@ int editStudentDataFromUser(Student* student) {
         }
         case '2': {
             printf("=== Edit Student Number ===\n");
-            appFormField field = { "Enter Student Number: ", student->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} };
+            char numberPrompt[64];
+            sprintf(numberPrompt, "Enter Student Number [%s]: ", student->personal.studentNumber);
+            appFormField field = { numberPrompt, student->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} };
             appGetValidatedInput(&field, 1);
             break;
         }
         case '3': {
             printf("=== Edit Program ===\n");
-            char programInput[3];
-            appFormField field = { "Enter Program (IT/CS): ", programInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"IT", "CS", "it", "cs"}, .count = 4}} };
+            char programInput[programCodeLen];
+            char programPrompt[64];
+            
+            // Load available programs if not already loaded
+            if (g_programCount == 0) {
+                loadProgramsFromConfig();
+            }
+            
+            // Display available programs
+            printf("Available Programs:\n");
+            for (int i = 0; i < g_programCount; i++) {
+                printf("%s = %s\n", g_programs[i].code, g_programs[i].name);
+            }
+            printf("\n");
+            
+            // Create program choices array for validation
+            const char* programChoices[maxProgramCount];
+            for (int i = 0; i < g_programCount; i++) {
+                programChoices[i] = g_programs[i].code;
+            }
+            
+            sprintf(programPrompt, "Enter Program Code [%s]: ", student->personal.programCode);
+            
+            // Initialize with current value
+            strncpy(programInput, student->personal.programCode, programCodeLen - 1);
+            programInput[programCodeLen - 1] = '\0';
+            
+            appFormField field = { programPrompt, programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} };
             appGetValidatedInput(&field, 1);
-            student->personal.programCode = (programInput[0] == 'I' || programInput[0] == 'i') ? PROG_IT : PROG_CS;
+            
+            // Update program code
+            strncpy(student->personal.programCode, programInput, programCodeLen - 1);
+            student->personal.programCode[programCodeLen - 1] = '\0';
             break;
         }
         case '4': {
             printf("=== Edit Year Level ===\n");
             char yearBuffer[3];
-            appFormField field = { "Enter Year Level (1-4): ", yearBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} };
+            char yearPrompt[64];
+            
+            sprintf(yearPrompt, "Enter Year Level (1-4) [%d]: ", student->personal.yearLevel);
+            sprintf(yearBuffer, "%d", student->personal.yearLevel);
+            
+            appFormField field = { yearPrompt, yearBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} };
             appGetValidatedInput(&field, 1);
             student->personal.yearLevel = atoi(yearBuffer);
             break;
@@ -389,10 +470,24 @@ int editStudentDataFromUser(Student* student) {
         case '5': {
             printf("=== Edit Grades ===\n");
             char prelimBuffer[10], midtermBuffer[10], finalExamBuffer[10];
+            char prelimPrompt[64], midtermPrompt[64], finalPrompt[64];
+            
+            sprintf(prelimPrompt, "Enter Prelim Grade (0.0-100.0) [%.2f]: ", 
+                   student->academic.prelimGrade);
+            sprintf(midtermPrompt, "Enter Midterm Grade (0.0-100.0) [%.2f]: ", 
+                   student->academic.midtermGrade);
+            sprintf(finalPrompt, "Enter Final Exam Grade (0.0-100.0) [%.2f]: ", 
+                   student->academic.finalExamGrade);
+                   
+            // Initialize with current values
+            sprintf(prelimBuffer, "%.2f", student->academic.prelimGrade);
+            sprintf(midtermBuffer, "%.2f", student->academic.midtermGrade);
+            sprintf(finalExamBuffer, "%.2f", student->academic.finalExamGrade);
+            
             appFormField gradeFields[] = {
-                { "Enter Prelim Grade (0.0-100.0): ", prelimBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
-                { "Enter Midterm Grade (0.0-100.0): ", midtermBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
-                { "Enter Final Exam Grade (0.0-100.0): ", finalExamBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} }
+                { prelimPrompt, prelimBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
+                { midtermPrompt, midtermBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
+                { finalPrompt, finalExamBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} }
             };
             appGetValidatedInput(gradeFields, 3);
             
@@ -422,15 +517,11 @@ int editStudentDataFromUser(Student* student) {
     printf("\n=== Updated Information ===\n");
     printf("Name: %s\n", student->personal.name.fullName);
     printf("Student Number: %s\n", student->personal.studentNumber);
-    printf("Program: %s\n", (student->personal.programCode == PROG_IT) ? "Information Technology" : "Computer Science");
+    printf("Program: %s (%s)\n", student->personal.programCode, getProgramName(student->personal.programCode));
     printf("Year Level: %d\n", student->personal.yearLevel);
     printf("Final Grade: %.2f (%s)\n", student->academic.finalGrade, student->academic.remarks);
     
-    printf("\nConfirm these changes? (Y/N): ");
-    char confirm = _getch();
-    printf("%c\n", confirm);
-    
-    if (confirm != 'Y' && confirm != 'y') {
+    if (!appYesNoPrompt("Confirm these changes?")) {
         printf("Changes cancelled. Reverting to original values.\n");
         memcpy(student, &backup, sizeof(Student));
         return -1;

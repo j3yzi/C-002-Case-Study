@@ -2,30 +2,65 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
+#include <windows.h>
 
 #include "../include/headers/apctxt.h"
 #include "../include/headers/state.h"
 #include "../include/headers/list.h"
 #include "../include/models/employee.h"
 #include "../include/models/student.h"
+#include "../include/models/course.h"
 #include "ui/menuio.h"
+#include "ui/courseio.h"
+
+// External reference to the main menu defined in menuio.c
+extern Menu mainMenu;
+
+/**
+ * @brief Gets the path to the configuration file
+ * @return A pointer to a static buffer containing the path
+ */
+static const char* getConfigPath(void) {
+    static char configPath[600];
+    char executablePath[512];
+    GetModuleFileName(NULL, executablePath, sizeof(executablePath));   // Get the full path of the executable
+    char* lastSlash = strrchr(executablePath, '\\'); // Find the last backslash to get the directory
+    if (lastSlash != NULL) {
+        *lastSlash = '\0'; // Remove the executable name, keep directory
+        sprintf(configPath, "%s\\config.ini", executablePath);
+    } else {
+        strcpy(configPath, "config.ini"); // Fallback to current directory
+    }
+    return configPath;
+}
 
 int main(void)
 {   
-    // Initialize the Windows terminal
-    appInitWinTerm("PUP Information Management System - Employee & Student Records");
+    const char* configPath = getConfigPath();
+    loadConfig(configPath); // Get configuration path and load configuration
+    appInitWinTerm("PUP Information Management System - Employee, Student & Course Records"); // Initialize the Windows terminal
+    initMultiListManager(); // Initialize the multi-list management system
+    initCourseCatalogManager(); // Initialize the course catalog manager
     
-    // Initialize the multi-list management system
-    initMultiListManager();
+    // Load program configuration
+    int programCount = loadProgramsFromConfig();
+    printf("Loaded %d program(s) from configuration.\n", programCount);
     
-    // Start the main menu loop
-    int result = menuLoop();
+    // Update the main menu to include course management
+    mainMenu = (Menu){1, "PUP Information Management System", (MenuOption[]){
+        {'1', "Employee Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Student Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Course Management", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "System Statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Configuration Settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Exit", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 6
+    };
     
-    // Clean up all resources before exit
-    cleanupMultiListManager();
+    int result = menuLoop(); // Start the main menu loop
     
-    printf("Press any key to exit...");
-    _getch();
+    cleanupMultiListManager(); // Clean up all resources before exit
+    cleanupCourseCatalogManager(); // Clean up course catalog resources
+    waitForKeypress("Press any key to exit...");
     
     return result;
 } 

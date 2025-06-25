@@ -1,9 +1,7 @@
 #include "../headers/apctxt.h"
 
-void enableAnsiSupport();
-void readLine(char* buffer, int size);
-bool isValid(const char* input, IValidationType type, IValidationParams params, const char* fieldName);
-void appGetValidatedInput(appFormField* fields, int fieldCount);
+// Forward declaration for internal helper function
+static const char* extractFieldName(const char* prompt);
 
 /**
  * @brief Enables ANSI escape sequence processing on Windows consoles.
@@ -15,6 +13,10 @@ void enableAnsiSupport() {
         if (hOut != INVALID_HANDLE_VALUE) {
             DWORD dwMode = 0;
             if (GetConsoleMode(hOut, &dwMode)) {
+                // Define ENABLE_VIRTUAL_TERMINAL_PROCESSING if not defined (for older Windows SDKs)
+                #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                    #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+                #endif
                 dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
                 SetConsoleMode(hOut, dwMode);
             }
@@ -45,7 +47,7 @@ void readLine(char* buffer, int size) {
  * @param prompt The full prompt string (e.g., "Enter employee first name: ")
  * @return A simplified field name (e.g., "First Name")
  */
-const char* extractFieldName(const char* prompt) {
+static const char* extractFieldName(const char* prompt) {
     // Common field mappings for better user experience
     if (strstr(prompt, "first name") || strstr(prompt, "First Name")) return "First Name";
     if (strstr(prompt, "last name") || strstr(prompt, "Last Name")) return "Last Name";
@@ -104,8 +106,8 @@ const char* extractFieldName(const char* prompt) {
  * @return Returns true if the input is valid, false otherwise.
  */
 bool isValid(const char* input, IValidationType type, IValidationParams params, const char* fieldName) {
-    // Special case: IV_OPTIONAL allows empty input
-    if (type == IV_OPTIONAL && input[0] == '\0') {
+    // Special cases: IV_OPTIONAL and IV_OPTIONAL_ALPHA_ONLY_MAX_LEN allow empty input
+    if ((type == IV_OPTIONAL || type == IV_OPTIONAL_ALPHA_ONLY_MAX_LEN) && input[0] == '\0') {
         return true;
     }
     
@@ -201,6 +203,29 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
             
         case IV_ALPHA_ONLY_MAX_LEN:
             {
+                // First check length
+                if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
+                    printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 
+                           fieldName, params.maxLengthChars.maxLength, strlen(input));
+                    return false;
+                }
+                
+                // Then check alphabetic characters only
+                for (int i = 0; input[i] != '\0'; i++) {
+                    char c = input[i];
+                    // Allow only alphabetic characters and spaces
+                    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
+                        printf("   [Error] %s can only contain letters and spaces. Invalid character: '%c'\n", 
+                               fieldName, c);
+                        return false;
+                    }
+                }
+                return true;
+            }
+              case IV_OPTIONAL_ALPHA_ONLY_MAX_LEN:
+            {
+                // Empty input was already checked at the beginning of the function
+                // Validate as alphabetic with max length
                 // First check length
                 if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
                     printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 

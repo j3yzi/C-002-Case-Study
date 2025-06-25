@@ -32,6 +32,13 @@ int menuLoop(void);
 void checkStates(void);
 void displaySystemStatistics(void);
 
+// Configuration management functions
+int runConfigurationManagement(void);
+int handleUpdatePayrollSettings(void);
+int handleUpdateAcademicSettings(void);
+int handleSaveConfiguration(const char* configPath);
+int handleResetConfiguration(const char* configPath);
+
 // Employee management functions
 int runEmployeeManagement(void);
 int handleCreateEmployeeList(void);
@@ -48,8 +55,12 @@ int handleCreateStudentList(void);
 int handleSwitchStudentList(void);
 int handleAddStudent(void);
 int handleDisplayAllStudents(void);
+int handleSortStudentsByGrade(void);
 int handleStudentReport(void);
 int handleSaveStudentList(void);
 int handleLoadStudentList(void);
+
+// Course management function (implemented in courseio.c)
+int runCourseManagement(void);
 
 #endif 

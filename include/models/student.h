@@ -1,9 +1,10 @@
 #ifndef STUDENT_H
 #define STUDENT_H
 
-#include <stdbool.h>
 #include "../headers/list.h"
+#include "../headers/apctxt.h"
 
+// Fixed-size definitions for struct compatibility  
 #define studentNumberLen 11 // 10 chars + null terminator
 #define studentNameLen 31   // 30 chars + null terminator
 #define studentFirstNameLen 32
@@ -11,17 +12,27 @@
 #define studentLastNameLen 32
 #define studentRemarksLen 8 // "Passed" or "Failed" + null terminator
 #define maxStudentCreationCount 10
+#define programCodeLen 8    // Program code length (e.g., "IT", "CS") + null terminator
+#define programNameLen 64   // Program name length + null terminator
+#define maxProgramCount 20  // Maximum number of programs that can be defined
+
+// Configurable business values (loaded from config.ini)
+// Use getPassingGrade() function instead of hard-coded threshold
 
 typedef enum {
     genderMale,
     genderFemale
 } Gender;
 
-typedef enum {
-    PROG_IT, // Information Technology
-    PROG_CS, // Computer Science
-    // Add other programs as needed
-} ProgramCode;
+// Program structure for configurable programs
+typedef struct {
+    char code[programCodeLen];
+    char name[programNameLen];
+} Program;
+
+// Global program list
+extern Program g_programs[maxProgramCount];
+extern int g_programCount;
 
 typedef enum {
     YEAR_FIRST = 1,
@@ -47,7 +58,7 @@ typedef struct {
     char studentNumber[studentNumberLen];
     StudentName name;
     Gender gender;
-    ProgramCode programCode;
+    char programCode[programCodeLen]; // Changed from enum to string
     YearLevel yearLevel;
 } StudentInfo;
 
@@ -66,8 +77,16 @@ typedef struct {
     AcademicStanding standing;
 } Student;
 
-// Function declarations
-bool composeStudentName(StudentName* name);
+// Program management functions
+int loadProgramsFromConfig(void);
+const char* getProgramName(const char* programCode);
+int getProgramCount(void);
+const Program* getPrograms(void);
+int addProgram(const char* code, const char* name);
+int removeProgram(const char* code);
+
+// Function declarations  
+int composeStudentName(StudentName* name);
 void calculateFinalGrade(Student* student);
 Student* searchStudentByNumber(const list* studentList, const char* studentNumber);
 Student* searchStudentByName(const list* studentList, const char* fullName);
