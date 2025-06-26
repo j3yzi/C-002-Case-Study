@@ -3,27 +3,9 @@
 
 #include "../../include/headers/apctxt.h"
 #include "../../include/headers/list.h"
+#include "../../include/headers/interface.h"
 #include "../../include/models/employee.h"
 #include "../../include/models/student.h"
-
-// Multi-list management structures
-typedef struct {
-    list* employeeLists[10];  // Support up to 10 employee lists
-    char employeeListNames[10][50];
-    int employeeListCount;
-    int activeEmployeeList;
-} EmployeeManager;
-
-typedef struct {
-    list* studentLists[10];   // Support up to 10 student lists  
-    char studentListNames[10][50];
-    int studentListCount;
-    int activeStudentList;
-} StudentManager;
-
-// Global manager instances
-extern EmployeeManager empManager;
-extern StudentManager stuManager;
 
 // Main coordination functions
 void initMultiListManager(void);

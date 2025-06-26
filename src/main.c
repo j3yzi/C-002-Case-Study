@@ -7,6 +7,7 @@
 #include "../include/headers/apctxt.h"
 #include "../include/headers/state.h"
 #include "../include/headers/list.h"
+#include "../include/headers/interface.h"
 #include "../include/models/employee.h"
 #include "../include/models/student.h"
 #include "../include/models/course.h"
@@ -39,6 +40,7 @@ int main(void)
     const char* configPath = getConfigPath();
     loadConfig(configPath); // Get configuration path and load configuration
     appInitWinTerm("PUP Information Management System - Employee, Student & Course Records"); // Initialize the Windows terminal
+    initConsole(); // Initialize the new console interface system
     initMultiListManager(); // Initialize the multi-list management system
     initCourseCatalogManager(); // Initialize the course catalog manager
     

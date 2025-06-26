@@ -4,7 +4,68 @@
 #include <conio.h>
 #include "empio.h"
 #include "../../include/headers/apctxt.h"
+#include "../../include/headers/interface.h"
 #include "../../include/models/employee.h"
+
+/**
+ * @brief Helper function to run a menu with the new interface system
+ * @param menu Pointer to the menu to display
+ * @return Returns the selected menu option character
+ */
+static char runMenuWithInterface(Menu* menu) {
+    int selected = 0;
+    int key;
+    
+    // Find first non-disabled option
+    while (selected < menu->optionCount && menu->options[selected].isDisabled) {
+        selected++;
+    }
+    if (selected >= menu->optionCount) selected = 0;
+    
+    while (1) {
+        // Clear screen and display the menu
+        winTermClearScreen();
+        displayMenu(menu, selected);
+        
+        // Get user input
+        key = _getch();
+        
+        // Handle special keys (arrow keys)
+        if (key == 0 || key == 224) {
+            key = _getch();
+            if (key == 72) { // Up arrow
+                int oldSelected = selected;
+                do {
+                    selected--;
+                    if (selected < 0) selected = menu->optionCount - 1;
+                } while (menu->options[selected].isDisabled && selected != oldSelected);
+            }
+            else if (key == 80) { // Down arrow
+                int oldSelected = selected;
+                do {
+                    selected++;
+                    if (selected >= menu->optionCount) selected = 0;
+                } while (menu->options[selected].isDisabled && selected != oldSelected);
+            }
+        }
+        else if (key == 13) { // Enter key
+            if (!menu->options[selected].isDisabled) {
+                return menu->options[selected].key;
+            }
+        }
+        else if (key == 27) { // Escape key
+            return menu->options[menu->optionCount - 1].key; // Return last option (usually Exit/Back)
+        }
+        else {
+            // Check if key matches any menu option
+            for (int i = 0; i < menu->optionCount; i++) {
+                if (key == menu->options[i].key && !menu->options[i].isDisabled) {
+                    return menu->options[i].key;
+                }
+            }
+        }
+    }
+}
 
 /**
  * @brief Prompts the user for all new employee data and validates it.
@@ -109,7 +170,7 @@ int handleSearchEmployee(const list* employeeList) {
         {'4', "Back to Main Menu", "Return to the employee management menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
     }, 4};
     
-    char choice = initMenu(&searchMenu);
+    char choice = runMenuWithInterface(&searchMenu);
     
     switch (choice) {
         case '1': {

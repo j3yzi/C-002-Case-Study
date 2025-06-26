@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
+#include <stdbool.h>
+#include <time.h>
+#include <ctype.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "menuio.h"
 #include "empio.h"
 #include "stuio.h"
@@ -9,6 +15,7 @@
 #include "../modules/payroll.h"
 #include "../../include/headers/apctxt.h"
 #include "../../include/headers/state.h"
+#include "../../include/headers/interface.h"
 #include "../../include/models/employee.h"
 #include "../../include/models/student.h"
 #include "../../include/headers/list.h"
@@ -26,6 +33,113 @@ Menu mainMenu = {1, "PUP Information Management System", (MenuOption[]){
     {'5', "Configuration Settings", "Modify system configuration and settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
     {'6', "Exit", "Close the application and return to system", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 6
 };
+
+/**
+ * @brief Helper function to run a menu with the new interface system
+ * @param menu Pointer to the menu to display
+ * @return Returns the selected menu option character
+ */
+static char runMenuWithInterface(Menu* menu) {
+    int selected = 0;
+    int prevSelected = -1; // Initialize to -1 to force initial drawing
+    int key;
+    bool running = true;
+    time_t lastTimeUpdate = 0;
+    
+    // Find first non-disabled option
+    while (selected < menu->optionCount && menu->options[selected].isDisabled) {
+        selected++;
+    }
+    if (selected >= menu->optionCount) selected = 0;
+    
+    // Get the console size
+    int consoleWidth, consoleHeight;
+    getConsoleSize(&consoleWidth, &consoleHeight);
+    
+    // Use constant width from interface.c
+    int totalMenuNameWidth = 60; // MENU_HEADER_WIDTH from interface.c
+    int paddingX = 5;
+    int paddingY = 2;
+    
+    // Always make option box exactly 2/3 of the total width
+    int totalOptionBoxWidth = (totalMenuNameWidth * 2) / 3;
+    
+    // Initial full menu draw
+    winTermClearScreen();
+    displayMenu(menu, selected);
+    
+    while (running) {
+        // Only update what changed
+        if (selected != prevSelected) {
+            updateMenuSelection(menu, prevSelected, selected, consoleWidth, totalMenuNameWidth, paddingX, paddingY);
+            prevSelected = selected;
+        }
+        
+        // Update time every second
+        time_t currentTime = time(NULL);
+        if (currentTime > lastTimeUpdate) {
+            updateInfoBoxTimeDate(consoleWidth, totalMenuNameWidth, totalOptionBoxWidth, paddingX, paddingY);
+            lastTimeUpdate = currentTime;
+        }
+        
+        // Check for keyboard input with timeout
+        if (_kbhit()) {
+            key = _getch();
+            
+            // Handle special keys (arrow keys)
+            if (key == 0 || key == 224) {
+                key = _getch(); // Get the actual key code
+                if (key == 72) { // Up arrow
+                    int oldSelected = selected;
+                    do {
+                        selected--;
+                        if (selected < 0) selected = menu->optionCount - 1;
+                    } while (menu->options[selected].isDisabled && selected != oldSelected);
+                }
+                else if (key == 80) { // Down arrow
+                    int oldSelected = selected;
+                    do {
+                        selected++;
+                        if (selected >= menu->optionCount) selected = 0;
+                    } while (menu->options[selected].isDisabled && selected != oldSelected);
+                }
+            }
+            else if (key == 13) { // Enter key
+                if (!menu->options[selected].isDisabled) {
+                    return menu->options[selected].key;
+                }
+            }
+            else if (key == 27) { // Escape key
+                // Find exit/back option (usually last, but could be different)
+                for (int i = menu->optionCount - 1; i >= 0; i--) {
+                    if (!menu->options[i].isDisabled) {
+                        return menu->options[i].key;
+                    }
+                }
+                return menu->options[menu->optionCount - 1].key; // Fallback to last option
+            }
+            else {
+                // Check if key matches any menu option
+                for (int i = 0; i < menu->optionCount; i++) {
+                    if ((key == menu->options[i].key || key == tolower(menu->options[i].key)) && !menu->options[i].isDisabled) {
+                        return menu->options[i].key;
+                    }
+                }
+            }
+        }
+        
+        // Small delay to prevent CPU hogging
+        Sleep(50);
+    }
+    
+    // Find last non-disabled option as fallback
+    for (int i = menu->optionCount - 1; i >= 0; i--) {
+        if (!menu->options[i].isDisabled) {
+            return menu->options[i].key;
+        }
+    }
+    return menu->options[menu->optionCount - 1].key; // Final fallback
+}
 
 /**
  * @brief Gets the path to the configuration file
@@ -202,9 +316,12 @@ static void updateStudentMenuStates(Menu* menu) {
 int menuLoop(void) {
     char choice;
     
+    // Initialize console for proper display
+    initConsole();
+    
     do {
         checkStates();
-        choice = initMenu(&mainMenu);
+        choice = runMenuWithInterface(&mainMenu);
         
         switch(choice) {
             case '1':
@@ -228,7 +345,7 @@ int menuLoop(void) {
                 printf("Thank you for using the system!\n");
                 return 0;
             default:
-                // This should not happen as initMenu handles invalid options
+                // This should not happen as runMenuWithInterface handles invalid options
                 break;
         }
     } while (1);
@@ -338,7 +455,7 @@ int runEmployeeManagement(void) {
         // Update menu option states based on current manager state
         updateEmployeeMenuStates(&employeeMenu);
         
-        choice = initMenu(&employeeMenu);
+        choice = runMenuWithInterface(&employeeMenu);
         
         switch(choice) {
             case '1':
@@ -391,8 +508,6 @@ int runEmployeeManagement(void) {
             case 'b':
                 return 0; // Return to main menu
             default:
-                printf("\nInvalid option. Press any key to continue...");
-                _getch();
                 break;
         }
     } while (1);
@@ -445,7 +560,7 @@ int runStudentManagement(void) {
         // Update menu option states based on current manager state
         updateStudentMenuStates(&studentMenu);
         
-        choice = initMenu(&studentMenu);
+        choice = runMenuWithInterface(&studentMenu);
         
         switch(choice) {
             case '1':
@@ -502,8 +617,6 @@ int runStudentManagement(void) {
             case 'b':
                 return 0; // Return to main menu
             default:
-                printf("\nInvalid option. Press any key to continue...");
-                _getch();
                 break;
         }
     } while (1);
@@ -1215,7 +1328,7 @@ int runConfigurationManagement(void) {
         printf("  Min Grade: %.1f\n", g_config.minGrade);
         printf("  Max Grade: %.1f\n\n", g_config.maxGrade);
         
-        choice = initMenu(&configMenu);
+        choice = runMenuWithInterface(&configMenu);
         
         switch(choice) {
             case '1':
@@ -1233,8 +1346,6 @@ int runConfigurationManagement(void) {
             case '5':
                 return 0;
             default:
-                printf("\nInvalid option. Press any key to continue...");
-                _getch();
                 break;
         }
     } while (1);
