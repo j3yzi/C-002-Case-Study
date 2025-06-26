@@ -2,6 +2,7 @@
 #define INTERFACE_H
 
 #include "apctxt.h"
+#include "state.h"
 #include "list.h"
 #include "../models/employee.h"
 #include "../models/student.h"
@@ -31,6 +32,13 @@ typedef struct {
 
 extern EmployeeManager empManager;
 extern StudentManager stuManager;
+
+// State management functions
+void checkMenuStates(Menu* menu);
+void updateMenuOptionStates(Menu* menu, int hasActiveList, int hasItems, int hasMultipleLists);
+void updateEmployeeMenuStates(Menu* menu);
+void updateStudentMenuStates(Menu* menu);
+bool checkActiveList(int isActiveList, int listSize, const char* errorMessage);
 
 // Menu display functions
 void displayMenuHeader(const Menu* menu, int consoleWidth, int totalMenuNameWidth, int paddingX, int paddingY);

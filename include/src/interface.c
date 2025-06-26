@@ -7,8 +7,9 @@
 #include <time.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "interface.h"
+#include "../headers/interface.h"
 #include "../headers/apctxt.h"
+#include "../headers/state.h"
 
 // Constants
 #define MENU_HEADER_WIDTH 60  // Constant width for menu headers
@@ -544,5 +545,163 @@ bool appYesNoPrompt(const char* prompt) {
             printf("\n");
             return false;
         }
+    }
+}
+
+// State Management Functions
+
+/**
+ * @brief Generic function to check if an active list exists and has items
+ * @param isActiveList Flag indicating if there's an active list
+ * @param listSize Size of the active list (0 if no active list)
+ * @param errorMessage Message to display if no active list
+ * @return Returns true if list exists and operation can proceed, false otherwise
+ */
+bool checkActiveList(int isActiveList, int listSize, const char* errorMessage) {
+    // Mark listSize as unused to avoid compiler warning
+    (void)listSize; // Suppress unused parameter warning
+    
+    if (!isActiveList) {
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                            ERROR                                  ║\n");
+        printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+        printf("║                                                                   ║\n");
+        printf("║  %-63s  ║\n", errorMessage ? errorMessage : "No active list!");
+        printf("║                                                                   ║\n");
+        printf("║  Please create or load a list first before performing this       ║\n");
+        printf("║  operation.                                                       ║\n");
+        printf("║                                                                   ║\n");
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("\nPress any key to continue...");
+        _getch();
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief Generic function to update menu option states based on list availability
+ * @param menu Pointer to the menu to update
+ * @param hasActiveList Flag indicating if there's an active list
+ * @param hasItems Flag indicating if the active list has items
+ * @param hasMultipleLists Flag indicating if there are multiple lists
+ */
+void updateMenuOptionStates(Menu* menu, int hasActiveList, int hasItems, int hasMultipleLists) {
+    if (!menu || !menu->options || menu->optionCount == 0) return;
+    
+    // This is a generic template - specific implementations should override this
+    // based on their menu structure
+    
+    for (int i = 0; i < menu->optionCount; i++) {
+        // Default behavior: enable all options
+        menu->options[i].isDisabled = false;
+        
+        // You can add generic rules here based on option keys or text
+        // For example, search/display operations typically need items
+        if (hasItems == 0) {
+            char key = menu->options[i].key;
+            if (key == '6' || key == '7' || key == '8' || key == '9') {
+                // Typically search, display, report, save operations
+                menu->options[i].isDisabled = true;
+            }
+        }
+        
+        // Switch operations typically need multiple lists
+        if (hasMultipleLists == 0) {
+            char key = menu->options[i].key;
+            if (key == '2') {
+                // Typically switch list operation
+                menu->options[i].isDisabled = true;
+            }
+        }
+        
+        // Add operations typically need an active list
+        if (hasActiveList == 0) {
+            char key = menu->options[i].key;
+            if (key == '3' || key == '4' || key == '5') {
+                // Typically add, edit, delete operations
+                menu->options[i].isDisabled = true;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Updates employee menu option states based on current manager state
+ * @param menu Pointer to the employee menu to update
+ */
+void updateEmployeeMenuStates(Menu* menu) {
+    if (!menu) return;
+    
+    // Get current employee manager state
+    extern EmployeeManager empManager;
+    
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && 
+                        empManager.employeeLists[empManager.activeEmployeeList] != NULL);
+    int hasEmployees = hasActiveList && 
+                      (empManager.employeeLists[empManager.activeEmployeeList]->size > 0);
+    int hasMultipleLists = (empManager.employeeListCount > 1);
+    
+    // Apply generic state rules
+    updateMenuOptionStates(menu, hasActiveList, hasEmployees, hasMultipleLists);
+    
+    // Employee-specific overrides can be added here
+    // For example, payroll reports might have special requirements
+}
+
+/**
+ * @brief Updates student menu option states based on current manager state
+ * @param menu Pointer to the student menu to update
+ */
+void updateStudentMenuStates(Menu* menu) {
+    if (!menu) return;
+    
+    // Get current student manager state
+    extern StudentManager stuManager;
+    
+    int hasActiveList = (stuManager.activeStudentList >= 0 && 
+                        stuManager.studentLists[stuManager.activeStudentList] != NULL);
+    int hasStudents = hasActiveList && 
+                     (stuManager.studentLists[stuManager.activeStudentList]->size > 0);
+    int hasMultipleLists = (stuManager.studentListCount > 1);
+    int hasMultipleStudents = hasActiveList && 
+                             (stuManager.studentLists[stuManager.activeStudentList]->size > 1);
+    
+    // Apply generic state rules
+    updateMenuOptionStates(menu, hasActiveList, hasStudents, hasMultipleLists);
+    
+    // Student-specific overrides
+    for (int i = 0; i < menu->optionCount; i++) {
+        // Sort operation typically needs at least 2 students
+        if (menu->options[i].key == '8') {
+            menu->options[i].isDisabled = !hasMultipleStudents;
+        }
+    }
+}
+
+/**
+ * @brief Main function to check and update menu states based on global application state
+ * @param menu Pointer to the menu to update states for
+ */
+void checkMenuStates(Menu* menu) {
+    if (!menu) return;
+    
+    // Check if this is a main menu (usually has fewer options and different structure)
+    if (menu->optionCount <= 6) {
+        // Main menu options are usually always available
+        for (int i = 0; i < menu->optionCount; i++) {
+            menu->options[i].isDisabled = false;
+        }
+        return;
+    }
+    
+    // For sub-menus, try to determine the type based on menu name or structure
+    if (menu->name && strstr(menu->name, "Employee")) {
+        updateEmployeeMenuStates(menu);
+    } else if (menu->name && strstr(menu->name, "Student")) {
+        updateStudentMenuStates(menu);
+    } else {
+        // Generic state checking for unknown menu types
+        updateMenuOptionStates(menu, 1, 1, 1); // Enable all by default
     }
 } 

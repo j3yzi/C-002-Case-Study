@@ -1,12 +1,25 @@
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <conio.h>
 #include <stdbool.h>
 #include <time.h>
 #include <ctype.h>
-#ifdef _WIN32
-#include <windows.h>
+#include <conio.h>
+
+// Ensure NULL is defined
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+// Ensure boolean constants are defined
+#ifndef true
+#define true 1
+#endif
+#ifndef false
+#define false 0
 #endif
 #include "menuio.h"
 #include "empio.h"
@@ -107,6 +120,16 @@ static char runMenuWithInterface(Menu* menu) {
             else if (key == 13) { // Enter key
                 if (!menu->options[selected].isDisabled) {
                     return menu->options[selected].key;
+                } else {
+                    // Show error message for disabled option
+                    printf("\n\nOption '%c - %s' is currently disabled.\n", 
+                           menu->options[selected].key, menu->options[selected].text);
+                    printf("Please select a different option.\n");
+                    printf("Press any key to continue...");
+                    _getch();
+                    // Force full redraw
+                    winTermClearScreen();
+                    displayMenu(menu, selected);
                 }
             }
             else if (key == 27) { // Escape key
@@ -121,8 +144,21 @@ static char runMenuWithInterface(Menu* menu) {
             else {
                 // Check if key matches any menu option
                 for (int i = 0; i < menu->optionCount; i++) {
-                    if ((key == menu->options[i].key || key == tolower(menu->options[i].key)) && !menu->options[i].isDisabled) {
-                        return menu->options[i].key;
+                    if (key == menu->options[i].key || key == tolower(menu->options[i].key)) {
+                        if (!menu->options[i].isDisabled) {
+                            return menu->options[i].key;
+                        } else {
+                            // Show error message for disabled option
+                            printf("\n\nOption '%c - %s' is currently disabled.\n", 
+                                   menu->options[i].key, menu->options[i].text);
+                            printf("Please select a different option.\n");
+                            printf("Press any key to continue...");
+                            _getch();
+                            // Force full redraw
+                            winTermClearScreen();
+                            displayMenu(menu, selected);
+                            break;
+                        }
                     }
                 }
             }
@@ -203,111 +239,7 @@ void cleanupMultiListManager(void) {
     printf("PUP Information Management System cleaned up!\n");
 }
 
-/**
- * @brief Updates main menu option states
- */
-void checkStates(void) {
-    // Main menu options are always available
-}
 
-/**
- * @brief Generic function to check if an active list exists and has items
- * @param isActiveList Flag indicating if there's an active list
- * @param listSize Size of the active list (0 if no active list)
- * @param errorMessage Message to display if no active list
- * @return Returns 1 if list exists and operation can proceed, 0 otherwise
- */
-static int checkActiveList(int isActiveList, int listSize, const char* errorMessage) {
-    // Mark listSize as unused to avoid compiler warning
-    (void)listSize; // Suppress unused parameter warning
-    
-    if (!isActiveList) {
-        winTermClearScreen();
-        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-        printf("║                            ERROR                                  ║\n");
-        printf("╠═══════════════════════════════════════════════════════════════════╣\n");
-        printf("║                                                                   ║\n");
-        printf("║  %-63s  ║\n", errorMessage ? errorMessage : "No active list!");
-        printf("║                                                                   ║\n");
-        printf("║  Please create or load a list first before performing this       ║\n");
-        printf("║  operation.                                                       ║\n");
-        printf("║                                                                   ║\n");
-        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
-        waitForKeypress("\nPress any key to continue...");
-        return 0;
-    }
-    return 1;
-}
-
-/**
- * @brief Updates menu option states based on list availability
- * @param menu Pointer to the menu to update
- * @param hasActiveList Flag indicating if there's an active list
- * @param hasItems Flag indicating if the active list has items
- * @param hasMultipleLists Flag indicating if there are multiple lists
- */
-static void updateMenuStates(Menu* menu, int hasActiveList, int hasItems, int hasMultipleLists) {
-    // Create List (1) - Always available
-    menu->options[0].isDisabled = 0;
-    
-    // Switch List (2) - Only if multiple lists exist
-    menu->options[1].isDisabled = !hasMultipleLists;
-    
-    // Add Item (3) - Only if there's an active list
-    menu->options[2].isDisabled = !hasActiveList;
-    
-    // Edit Item (4) - Only if there are items in active list
-    menu->options[3].isDisabled = !hasItems;
-    
-    // Delete Item (5) - Only if there are items in active list
-    menu->options[4].isDisabled = !hasItems;
-    
-    // Search Item (6) - Only if there are items in active list
-    menu->options[5].isDisabled = !hasItems;
-    
-    // Display All Items (7) - Only if there are items in active list
-    menu->options[6].isDisabled = !hasItems;
-    
-    // Report (8) - Only if there are items in active list
-    menu->options[7].isDisabled = !hasItems;
-    
-    // Save List (9) - Only if there's an active list with items
-    menu->options[8].isDisabled = !hasItems;
-    
-    // Load List (A) - Always available
-    menu->options[9].isDisabled = 0;
-    
-    // Back to Main Menu (B) - Always available
-    menu->options[10].isDisabled = 0;
-}
-
-/**
- * @brief Updates employee menu option states based on current manager state
- * @param menu Pointer to the employee menu to update
- */
-static void updateEmployeeMenuStates(Menu* menu) {
-    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList] != 0);
-    int hasEmployees = hasActiveList && (empManager.employeeLists[empManager.activeEmployeeList]->size > 0);
-    int hasMultipleLists = (empManager.employeeListCount > 1);
-    
-    updateMenuStates(menu, hasActiveList, hasEmployees, hasMultipleLists);
-}
-
-/**
- * @brief Updates student menu option states based on current manager state
- * @param menu Pointer to the student menu to update
- */
-static void updateStudentMenuStates(Menu* menu) {
-    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList] != 0);
-    int hasStudents = hasActiveList && (stuManager.studentLists[stuManager.activeStudentList]->size > 0);
-    int hasMultipleStudents = hasActiveList && (stuManager.studentLists[stuManager.activeStudentList]->size > 1);
-    int hasMultipleLists = (stuManager.studentListCount > 1);
-    
-    updateMenuStates(menu, hasActiveList, hasStudents, hasMultipleLists);
-    
-    // Update Sort Students option (menu option 8) - needs at least 2 students
-    menu->options[7].isDisabled = !hasMultipleStudents;
-}
 
 /**
  * @brief Main menu loop
@@ -320,7 +252,7 @@ int menuLoop(void) {
     initConsole();
     
     do {
-        checkStates();
+        checkMenuStates(&mainMenu);
         choice = runMenuWithInterface(&mainMenu);
         
         switch(choice) {
@@ -453,7 +385,7 @@ int runEmployeeManagement(void) {
         employeeMenu.name = menuTitle;
         
         // Update menu option states based on current manager state
-        updateEmployeeMenuStates(&employeeMenu);
+        checkMenuStates(&employeeMenu);
         
         choice = runMenuWithInterface(&employeeMenu);
         
@@ -558,7 +490,7 @@ int runStudentManagement(void) {
         studentMenu.name = menuTitle;
         
         // Update menu option states based on current manager state
-        updateStudentMenuStates(&studentMenu);
+        checkMenuStates(&studentMenu);
         
         choice = runMenuWithInterface(&studentMenu);
         
