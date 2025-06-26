@@ -402,39 +402,65 @@ int editEmployeeDataFromUser(Employee* employee) {
     char menuTitle[100];
     sprintf(menuTitle, "Edit Employee: %s", employee->personal.employeeNumber);
     
+    // Display current employee information first
     winTermClearScreen();
-    printf("====================================\n");
-    printf("%s\n", menuTitle);
-    printf("====================================\n\n");
-    
-    printf("Current Employee Information:\n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
+    printf("                    CURRENT EMPLOYEE INFORMATION                   \n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
     printf("Name: %s\n", employee->personal.name.fullName);
-    printf("  First Name: %s\n", employee->personal.name.firstName);
-    printf("  Middle Name: %s\n", employee->personal.name.middleName);
-    printf("  Last Name: %s\n", employee->personal.name.lastName);
+    printf("  • First Name: %s\n", employee->personal.name.firstName);
+    printf("  • Middle Name: %s\n", employee->personal.name.middleName);
+    printf("  • Last Name: %s\n", employee->personal.name.lastName);
     printf("Employee Number: %s\n", employee->personal.employeeNumber);
     printf("Status: %s\n", (employee->employment.status == statusRegular) ? "Regular" : "Casual");
-    printf("Hours Worked: %d\n", employee->employment.hoursWorked);
-    printf("Basic Rate: %.2f\n\n", employee->employment.basicRate);
+    printf("Hours Worked: %d hours\n", employee->employment.hoursWorked);
+    printf("Basic Rate: ₱%.2f per hour\n", employee->employment.basicRate);
+    printf("═══════════════════════════════════════════════════════════════════\n\n");
+    printf("Select what you would like to edit:\n\n");
     
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf(">> Edit Name\n");
-    printf(" Edit Employee Number\n");
-    printf(" Edit Employment Status\n");
-    printf(" Edit Hours Worked\n");
-    printf(" Edit Basic Rate\n");
-    printf(" Edit All Fields\n");
-    printf(" Cancel\n");
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf("\nSelect an option (1-7): ");
+    // Create the menu with proper interface
+    Menu editMenu = {1, menuTitle, (MenuOption[]){
+        {'1', "Edit Name", "Modify employee's first, middle, or last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Edit Employee Number", "Change the employee identification number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Edit Employment Status", "Switch between Regular and Casual status", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Edit Hours Worked", "Update the number of hours worked", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Edit Basic Rate", "Modify the hourly pay rate", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Edit All Fields", "Update all employee information at once", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Cancel", "Return without making any changes", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 7
+    };
     
-    char choice = _getch();
-    printf("%c\n", choice);
+    char choice = runMenuWithInterface(&editMenu);
     
     switch (choice) {
         case '1': {
-            // Edit name
-            printf("=== Edit Name ===\n");
+            // Edit name - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Employee Name ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 3;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
+            // Center the form within a box
+            int boxWidth = 60;
+            int boxStartX = (consoleWidth - boxWidth) / 2;
+            
+            setCursor(boxStartX, startY + 2);
+            printf("╔");
+            for (int i = 0; i < boxWidth - 2; i++) printf("═");
+            printf("╗\n");
+            
+            setCursor(boxStartX, startY + 3);
+            printf("║%*s║\n", boxWidth - 2, "");
+            
             char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];
             sprintf(firstNamePrompt, "Enter First Name [%s]: ", employee->personal.name.firstName);
             sprintf(middleNamePrompt, "Enter Middle Name (optional) [%s]: ", employee->personal.name.middleName);
@@ -444,7 +470,19 @@ int editEmployeeDataFromUser(Employee* employee) {
                 { firstNamePrompt, employee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
                 { middleNamePrompt, employee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
                 { lastNamePrompt, employee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
-            };appGetValidatedInput(nameFields, 3);
+            };
+            
+            // Position cursor for input
+            setCursor(boxStartX + 2, startY + 4);
+            appGetValidatedInput(nameFields, 3);
+            
+            setCursor(boxStartX, startY + 8);
+            printf("║%*s║\n", boxWidth - 2, "");
+            
+            setCursor(boxStartX, startY + 9);
+            printf("╚");
+            for (int i = 0; i < boxWidth - 2; i++) printf("═");
+            printf("╝\n");
             
             if (!composeEmployeeName(&employee->personal.name)) {
                 printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
@@ -455,8 +493,22 @@ int editEmployeeDataFromUser(Employee* employee) {
             break;
         }
         case '2': {
-            // Edit employee number
-            printf("=== Edit Employee Number ===\n");
+            // Edit employee number - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Employee Number ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char numberPrompt[64];
             sprintf(numberPrompt, "Enter Employee Number [%s]: ", employee->personal.employeeNumber);
             appFormField field = { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} };
@@ -464,8 +516,22 @@ int editEmployeeDataFromUser(Employee* employee) {
             break;
         }
         case '3': {
-            // Edit status
-            printf("=== Edit Employment Status ===\n");
+            // Edit status - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Employment Status ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char statusInput[3];
             char statusPrompt[64];
             sprintf(statusPrompt, "Enter Status (R/C) [%c]: ", 
@@ -480,8 +546,22 @@ int editEmployeeDataFromUser(Employee* employee) {
             break;
         }
         case '4': {
-            // Edit hours worked
-            printf("=== Edit Hours Worked ===\n");
+            // Edit hours worked - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Hours Worked ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char hoursBuffer[10];
             char hoursPrompt[64];
             
@@ -495,8 +575,22 @@ int editEmployeeDataFromUser(Employee* employee) {
             break;
         }
         case '5': {
-            // Edit basic rate
-            printf("=== Edit Basic Rate ===\n");
+            // Edit basic rate - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Basic Rate ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char rateBuffer[20];
             char ratePrompt[64];
             
@@ -510,8 +604,21 @@ int editEmployeeDataFromUser(Employee* employee) {
             break;
         }
         case '6': {
-            // Edit all fields
-            printf("=== Edit All Fields ===\n\n");
+            // Edit all fields - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit All Employee Fields ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 3;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
             // Name fields
             printf("--- Name Information ---\n");
             char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];

@@ -438,44 +438,59 @@ int editStudentDataFromUser(Student* student) {
     char menuTitle[100];
     sprintf(menuTitle, "Edit Student: %s", student->personal.studentNumber);
     
+    // Display current student information first
     winTermClearScreen();
-    printf("====================================\n");
-    printf("%s\n", menuTitle);
-    printf("====================================\n\n");
-    
-    printf("Current Student Information:\n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
+    printf("                     CURRENT STUDENT INFORMATION                   \n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
     printf("Name: %s\n", student->personal.name.fullName);
-    printf("  First Name: %s\n", student->personal.name.firstName);
-    printf("  Middle Name: %s\n", student->personal.name.middleName);
-    printf("  Last Name: %s\n", student->personal.name.lastName);
+    printf("  • First Name: %s\n", student->personal.name.firstName);
+    printf("  • Middle Name: %s\n", student->personal.name.middleName);
+    printf("  • Last Name: %s\n", student->personal.name.lastName);
     printf("Student Number: %s\n", student->personal.studentNumber);
     printf("Gender: %s\n", (student->personal.gender == genderMale) ? "Male" : "Female");
     printf("Program: %s (%s)\n", student->personal.programCode, getProgramName(student->personal.programCode));
     printf("Year Level: %d\n", student->personal.yearLevel);
-    printf("Academic Information:\n");
-    printf("  Units Enrolled: %d\n", student->academic.unitsEnrolled);
-    printf("  Prelim Grade: %.2f\n", student->academic.prelimGrade);
-    printf("  Midterm Grade: %.2f\n", student->academic.midtermGrade);
-    printf("  Final Exam Grade: %.2f\n", student->academic.finalExamGrade);
-    printf("  Final Grade: %.2f (%s)\n\n", student->academic.finalGrade, student->academic.remarks);
+    printf("\nAcademic Information:\n");
+    printf("  • Units Enrolled: %d units\n", student->academic.unitsEnrolled);
+    printf("  • Prelim Grade: %.2f\n", student->academic.prelimGrade);
+    printf("  • Midterm Grade: %.2f\n", student->academic.midtermGrade);
+    printf("  • Final Exam Grade: %.2f\n", student->academic.finalExamGrade);
+    printf("  • Final Grade: %.2f (%s)\n", student->academic.finalGrade, student->academic.remarks);
+    printf("═══════════════════════════════════════════════════════════════════\n\n");
+    printf("Select what you would like to edit:\n\n");
     
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf(">> Edit Name\n");
-    printf(" Edit Student Number\n");
-    printf(" Edit Program\n");
-    printf(" Edit Year Level\n");
-    printf(" Edit Grades\n");
-    printf(" Edit All Fields\n");
-    printf(" Cancel\n");
-    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-    printf("\nSelect an option (1-7): ");
+    // Create the menu with proper interface
+    Menu editMenu = {1, menuTitle, (MenuOption[]){
+        {'1', "Edit Name", "Modify student's first, middle, or last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Edit Student Number", "Change the student identification number", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Edit Program", "Change the academic program and course code", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Edit Year Level", "Update the current year level (1-4)", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Edit Grades", "Modify prelim, midterm, and final exam grades", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Edit All Fields", "Update all student information at once", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Cancel", "Return without making any changes", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 7
+    };
     
-    char choice = _getch();
-    printf("%c\n", choice);
+    char choice = runMenuWithInterface(&editMenu);
     
     switch (choice) {
         case '1': {
-            printf("=== Edit Name ===\n");
+            // Edit name - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Student Name ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char firstNamePrompt[128], middleNamePrompt[128], lastNamePrompt[128];
             sprintf(firstNamePrompt, "Enter First Name [%s]: ", student->personal.name.firstName);
             sprintf(middleNamePrompt, "Enter Middle Name (optional) [%s]: ", student->personal.name.middleName);
@@ -497,7 +512,22 @@ int editStudentDataFromUser(Student* student) {
             break;
         }
         case '2': {
-            printf("=== Edit Student Number ===\n");
+            // Edit student number - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Student Number ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char numberPrompt[64];
             sprintf(numberPrompt, "Enter Student Number [%s]: ", student->personal.studentNumber);
             appFormField field = { numberPrompt, student->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} };
@@ -505,7 +535,21 @@ int editStudentDataFromUser(Student* student) {
             break;
         }
         case '3': {
-            printf("=== Edit Program ===\n");
+            // Edit program - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Student Program ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 3;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
             char programInput[programCodeLen];
             char programPrompt[64];
             
@@ -542,7 +586,22 @@ int editStudentDataFromUser(Student* student) {
             break;
         }
         case '4': {
-            printf("=== Edit Year Level ===\n");
+            // Edit year level - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Year Level ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 5;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             char yearBuffer[3];
             char yearPrompt[64];
             
@@ -555,7 +614,21 @@ int editStudentDataFromUser(Student* student) {
             break;
         }
         case '5': {
-            printf("=== Edit Grades ===\n");
+            // Edit grades - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit Student Grades ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 3;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
             char prelimBuffer[10], midtermBuffer[10], finalExamBuffer[10];
             char prelimPrompt[64], midtermPrompt[64], finalPrompt[64];
             
@@ -585,8 +658,22 @@ int editStudentDataFromUser(Student* student) {
             break;
         }
         case '6': {
-            // Edit all fields - just call getStudentDataFromUser
-            printf("=== Edit All Fields ===\n\n");
+            // Edit all fields - with centered display
+            winTermClearScreen();
+            
+            // Get console size for centering
+            int consoleWidth, consoleHeight;
+            getConsoleSize(&consoleWidth, &consoleHeight);
+            
+            // Display centered header
+            const char* header = "=== Edit All Student Fields ===";
+            int headerLen = strlen(header);
+            int startX = (consoleWidth - headerLen) / 2;
+            int startY = 3;
+            
+            setCursor(startX, startY);
+            printf("%s\n\n", header);
+            
             if (getStudentDataFromUser(student) != 0) {
                 memcpy(student, &backup, sizeof(Student));
                 return -1;
