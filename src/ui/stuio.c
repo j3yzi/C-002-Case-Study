@@ -183,22 +183,19 @@ int getStudentDataFromUser(Student* newStudent) {
  * @return Returns 0 on success, -1 on cancel.
  */
 int getStudentNumberFromUser(char* buffer, int bufferSize) {
-    fflush(stdout);
+    // Clear the buffer first
+    memset(buffer, 0, bufferSize);
     
-    if (fgets(buffer, bufferSize, stdin) == NULL) {
-        return -1; // Handle EOF or read error
-    }
-
-    // Remove newline character if present
-    char* newline = strchr(buffer, '\n');
-    if (newline) {
-        *newline = '\0';
-    } else {
-        // Clear any remaining input from the buffer if it was too long
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
-    }
+    // Use the proper validation system
+    appFormField field = { 
+        "Enter Student Number: ", 
+        buffer, 
+        bufferSize, 
+        IV_MAX_LEN, 
+        {.rangeInt = {.max = bufferSize - 1}} 
+    };
     
+    appGetValidatedInput(&field, 1);
     return 0;
 }
 
@@ -272,38 +269,67 @@ int handleSearchStudent(const list* studentList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleEditStudent(list* studentList) {
+    if (!studentList || studentList->size == 0) {
+        winTermClearScreen();
+        printf("=== Edit Student ===\n\n");
+        printf("No students available to edit.\n");
+        printf("Please add some students first.\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
     winTermClearScreen();
     printf("=== Edit Student ===\n\n");
+    printf("Current students in the list:\n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
+    displayAllStudents(studentList);
+    printf("═══════════════════════════════════════════════════════════════════\n\n");
     
     char stuNumber[studentNumberLen];
+    printf("Which student would you like to edit?\n");
     if (getStudentNumberFromUser(stuNumber, studentNumberLen) != 0) {
         return -1;
     }
     
     Student* existingStu = searchStudentByNumber(studentList, stuNumber);
     if (!existingStu) {
-        printf("\nStudent with number '%s' not found.\n", stuNumber);
+        printf("\n❌ Student with number '%s' not found.\n", stuNumber);
+        printf("Please check the student number and try again.\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
-    printf("\n=== Current Student Information ===\n");
+    winTermClearScreen();
+    printf("=== Edit Student: %s ===\n\n", stuNumber);
+    printf("Current Student Information:\n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
     displayStudentDetails(existingStu);
+    printf("═══════════════════════════════════════════════════════════════════\n\n");
     
     Student newData;
     memcpy(&newData, existingStu, sizeof(Student)); // Start with current data
     
     if (editStudentDataFromUser(&newData) == 0) {
+        // Recalculate final grade with new data
+        calculateFinalGrade(&newData);
+        
         if (updateStudentData(existingStu, &newData) == 0) {
-            printf("\nStudent updated successfully!\n");
-            printf("\n=== Updated Student Information ===\n");
+            winTermClearScreen();
+            printf("=== Student Update Successful ===\n\n");
+            printf("✅ Student '%s' has been updated successfully!\n\n", stuNumber);
+            printf("Updated Student Information:\n");
+            printf("═══════════════════════════════════════════════════════════════════\n");
             displayStudentDetails(existingStu);
+            printf("═══════════════════════════════════════════════════════════════════\n");
         } else {
-            printf("Failed to update student.\n");
+            printf("❌ Failed to update student data.\n");
+            printf("Please try again or contact system administrator.\n");
         }
     } else {
-        printf("Edit cancelled.\n");
+        printf("🚫 Edit operation cancelled.\n");
+        printf("No changes were made to the student record.\n");
     }
     
     printf("\nPress any key to continue...");

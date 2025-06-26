@@ -3,6 +3,7 @@
 #include <string.h>
 #include <conio.h>
 #include "empio.h"
+#include "../modules/payroll.h"
 #include "../../include/headers/apctxt.h"
 #include "../../include/headers/interface.h"
 #include "../../include/models/employee.h"
@@ -136,22 +137,19 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
  * @return Returns 0 on success, -1 on cancel.
  */
 int getEmployeeNumberFromUser(char* buffer, const int bufferSize) {
-    fflush(stdout);
+    // Clear the buffer first
+    memset(buffer, 0, bufferSize);
     
-    if (fgets(buffer, bufferSize, stdin) == NULL) {
-        return -1; // Handle EOF or read error
-    }
-
-    // Remove newline character if present
-    char* newline = strchr(buffer, '\n');
-    if (newline) {
-        *newline = '\0';
-    } else {
-        // Clear any remaining input from the buffer if it was too long
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
-    }
+    // Use the proper validation system
+    appFormField field = { 
+        "Enter Employee Number: ", 
+        buffer, 
+        bufferSize, 
+        IV_MAX_LEN, 
+        {.rangeInt = {.max = bufferSize - 1}} 
+    };
     
+    appGetValidatedInput(&field, 1);
     return 0;
 }
 
@@ -225,38 +223,67 @@ int handleSearchEmployee(const list* employeeList) {
  * @return Returns 0 on success, -1 on failure or cancel.
  */
 int handleEditEmployee(list* employeeList) {
+    if (!employeeList || employeeList->size == 0) {
+        winTermClearScreen();
+        printf("=== Edit Employee ===\n\n");
+        printf("No employees available to edit.\n");
+        printf("Please add some employees first.\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
     winTermClearScreen();
     printf("=== Edit Employee ===\n\n");
+    printf("Current employees in the list:\n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
+    displayAllEmployees(employeeList);
+    printf("═══════════════════════════════════════════════════════════════════\n\n");
     
     char empNumber[employeeNumberLen];
+    printf("Which employee would you like to edit?\n");
     if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) != 0) {
         return -1;
     }
     
     Employee* existingEmp = searchEmployeeByNumber(employeeList, empNumber);
     if (!existingEmp) {
-        printf("\nEmployee with number '%s' not found.\n", empNumber);
+        printf("\n❌ Employee with number '%s' not found.\n", empNumber);
+        printf("Please check the employee number and try again.\n");
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
-    printf("\n=== Current Employee Information ===\n");
+    winTermClearScreen();
+    printf("=== Edit Employee: %s ===\n\n", empNumber);
+    printf("Current Employee Information:\n");
+    printf("═══════════════════════════════════════════════════════════════════\n");
     displayEmployeeDetails(existingEmp);
+    printf("═══════════════════════════════════════════════════════════════════\n\n");
     
     Employee newData;
     memcpy(&newData, existingEmp, sizeof(Employee)); // Start with current data
     
     if (editEmployeeDataFromUser(&newData) == 0) {
+        // Recalculate payroll with new data
+        calculatePayroll(&newData);
+        
         if (updateEmployeeData(existingEmp, &newData) == 0) {
-            printf("\nEmployee updated successfully!\n");
-            printf("\n=== Updated Employee Information ===\n");
+            winTermClearScreen();
+            printf("=== Employee Update Successful ===\n\n");
+            printf("✅ Employee '%s' has been updated successfully!\n\n", empNumber);
+            printf("Updated Employee Information:\n");
+            printf("═══════════════════════════════════════════════════════════════════\n");
             displayEmployeeDetails(existingEmp);
+            printf("═══════════════════════════════════════════════════════════════════\n");
         } else {
-            printf("Failed to update employee.\n");
+            printf("❌ Failed to update employee data.\n");
+            printf("Please try again or contact system administrator.\n");
         }
     } else {
-        printf("Edit cancelled.\n");
+        printf("🚫 Edit operation cancelled.\n");
+        printf("No changes were made to the employee record.\n");
     }
     
     printf("\nPress any key to continue...");
