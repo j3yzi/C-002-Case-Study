@@ -13,20 +13,24 @@
   <img src="https://img.shields.io/badge/Status-Optimized-success.svg?style=for-the-badge&logo=github" alt="Status Optimized">  
 </div>
 
-<h2 style="text-align:center;">📑 Table of Contents </h2>
+<h2 style="text-align:center;">📑 Table of Contents</h2>
 
-<span>
-  <link rel="stylesheet" href="styles.css">
- <div class="button-container">
-  <a href="#about" class="button about">ABOUT</a>
-  <a href="#getting-started" class="button getting-started">GETTING STARTED</a>
-  <a href="#features" class="button features">FEATURES</a>
-  <a href="#consolidation" class="button consolidation">CONSOLIDATION</a>
-  <a href="#architecture" class="button architecture">ARCHITECTURE</a>
-  <a href="#team" class="button team">TEAM</a>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 50px;">
+  <a href="#about" style="padding: 10px 20px; background-color: #007bff; color: white; font-weight: bold; border-radius: 8px; font-size: 14x; text-decoration: none; display: inline-block; text-align: center; line-height: 1; height: 20px;">ABOUT</a>
+
+  <a href="#getting-started" style="padding: 10px 20px; background-color: #8bc34a; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">GETTING STARTED</a>
+
+  <a href="#features" style="padding: 10px 20px; background-color: #9c27b0; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">FEATURES</a>
+
+  <a href="#consolidation" style="padding: 10px 20px; background-color: #ff9800; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">CONSOLIDATION</a>
+
+  <a href="#architecture" style="padding: 10px 20px; background-color: #f44336; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">ARCHITECTURE</a>
+
+  <a href="#team" style="padding: 10px 20px; background-color: #ffc107; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">TEAM</a>
 </div>
-</span>
+
 <br>
+
 <h2 id="about" style="text-align:center;">📖 About The Project </h2>
 
 <div align="justified">
