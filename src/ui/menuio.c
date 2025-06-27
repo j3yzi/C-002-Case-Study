@@ -1059,7 +1059,7 @@ int handleLoadEmployeeList(void) {
     options[cancelIndex].onSelect = NULL;
     
     // Create the file selection menu
-    Menu fileMenu = {1, "📂 Load Employee List - Select File    ", options, totalMenuOptions};
+    Menu fileMenu = {1, "Load Employee List - Select File", options, totalMenuOptions};
     
     char choice = runMenuWithInterface(&fileMenu);
     
@@ -1510,7 +1510,7 @@ int handleLoadStudentList(void) {
     options[cancelIndex].onSelect = NULL;
     
     // Create the file selection menu
-    Menu fileMenu = {1, "📂 Load Student List - Select File    ", options, totalMenuOptions};
+    Menu fileMenu = {1, "Load Student List - Select File", options, totalMenuOptions};
     
     char choice = runMenuWithInterface(&fileMenu);
     
