@@ -143,16 +143,6 @@ static char runMenuWithInterface(Menu* menu) {
             else if (key == 13) { // Enter key
                 if (!menu->options[selected].isDisabled) {
                     return menu->options[selected].key;
-                } else {
-                    // Show error message for disabled option
-                    printf("\n\nOption '%c - %s' is currently disabled.\n", 
-                           menu->options[selected].key, menu->options[selected].text);
-                    printf("Please select a different option.\n");
-                    printf("Press any key to continue...");
-                    _getch();
-                    // Force full redraw
-                    winTermClearScreen();
-                    displayMenu(menu, selected);
                 }
             }
             else if (key == 27) { // Escape key
@@ -170,18 +160,8 @@ static char runMenuWithInterface(Menu* menu) {
                     if (key == menu->options[i].key || key == tolower(menu->options[i].key)) {
                         if (!menu->options[i].isDisabled) {
                             return menu->options[i].key;
-                        } else {
-                            // Show error message for disabled option
-                            printf("\n\nOption '%c - %s' is currently disabled.\n", 
-                                   menu->options[i].key, menu->options[i].text);
-                            printf("Please select a different option.\n");
-                            printf("Press any key to continue...");
-                            _getch();
-                            // Force full redraw
-                            winTermClearScreen();
-                            displayMenu(menu, selected);
-                            break;
                         }
+                        break;
                     }
                 }
             }
@@ -645,6 +625,14 @@ int runStudentManagement(void) {
         
         // Update menu option states based on current manager state
         checkMenuStates(&studentMenu);
+        
+        // Additionally disable "Save Student List" when the active list is empty
+        int hasStudents = 0;
+        if (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]) {
+            hasStudents = (stuManager.studentLists[stuManager.activeStudentList]->size > 0);
+        }
+        // Option index 10 corresponds to key 'S'
+        studentMenu.options[10].isDisabled = studentMenu.options[10].isDisabled || !hasStudents;
         
         choice = runMenuWithInterface(&studentMenu);
         
