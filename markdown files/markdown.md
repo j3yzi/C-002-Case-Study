@@ -16,38 +16,7 @@
 <span><h2 style="text-align:center;">📑 Table of Contents </h2></span>
 
 <span>
-  <style>
- .button-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
-}
-.button-container .button {
-  padding: 10px 20px;
-  border: none;
-  color: white;
-  font-weight: bold;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-}
-.about { background-color: #007bff; }
-.getting-started { background-color: #8bc34a; }
-.features { background-color: #9c27b0; }
-.consolidation { background-color: #ff9800; }
-.architecture { background-color: #f44336; }
-.team { background-color: #ffc107; }
-.button-container .button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-</style>
+  <link rel="stylesheet" href="styles.css">
 </span>
  <div class="button-container">
   <a href="#about" class="button about">ABOUT</a>
@@ -166,60 +135,6 @@ Management System</strong> that demonstrates the power of thoughtful code consol
 
 <div id="features"></div>
 ## ✨ Features
-
-<style>
-.features-section {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.feature-card {
-  width: 300px;
-  background: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-}
-
-.feature-card h4 {
-  margin-bottom: 15px;
-  font-size: 18px;
-  color: #333;
-}
-
-.feature-card ul {
-  list-style: none;
-  padding-left: 0;
-}
-
-.feature-card li {
-  margin: 10px 0;
-  padding-left: 20px;
-  position: relative;
-}
-
-.feature-card li::before {
-  content: '✔';
-  color: green;
-  font-weight: bold;
-  position: absolute;
-  left: 0;
-}
-
-/* Optional: Category-specific color accents */
-.feature-card.employee h4 { color: #007bff; }
-.feature-card.student h4 { color: #8bc34a; }
-.feature-card.system h4  { color: #9c27b0; }
-
-</style>
 
 <div class="features-section">
   <div class="feature-card employee">
