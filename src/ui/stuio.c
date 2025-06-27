@@ -702,4 +702,38 @@ int editStudentDataFromUser(Student* student) {
     }
 
     return 0; // Success
+}
+
+/**
+ * @brief Handles displaying students in a tabular format with pagination
+ * @param studentList Pointer to the student list to display
+ * @return Returns 0 on success, -1 on failure
+ */
+int handleDisplayStudentTable(const list* studentList) {
+    if (!studentList) {
+        printf("Error: No student list provided!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    if (studentList->size == 0) {
+        winTermClearScreen();
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                       STUDENT TABLE VIEW                         ║\n");
+        printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+        printf("║                                                                   ║\n");
+        printf("║                     No students to display!                      ║\n");
+        printf("║                                                                   ║\n");
+        printf("║               Please add students to view the table.             ║\n");
+        printf("║                                                                   ║\n");
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("\nPress any key to continue...");
+        _getch();
+        return 0;
+    }
+    
+    // Use the interface system's table view
+    extern int runStudentTableView(const list* studentList);
+    return runStudentTableView(studentList);
 } 

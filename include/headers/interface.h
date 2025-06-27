@@ -16,6 +16,21 @@
 #include <string.h>
 #include <stdbool.h>
 
+// Table display constants
+#define NAME_COL_WIDTH 15
+#define STUDENTS_PER_PAGE 10
+#define MAX_STUDENTS 50
+
+// Pagination state structure
+typedef struct {
+    int currentPage;
+    int totalPages;
+    int itemsPerPage;
+    int totalItems;
+    int startIndex;
+    int endIndex;
+} PaginationState;
+
 typedef struct {
     list* employeeLists[10];  // Support up to 10 employee lists
     char employeeListNames[10][50];
@@ -39,6 +54,18 @@ void updateMenuOptionStates(Menu* menu, int hasActiveList, int hasItems, int has
 void updateEmployeeMenuStates(Menu* menu);
 void updateStudentMenuStates(Menu* menu);
 bool checkActiveList(int isActiveList, int listSize, const char* errorMessage);
+
+// Pagination functions
+void initPagination(PaginationState* pagination, int totalItems, int itemsPerPage);
+void updatePagination(PaginationState* pagination, int newPage);
+int calculateTotalPages(int totalItems, int itemsPerPage);
+
+// Student table display functions
+void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination);
+void displayStudentTableRow(const Student* student, int rowNumber, int consoleWidth, int tableWidth, int tblMargin);
+void displayStudentTableFooter(int consoleWidth, int tableWidth, int tblMargin);
+void displayStudentTable(const list* studentList, PaginationState* pagination);
+int runStudentTableView(const list* studentList);
 
 // Menu display functions
 void displayMenuHeader(const Menu* menu, int consoleWidth, int totalMenuNameWidth, int paddingX, int paddingY);

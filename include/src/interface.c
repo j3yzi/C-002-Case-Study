@@ -717,6 +717,10 @@ void updateStudentMenuStates(Menu* menu) {
         if (menu->options[i].key == '8') {
             menu->options[i].isDisabled = !hasMultipleStudents;
         }
+        // Table view needs at least 1 student
+        if (menu->options[i].key == 'T') {
+            menu->options[i].isDisabled = !hasStudents;
+        }
     }
 }
 
@@ -745,4 +749,393 @@ void checkMenuStates(Menu* menu) {
         // Generic state checking for unknown menu types
         updateMenuOptionStates(menu, 1, 1, 1); // Enable all by default
     }
+}
+
+// Pagination Functions
+
+/**
+ * @brief Initialize pagination state
+ * @param pagination Pointer to pagination state structure
+ * @param totalItems Total number of items to paginate
+ * @param itemsPerPage Number of items to display per page
+ */
+void initPagination(PaginationState* pagination, int totalItems, int itemsPerPage) {
+    if (!pagination) return;
+    
+    pagination->totalItems = totalItems;
+    pagination->itemsPerPage = itemsPerPage;
+    pagination->totalPages = calculateTotalPages(totalItems, itemsPerPage);
+    pagination->currentPage = 1;
+    updatePagination(pagination, 1);
+}
+
+/**
+ * @brief Update pagination state for a specific page
+ * @param pagination Pointer to pagination state structure
+ * @param newPage The page number to navigate to (1-indexed)
+ */
+void updatePagination(PaginationState* pagination, int newPage) {
+    if (!pagination || newPage < 1 || newPage > pagination->totalPages) return;
+    
+    pagination->currentPage = newPage;
+    pagination->startIndex = (newPage - 1) * pagination->itemsPerPage;
+    pagination->endIndex = pagination->startIndex + pagination->itemsPerPage - 1;
+    
+    // Ensure end index doesn't exceed total items
+    if (pagination->endIndex >= pagination->totalItems) {
+        pagination->endIndex = pagination->totalItems - 1;
+    }
+}
+
+/**
+ * @brief Calculate total number of pages needed
+ * @param totalItems Total number of items
+ * @param itemsPerPage Items per page
+ * @return Total number of pages
+ */
+int calculateTotalPages(int totalItems, int itemsPerPage) {
+    if (itemsPerPage <= 0) return 1;
+    return (totalItems + itemsPerPage - 1) / itemsPerPage;
+}
+
+// Student Table Display Functions
+
+/**
+ * @brief Display the header portion of the student table
+ * @param consoleWidth Current console width
+ * @param tableWidth Width of the main table
+ * @param smlBoxWidth Width of the side box
+ * @param tblMargin Left margin for centering
+ * @param pagination Pagination state for page info
+ */
+void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination) {
+    char title[] = "STUDENT RECORDS";
+    char keys[3][30] = {
+        " ⇄     Navigate pages",
+        "Enter  View details",
+        "Esc    Return to menu"
+    };
+    
+    int tablepad = (tableWidth - strlen(title)) / 2 - 1;
+    int extra = (tableWidth - (int)strlen(title)) % 2;
+    if (tablepad < 0) tablepad = 0;
+    
+    // Column positions
+    int num = 5, id = 18, name = 36, prog = 46, yr = 53, grd = 67, rm = 77;
+    
+    // Page info
+    int itemsOnPage = pagination->endIndex - pagination->startIndex + 1;
+    if (pagination->totalItems == 0) itemsOnPage = 0;
+    
+    printf("%*sPage %d of %d", tblMargin, "", pagination->currentPage, pagination->totalPages);
+    printf("%*s%d out of %d Students\n", tableWidth - 11 - 22, "", itemsOnPage, pagination->totalItems);
+    
+    // Draw top border
+    printf("%*s╔", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++)
+        printf("═");
+    printf("╗╔");
+    for (int i = 0; i < smlBoxWidth; i++)
+        printf("═");
+    printf("╗\n");
+    
+    // Draw title centered
+    printf("%*s║%*s%s%*s║", tblMargin, "", tablepad, "", title, tablepad + extra, "");
+    printf("║ %-22s ║\n", keys[0]);
+    
+    // Header separator
+    printf("%*s╠", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++){
+        if (i == num || i == id || i == name || i == prog || i == yr || i == grd || i == rm)
+            printf("╦");
+        else
+            printf("═");
+    }
+    printf("╣║ %-22s ║\n", keys[1]);
+    
+    // Column headers
+    printf("%*s║ %-3s ║ %-10s ║ %-15s ║ %-7s ║ %-4s ║ %-11s ║ %-7s ║", 
+            tblMargin, "",
+            "NO.",
+            "ID",
+            "NAME",
+            "PROGRAM",
+            "YEAR",
+            "FINAL GRADE",
+            "REMARKS"
+        );
+    printf("║ %-22s ║\n", keys[2]);
+    
+    // Header bottom border
+    printf("%*s╠", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++){
+        if (i == num || i == id || i == name || i == prog || i == yr || i == grd || i == rm)
+            printf("╬");
+        else
+            printf("═");
+    }
+    printf("╣");
+    printf("╚");
+    for (int i = 0; i < smlBoxWidth; i++)
+        printf("═");
+    printf("╝\n");
+}
+
+/**
+ * @brief Display a single student row in the table
+ * @param student Pointer to student data
+ * @param rowNumber Row number for display (1-indexed)
+ * @param consoleWidth Current console width
+ * @param tableWidth Width of the main table
+ * @param tblMargin Left margin for centering
+ */
+void displayStudentTableRow(const Student* student, int rowNumber, int consoleWidth, int tableWidth, int tblMargin) {
+    if (!student) return;
+    
+    // Handle long names by splitting
+    char *fullName = (char*)student->personal.name.fullName;
+    int nameLen = strlen(fullName);
+    
+    char name1[NAME_COL_WIDTH + 1] = "";
+    char name2[NAME_COL_WIDTH + 1] = "";
+    
+    if (nameLen <= NAME_COL_WIDTH) {
+        // Name fits in one line
+        strncpy(name1, fullName, NAME_COL_WIDTH);
+        name1[NAME_COL_WIDTH] = '\0';
+        name2[0] = '\0';
+    } else {
+        // Find last space before NAME_COL_WIDTH to split nicely
+        int split = NAME_COL_WIDTH;
+        for (int j = NAME_COL_WIDTH; j > 0; j--) {
+            if (fullName[j] == ' ') {
+                split = j;
+                break;
+            }   
+        }
+        
+        strncpy(name1, fullName, split);
+        name1[split] = '\0';
+        
+        // Skip spaces after split for second line
+        int startSecondLine = split;
+        while (fullName[startSecondLine] == ' ') startSecondLine++;
+        
+        strncpy(name2, fullName + startSecondLine, NAME_COL_WIDTH);
+        name2[NAME_COL_WIDTH] = '\0';
+    }
+    
+    // Get final grade (use computed final grade or calculate if needed)
+    float finalGrade = student->academic.finalGrade;
+    if (finalGrade == 0.0f) {
+        // Calculate if not already computed
+        finalGrade = (student->academic.prelimGrade + student->academic.midtermGrade + student->academic.finalExamGrade) / 3.0f;
+    }
+    
+    // Use existing remarks or determine based on passing grade
+    char remarks[8];
+    if (strlen(student->academic.remarks) > 0) {
+        strncpy(remarks, student->academic.remarks, 7);
+        remarks[7] = '\0';
+    } else {
+        extern float getPassingGrade(void);
+        if (finalGrade >= getPassingGrade()) {
+            strcpy(remarks, "Passed");
+        } else {
+            strcpy(remarks, "Failed");
+        }
+    }
+    
+    // Display first line of student data
+    printf("%*s║  %-2d ║ %-10s ║ %-*s ║ %-7s ║  %-2d  ║    %-8.2f ║  %-6s ║\n",
+        tblMargin, "",
+        rowNumber,
+        student->personal.studentNumber,
+        NAME_COL_WIDTH, name1,
+        student->personal.programCode,
+        student->personal.yearLevel,
+        finalGrade,
+        remarks
+    );
+    
+    // Display second line if name was split
+    if (name2[0] != '\0'){
+        printf("%*s║  %-2s ║ %-10s ║ %-*s ║ %-7s ║ %-4s ║    %-8s ║  %-6s ║\n",
+            tblMargin, "",
+            "",
+            "", // empty ID
+            NAME_COL_WIDTH, name2,
+            "", "", "", ""); // empty other cells
+    }
+}
+
+/**
+ * @brief Display the footer of the student table
+ * @param consoleWidth Current console width
+ * @param tableWidth Width of the main table
+ * @param tblMargin Left margin for centering
+ */
+void displayStudentTableFooter(int consoleWidth, int tableWidth, int tblMargin) {
+    // Column positions
+    int num = 5, id = 18, name = 36, prog = 46, yr = 53, grd = 67, rm = 77;
+    
+    printf("%*s╚", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++){
+        if (i == num || i == id || i == name || i == prog || i == yr || i == grd || i == rm)
+            printf("╩");
+        else
+            printf("═");
+    }
+    printf("╝\n");
+}
+
+/**
+ * @brief Display the complete student table with pagination
+ * @param studentList Pointer to student list
+ * @param pagination Pagination state
+ */
+void displayStudentTable(const list* studentList, PaginationState* pagination) {
+    if (!studentList || !pagination) return;
+    
+    int consoleWidth, consoleHeight;
+    getConsoleSize(&consoleWidth, &consoleHeight);
+    
+    int tableWidth = 79;
+    int smlBoxWidth = 24;
+    int tblMargin = (consoleWidth - (tableWidth + smlBoxWidth)) / 2;
+    if (tblMargin < 0) tblMargin = 0;
+    
+    // Display header
+    displayStudentTableHeader(consoleWidth, tableWidth, smlBoxWidth, tblMargin, pagination);
+    
+    // Display student rows
+    if (studentList->size > 0 && studentList->head) {
+        node* current = studentList->head;
+        int index = 0;
+        int displayedRows = 0;
+        
+        // Navigate to start position
+        do {
+            if (index >= pagination->startIndex && index <= pagination->endIndex) {
+                Student* student = (Student*)current->data;
+                if (student) {
+                    displayStudentTableRow(student, displayedRows + 1, consoleWidth, tableWidth, tblMargin);
+                    displayedRows++;
+                }
+            }
+            current = current->next;
+            index++;
+        } while (current != studentList->head && current != NULL && index <= pagination->endIndex);
+        
+        // Fill remaining rows with empty space if needed
+        for (int i = displayedRows; i < pagination->itemsPerPage; i++) {
+            printf("%*s║  %-2s ║ %-10s ║ %-15s ║ %-7s ║ %-4s ║    %-8s ║  %-6s ║\n",
+                tblMargin, "", "", "", "", "", "", "", "");
+        }
+    } else {
+        // Display empty rows
+        for (int i = 0; i < pagination->itemsPerPage; i++) {
+            printf("%*s║  %-2s ║ %-10s ║ %-15s ║ %-7s ║ %-4s ║    %-8s ║  %-6s ║\n",
+                tblMargin, "", "", "", "", "", "", "", "");
+        }
+    }
+    
+    // Display footer
+    displayStudentTableFooter(consoleWidth, tableWidth, tblMargin);
+}
+
+/**
+ * @brief Run the interactive student table view with pagination
+ * @param studentList Pointer to student list to display
+ * @return Returns 0 on normal exit
+ */
+int runStudentTableView(const list* studentList) {
+    if (!studentList) {
+        printf("Error: No student list provided!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Initialize pagination
+    PaginationState pagination;
+    initPagination(&pagination, studentList->size, STUDENTS_PER_PAGE);
+    
+    // Enable window input events for responsiveness
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD prevMode;
+    GetConsoleMode(hStdin, &prevMode);
+    SetConsoleMode(hStdin, ENABLE_WINDOW_INPUT | prevMode);
+    
+    // Initial display
+    winTermClearScreen();
+    displayStudentTable(studentList, &pagination);
+    
+    INPUT_RECORD inputRecord;
+    DWORD events;
+    
+    while (1) {
+        // Wait for input event
+        ReadConsoleInput(hStdin, &inputRecord, 1, &events);
+        
+        if (inputRecord.EventType == WINDOW_BUFFER_SIZE_EVENT) {
+            // Console window resized - redraw
+            winTermClearScreen();
+            displayStudentTable(studentList, &pagination);
+        } 
+        else if (inputRecord.EventType == KEY_EVENT && inputRecord.Event.KeyEvent.bKeyDown) {
+            WORD key = inputRecord.Event.KeyEvent.wVirtualKeyCode;
+            
+            switch (key) {
+                case VK_ESCAPE:
+                    // Exit table view
+                    goto exit_table;
+                    
+                case VK_LEFT:
+                    // Previous page
+                    if (pagination.currentPage > 1) {
+                        updatePagination(&pagination, pagination.currentPage - 1);
+                        winTermClearScreen();
+                        displayStudentTable(studentList, &pagination);
+                    }
+                    break;
+                    
+                case VK_RIGHT:
+                    // Next page
+                    if (pagination.currentPage < pagination.totalPages) {
+                        updatePagination(&pagination, pagination.currentPage + 1);
+                        winTermClearScreen();
+                        displayStudentTable(studentList, &pagination);
+                    }
+                    break;
+                    
+                case VK_HOME:
+                    // First page
+                    if (pagination.currentPage != 1) {
+                        updatePagination(&pagination, 1);
+                        winTermClearScreen();
+                        displayStudentTable(studentList, &pagination);
+                    }
+                    break;
+                    
+                case VK_END:
+                    // Last page
+                    if (pagination.currentPage != pagination.totalPages) {
+                        updatePagination(&pagination, pagination.totalPages);
+                        winTermClearScreen();
+                        displayStudentTable(studentList, &pagination);
+                    }
+                    break;
+                    
+                default:
+                    // Ignore other keys
+                    break;
+            }
+        }
+    }
+    
+exit_table:
+    // Restore original console mode
+    SetConsoleMode(hStdin, prevMode);
+    return 0;
 } 

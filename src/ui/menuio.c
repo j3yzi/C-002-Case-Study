@@ -471,11 +471,12 @@ int runStudentManagement(void) {
         {'5', "Delete Student", "Remove a student from the database", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'6', "Search Student", "Find students by number or name", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'7', "Display All Students", "Show complete list of all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'T', "Student Table View", "View students in paginated table format", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'8', "Sort Students by Grade", "Arrange students by academic performance", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'9', "Student Report", "Generate academic reports and statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'S', "Save Student List", "Save current list to file", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'L', "Load Student List", "Load student data from saved file", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'B', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 12};
+        {'B', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 13};
     
     do {
         // Update menu title with current active list info before displaying menu
@@ -531,6 +532,15 @@ int runStudentManagement(void) {
             case '7':
                 handleDisplayAllStudents();
                 break;
+            case 'T':
+            case 't': {
+                int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+                if (checkActiveList(hasActiveList, 0, "No active student list!")) {
+                    extern int handleDisplayStudentTable(const list* studentList);
+                    handleDisplayStudentTable(stuManager.studentLists[stuManager.activeStudentList]);
+                }
+                break;
+            }
             case '8':
                 handleSortStudentsByGrade();
                 break;
