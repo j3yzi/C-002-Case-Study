@@ -6,11 +6,13 @@ This document provides a **comprehensive inventory** of all functions, variables
 
 ---
 
-## 📁 `include/headers/apctxt.h` - Application Context
+## 🏗️ Core Infrastructure Components
 
-### 🏗️ Data Structures
+### 📁 `include/headers/apctxt.h` - Application Context & Framework
 
-#### `Config` Struct
+#### 🏗️ **Data Structures**
+
+##### `Config` Struct
 ```c
 typedef struct {
     float regularHours;    // Default: 160.0
@@ -19,7 +21,7 @@ typedef struct {
 } Config;
 ```
 
-#### `IValidationType` Enum
+##### `IValidationType` Enum
 ```c
 typedef enum {
     IV_NONE,                        // No validation
@@ -36,7 +38,7 @@ typedef enum {
 } IValidationType;
 ```
 
-#### `IValidationParams` Union
+##### `IValidationParams` Union
 ```c
 typedef union {
     // For IV_CHOICES
@@ -64,7 +66,7 @@ typedef union {
 } IValidationParams;
 ```
 
-#### `appFormField` Struct
+##### `appFormField` Struct
 ```c
 typedef struct {
     const char* prompt;             // Text to display
@@ -75,53 +77,29 @@ typedef struct {
 } appFormField;
 ```
 
-### 🌍 Global Variables
+#### 🌍 **Global Variables**
 
 | Variable | Type | Purpose | Default Value |
 |----------|------|---------|---------------|
 | `g_config` | `Config` | Global configuration | `{160.0, 0.5, 75.0}` |
 
-### 🔧 Functions
+#### 🔧 **Core Functions**
 
-#### `loadConfig()`
-- **Purpose**: Loads configuration from INI file
-- **Parameters**: None
-- **Returns**: `int` - 0 on success, -1 on failure
-- **Prerequisites**: File system access, `config.ini` in expected location
-
-#### `saveConfig()`
-- **Purpose**: Saves current configuration to INI file
-- **Parameters**: None
-- **Returns**: `int` - 0 on success, -1 on failure
-- **Prerequisites**: File system write access
-
-#### `getRegularHours()`
-- **Purpose**: Retrieves configured regular hours
-- **Parameters**: None
-- **Returns**: `float` - Regular hours value
-- **Prerequisites**: `g_config` initialized
-
-#### `getOvertimeRate()`
-- **Purpose**: Retrieves configured overtime rate
-- **Parameters**: None
-- **Returns**: `float` - Overtime rate value
-- **Prerequisites**: `g_config` initialized
-
-#### `appGetValidatedInput()`
-- **Purpose**: Collects and validates user input for multiple fields
-- **Parameters**: 
-  - `appFormField* fields` - Array of form fields
-  - `int fieldCount` - Number of fields
-- **Returns**: `void`
-- **Prerequisites**: Console initialized, ANSI support enabled
+| Function | Purpose | Parameters | Returns | Prerequisites |
+|----------|---------|------------|---------|---------------|
+| `loadConfig()` | Loads configuration from INI file | None | `int` (0 success, -1 failure) | File system access, `config.ini` exists |
+| `saveConfig()` | Saves current configuration to INI file | None | `int` (0 success, -1 failure) | File system write access |
+| `getRegularHours()` | Retrieves configured regular hours | None | `float` (regular hours value) | `g_config` initialized |
+| `getOvertimeRate()` | Retrieves configured overtime rate | None | `float` (overtime rate value) | `g_config` initialized |
+| `appGetValidatedInput()` | Collects and validates user input | `appFormField* fields`, `int fieldCount` | `void` | Console initialized, ANSI support |
 
 ---
 
-## 📁 `include/headers/list.h` - Generic Linked List
+### 📁 `include/headers/list.h` - Generic Linked List Library
 
-### 🏗️ Data Structures
+#### 🏗️ **Data Structures**
 
-#### `ListType` Enum
+##### `ListType` Enum
 ```c
 typedef enum { 
     SINGLY, 
@@ -131,7 +109,7 @@ typedef enum {
 } ListType;
 ```
 
-#### `node` Struct
+##### `node` Struct
 ```c
 typedef struct Node {
     struct Node* prev;   // Previous node (NULL for SINGLY)
@@ -140,7 +118,7 @@ typedef struct Node {
 } node;
 ```
 
-#### `list` Struct
+##### `list` Struct
 ```c
 typedef struct LinkedList {
     struct Node* head;   // First node
@@ -664,4 +642,60 @@ typedef struct {
 
 ---
 
-*This comprehensive reference was auto-generated June 2025. It includes all public functions, variables, and data structures in the PUP Information Management System.* 
+## 📁 `include/src/interface.c` - Console & Table Toolkit
+
+### 🌍 Global Constants
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `MENU_HEADER_WIDTH` | 60 | Standardised menu width for all UIs |
+
+### 🔧 Functions
+
+| Function | Purpose |
+|----------|---------|
+| `initConsole()` | Detects console handle, enables UTF-8, stores original colours |
+| `getConsoleSize()` | Retrieves current console width & height |
+| `setCursor()` | Moves console cursor to `x,y` coordinates |
+| `displayMenu()` | High-level compositor that draws header, options, description & info boxes |
+| `updateMenuSelection()` | Highlights newly selected option & un-highlights previous |
+| `updateInfoBoxTimeDate()` | Refreshes real-time clock & date inside info box |
+| `displayStudentTable()` / `displayEmployeeTable()` | Renders paginated tables for students / employees |
+| `runStudentTableView()` / `runEmployeeTableView()` | Interactive arrow-key pagination loops |
+| `appYesNoPrompt()` | Standardised Y/N confirmation dialog |
+| `initPagination()`, `updatePagination()`, `calculateTotalPages()` | Pagination helpers used by table views |
+
+> The file also contains **20+ helper routines** (header/option/description sub-renderers) – only the most widely used public ones are listed here.
+
+---
+## 📁 `src/ui/menuio.c` - Menu Controller & Multi-List Manager
+
+### 🌍 Global Variables
+
+| Variable | Type | Purpose |
+|----------|------|---------|
+| `empManager` | `EmployeeManager` | Tracks up to 10 employee lists & active index |
+| `stuManager` | `StudentManager` | Tracks up to 10 student lists & active index |
+| `mainMenu` | `Menu` | Root application menu rendered at start-up |
+
+### 🔧 Functions (public entry points)
+
+| Function | Category | Brief Description |
+|----------|----------|-------------------|
+| `initMultiListManager()` / `cleanupMultiListManager()` | Lifecycle | Initialise & free all list managers |
+| `menuLoop()` | Navigation | Central loop that drives **mainMenu** using new interface toolkit |
+| `runEmployeeManagement()`, `runStudentManagement()`, `runCourseManagement()` | Sub-menus | Dispatch to entity-specific menu trees |
+| `runConfigurationManagement()` | Settings | Opens payroll/academic settings submenu |
+| `displaySystemInformation()` | Info | Pretty system stats & metadata screen |
+| `handleCreateEmployeeList()` / `handleCreateStudentList()` | List Ops | Start a new empty list with custom name |
+| `handleSwitchEmployeeList()` / `handleSwitchStudentList()` | List Ops | Change active list when multiple exist |
+| `handleAddEmployee()` / `handleAddStudent()` | CRUD | Prompt user & push new record |
+| `handleDisplayAllEmployees()` / `handleDisplayAllStudents()` | CRUD | Paginated table view using interface.c |
+| `handlePayrollReport()` / `handleStudentReport()` | Reports | Generate TXT reports via `data.c` |
+| `handleSaveEmployeeList()` / `handleLoadEmployeeList()` | Persistence | Binary save & load operations |
+| `handleSaveStudentList()` / `handleLoadStudentList()` | Persistence | Binary save & load operations |
+| `handleUpdatePayrollSettings()` / `handleUpdateAcademicSettings()` | Config | Modify config.ini values in-app |
+| `handleSaveConfiguration()` / `handleResetConfiguration()` | Config | Persist or revert configuration file |
+
+---
+*This comprehensive reference was auto-generated June 2025 and **updated 27 June 2025** after a full repository scan. It includes all public functions, variables, and data structures in the PUP Information Management System.* 

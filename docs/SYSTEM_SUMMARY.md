@@ -2,33 +2,35 @@
 
 ## ✨ Quick Feature Matrix
 
-| 📦 Module | 🚀 Core Features | ⚙️ Key Logic Mechanics |
-|-----------|-----------------|-------------------------|
-| 👨‍💼 **Employee** | • Create / Edit / Delete Employees  <br>• Multi-list support  <br>• Payroll report generation | • `calculatePayroll()` pipeline  <br>• Hours-worked validation (0-744)  <br>• Overtime @ **+50 %** beyond 160 h  <br>• Basic-pay & deduction caps |
-| 🎓 **Student** | • Create / Edit / Delete Students  <br>• GPA & standing auto-calc  <br>• Grade-sorted list & reports | • `calculateFinalGrade()` average  <br>• Pass/Fail vs configurable threshold  <br>• Exact-length student number (10) |
-| 📚 **Course** | • CRUD course catalog  <br>• Active / inactive flag  <br>• Save & load catalogs | • Course-type enum (Core/Major/GE)  <br>• Unit range guard (1-6 units) |
-| 🗂️ **Multi-List** | • Up to 10 lists per entity  <br>• Named lists & quick switch | • Global `empManager` / `stuManager` structs track active list & counts |
-| 📈 **Reports** | • Payroll txt report  <br>• Student grade report | • Timestamped filenames  <br>• Stats summarised per list |
-| 🛠️ **Config** | • Regular hours (40-744)  <br>• Overtime rate (0.1-2.0)  <br>• Passing grade | • INI parsing in `apctxt.c`  <br>• Persist on exit |
+| 📦 **Module** | 🚀 **Core Features** | ⚙️ **Key Logic Mechanics** |
+|---------------|---------------------|---------------------------|
+| 👨‍💼 **Employee** | • Create / Edit / Delete Employees<br>• Multi-list support<br>• Payroll report generation | • `calculatePayroll()` pipeline<br>• Hours-worked validation (0-744)<br>• Overtime @ **+50%** beyond 160h<br>• Basic-pay & deduction caps |
+| 🎓 **Student** | • Create / Edit / Delete Students<br>• GPA & standing auto-calc<br>• Grade-sorted list & reports | • `calculateFinalGrade()` average<br>• Pass/Fail vs configurable threshold<br>• Exact-length student number (10) |
+| 📚 **Course** | • CRUD course catalog<br>• Active / inactive flag<br>• Save & load catalogs | • Course-type enum (Core/Major/GE)<br>• Unit range guard (1-6 units) |
+| 🗂️ **Multi-List** | • Up to 10 lists per entity<br>• Named lists & quick switch | • Global `empManager` / `stuManager` structs track active list & counts |
+| 📈 **Reports** | • Payroll txt report<br>• Student grade report | • Timestamped filenames<br>• Stats summarised per list |
+| 🛠️ **Config** | • Regular hours (40-744)<br>• Overtime rate (0.1-2.0)<br>• Passing grade | • INI parsing in `apctxt.c`<br>• Persist on exit |
+
+---
 
 ### 🗂️ Detailed Module & Sub-Module Capabilities
 
-| 🌟 Top-Level Module | 🧩 Sub-Module | 🛠️ What It Does | 📄 Key Source Files |
-|--------------------|-------------|-----------------|-----------------------|
-| 👨‍💼 Employee | **List Manager** | Create / switch / delete up to 10 employee lists | `menuio.c`, `interface.c` |
+| 🌟 **Top-Level Module** | 🧩 **Sub-Module** | 🛠️ **What It Does** | 📄 **Key Source Files** |
+|------------------------|-------------------|---------------------|------------------------|
+| 👨‍💼 **Employee** | **List Manager** | Create / switch / delete up to 10 employee lists | `menuio.c`, `interface.c` |
 | | **Payroll Engine** | Compute Basic, Overtime, Deductions, Net Pay with safety caps | `payroll.c` |
-| | **Report Generator** | Produce TXT payroll reports with timestamped filenames | `data.c` `payroll.c` |
+| | **Report Generator** | Produce TXT payroll reports with timestamped filenames | `data.c`, `payroll.c` |
 | | **Search & Edit UI** | Interactive search by ID/Name; edit & delete operations | `empio.c` |
-| 🎓 Student | **List Manager** | Same multi-list system as employees (10 lists) | `menuio.c`, `interface.c` |
+| 🎓 **Student** | **List Manager** | Same multi-list system as employees (10 lists) | `menuio.c`, `interface.c` |
 | | **Grade Calculator** | Average Prelim / Midterm / Final → Final Grade; standing update | `student.c` |
 | | **Report Generator** | Generate grade distribution & summary reports | `data.c` |
 | | **Program Registry** | Holds program codes & names; validates against user input | `apctxt.c`, `student.h` |
-| 📚 Course | **Catalog Manager** | Add / edit / delete courses; toggle active status | `courseio.c` |
+| 📚 **Course** | **Catalog Manager** | Add / edit / delete courses; toggle active status | `courseio.c` |
 | | **Search Engine** | Search by Code or Name (partial match) | `courseio.c` |
 | | **Catalog Persistence** | Save/load `.cat` files for course catalogs | `data.c` |
-| 🛠 Infrastructure | **Validation Core** | All input validation types inc. `IV_EXACT_LEN` | `validation.c` `apctxt.h` |
+| 🛠 **Infrastructure** | **Validation Core** | All input validation types inc. `IV_EXACT_LEN` | `validation.c`, `apctxt.h` |
 | | **Menu Framework** | Re-usable menu render / navigation system | `menuio.c`, `interface.c` |
-| | **Linked-List Library** | Generic singly/doubly list implementations | `list.h` `list.c` |
+| | **Linked-List Library** | Generic singly/doubly list implementations | `list.h`, `list.c` |
 | | **Config Loader** | INI parsing + auto-persist on exit | `apctxt.c` |
 
 *Use this table to quickly locate the code responsible for a given feature or rule.*
@@ -37,12 +39,12 @@
 
 ## 🔍 Logic Cheat-Sheet
 
-| 🔑 Item | 🧩 Where Implemented | 📝 Rule |
-|---------|---------------------|---------|
+| 🔑 **Item** | 🧩 **Where Implemented** | 📝 **Rule** |
+|-------------|--------------------------|-------------|
 | **Exact-length IDs** | `validation.c` → `IV_EXACT_LEN` | Employee & Student numbers must be **exactly 10** chars. |
-| **Hours Worked** | `empio.c` input → `IV_RANGE_INT` | Accept **0–744**; overtime triggers after **160 h**. |
-| **Basic Pay Cap** | `payroll.c` → `calculateBasicPay()` | Capped at **₱ 999 999.00** with warning. |
-| **Deduction Cap** | `payroll.c` → `calculateDeductions()` | Capped at **₱ 99 999.99** with warning. |
+| **Hours Worked** | `empio.c` input → `IV_RANGE_INT` | Accept **0–744**; overtime triggers after **160h**. |
+| **Basic Pay Cap** | `payroll.c` → `calculateBasicPay()` | Capped at **₱999,999.00** with warning. |
+| **Deduction Cap** | `payroll.c` → `calculateDeductions()` | Capped at **₱99,999.99** with warning. |
 | **Grade Pass Mark** | `apctxt.h` config (`g_config.passingGrade`) | Default **75**; affects student standing. |
 
 > 📌 *For the in-depth architectural narrative, keep reading the sections below.*
@@ -53,7 +55,7 @@
 
 The **PUP Information Management System** is a unified C-based application that consolidates three separate management systems into a single, comprehensive solution. This system manages employees, students, and courses through a centralized platform, demonstrating excellent software engineering principles and architectural consolidation.
 
-### 🎯 Core Purpose
+### 🎯 **Core Purpose**
 - **Employee Management**: Payroll processing, employee records, and reporting
 - **Student Management**: Academic records, grade tracking, and student information
 - **Course Management**: Course catalog, curriculum management, and course information
@@ -66,20 +68,20 @@ The **PUP Information Management System** is a unified C-based application that 
 
 ### 1. **Employee Management Module**
 
-#### Core Functionality
+#### **Core Functionality**
 - **Employee Record Creation**: Complete employee profile management
 - **Payroll Processing**: Automated salary calculations with overtime support
 - **Status Management**: Regular (R) and Casual (C) employee classifications
 - **Search & Filter**: Find employees by number or name
 - **Data Persistence**: Save/load employee lists with custom naming
 
-#### Payroll Calculations
+#### **Payroll Calculations**
 - **Basic Pay**: `Basic Rate × Hours Worked`
 - **Overtime Pay**: `(Hours Worked - Regular Hours) × Basic Rate × 1.5`
 - **Net Pay**: `Basic Pay + Overtime Pay - Deductions`
 - **Configurable Parameters**: Regular hours and overtime rates via config file
 
-#### Data Structure
+#### **Data Structure**
 ```c
 typedef struct {
     PersonalInfo personal;      // Employee number, name
@@ -90,7 +92,7 @@ typedef struct {
 
 ### 2. **Student Management Module**
 
-#### Core Functionality
+#### **Core Functionality**
 - **Student Record Creation**: Comprehensive academic profile management
 - **Grade Tracking**: Prelim, midterm, and final exam grades
 - **GPA Calculation**: Automatic final grade computation
@@ -98,12 +100,12 @@ typedef struct {
 - **Program Management**: Configurable academic programs
 - **Search & Sort**: Find students and sort by academic performance
 
-#### Academic Calculations
+#### **Academic Calculations**
 - **Final Grade**: `(Prelim + Midterm + Final Exam) / 3`
 - **Pass/Fail Logic**: Pass if Final Grade ≥ 75 (configurable)
 - **Academic Standing**: Based on GPA thresholds (expandable)
 
-#### Data Structure
+#### **Data Structure**
 ```c
 typedef struct {
     StudentInfo personal;      // Student number, name, program
@@ -114,14 +116,14 @@ typedef struct {
 
 ### 3. **Course Management Module**
 
-#### Core Functionality
+#### **Core Functionality**
 - **Course Catalog**: Maintain comprehensive course listings
 - **Course Types**: Core, Major, Elective, and General Education courses
 - **Course Metadata**: Code, name, description, units, and active status
 - **Search Capabilities**: Find courses by code or name
 - **Catalog Management**: Save/load course catalogs
 
-#### Data Structure
+#### **Data Structure**
 ```c
 typedef struct {
     char code[courseCodeLen];        // Course code (e.g., "IT101")
@@ -135,14 +137,14 @@ typedef struct {
 
 ### 4. **Multi-List Management System**
 
-#### Capabilities
+#### **Capabilities**
 - **Multiple Employee Lists**: Up to 10 employee lists with custom names
 - **Multiple Student Lists**: Up to 10 student lists with custom names
 - **List Switching**: Active list management for each entity type
 - **Cross-List Operations**: Independent operations on different lists
 - **Unified Interface**: Single entry point for all list management
 
-#### Management Structure
+#### **Management Structure**
 ```c
 typedef struct {
     list* employeeLists[10];         // Array of employee lists
@@ -170,7 +172,7 @@ The system follows a clean separation of concerns with three distinct architectu
 
 This layer provides the foundational libraries and utilities that support the entire application:
 
-#### Core Infrastructure Components
+#### **Core Infrastructure Components**
 
 **🔧 `apctxt.h` - Application Context & Framework**
 - **Configuration Management**: Global config system for business rules
@@ -224,7 +226,7 @@ extern appState universityEmployeeListCreated;
 
 This layer contains the core business logic and operational components:
 
-#### Business Logic Components
+#### **Business Logic Components**
 
 **💰 `payroll.c/h` - Payroll Calculation Engine**
 - **Salary Calculations**: Basic pay, overtime, deductions computation
@@ -260,7 +262,7 @@ int generateStudentReportFile(const list* studentList, char* generatedFilePath, 
 
 This layer defines the domain entities and their associated operations:
 
-#### Domain Models & Entities
+#### **Domain Models & Entities**
 
 **👨‍💼 `employee.c/h` - Employee Data Model**
 - **Entity Definition**: Complete employee structure with personal, employment, and payroll info
@@ -280,9 +282,9 @@ This layer defines the domain entities and their associated operations:
 - **Search & Filter**: Course discovery by code, name, and type
 - **Academic Integration**: Integration with student program requirements
 
-#### Model Characteristics
+#### **Model Characteristics**
 
-**🔗 **Encapsulation**: Each model encapsulates its own data and operations**
+**🔗 Encapsulation**: Each model encapsulates its own data and operations
 ```c
 // Employee model encapsulates:
 typedef struct {
@@ -297,7 +299,7 @@ int updateEmployeeData(Employee* employee, const Employee* newData);
 void displayEmployeeDetails(const Employee* employee);
 ```
 
-**📋 **Self-Contained Logic**: Models include their own business rules and validation**
+**📋 Self-Contained Logic**: Models include their own business rules and validation
 - **Name Composition**: Advanced fullname formatting with fallback strategies
 - **Calculation Logic**: Automatic grade and payroll calculations
 - **Data Integrity**: Validation and constraint enforcement
@@ -305,18 +307,18 @@ void displayEmployeeDetails(const Employee* employee);
 
 ### 5. **Architectural Benefits of This Design**
 
-#### Clear Separation of Concerns
+#### **Clear Separation of Concerns**
 - **Infrastructure**: Reusable utilities independent of business logic
 - **Business Logic**: Domain-agnostic operations that can work with any model
 - **Data Models**: Self-contained entities with their own rules and behaviors
 
-#### Maintainability & Scalability
+#### **Maintainability & Scalability**
 - **Modular Updates**: Change business logic without affecting infrastructure
 - **Extensibility**: Add new models without modifying existing layers
 - **Reusability**: Infrastructure components can be used across different projects
 - **Testing**: Each layer can be tested independently
 
-#### Development Workflow
+#### **Development Workflow**
 - **Team Collaboration**: Different developers can work on different layers
 - **Code Organization**: Logical grouping makes navigation intuitive  
 - **Dependency Management**: Clear dependency hierarchy prevents circular references
@@ -324,14 +326,14 @@ void displayEmployeeDetails(const Employee* employee);
 
 ### 6. **Modular Design**
 
-#### Core Components
+#### **Core Components**
 - **`main.c`**: Application entry point and initialization
 - **UI Layer**: Menu-driven interface (`menuio.c`, `empio.c`, `stuio.c`, `courseio.c`)
 - **Business Logic**: Payroll calculations (`payroll.c`), data management (`data.c`)
 - **Data Models**: Employee, Student, and Course structures
 - **Infrastructure**: Generic linked list implementation, application context
 
-#### File Organization
+#### **File Organization**
 ```
 src/
 ├── main.c                    # Entry point
@@ -345,15 +347,15 @@ src/
     └── data.c/h             # Data persistence & reports
 ```
 
-### 2. **Data Structure Implementation**
+### 7. **Data Structure Implementation**
 
-#### Generic Linked List
+#### **Generic Linked List**
 - **Type-Agnostic**: Supports any data type through `void*` pointers
 - **Multiple Types**: Singly, Doubly, Circular variants supported
 - **Memory Management**: Automatic cleanup with custom free functions
 - **Operations**: Add, remove, search, clear, destroy
 
-#### List Operations
+#### **List Operations**
 ```c
 int addNode(list** l, void* data);
 void removeNode(list* l, const void* data, void (*freeData)(void* data));
@@ -361,15 +363,15 @@ void* getNodeData(const list* l, int index);
 void clearList(list* l, void (*freeData)(void* data));
 ```
 
-### 3. **Configuration Management**
+### 8. **Configuration Management**
 
-#### Configurable Parameters
+#### **Configurable Parameters**
 - **Payroll Settings**: Regular hours, overtime rates
 - **Academic Settings**: Passing grade thresholds
 - **Program Definitions**: Academic programs and codes
 - **System Behavior**: Default values and business rules
 
-#### Configuration File (`config.ini`)
+#### **Configuration File (`config.ini`)**
 ```ini
 [payroll]
 regular_hours=40
@@ -392,7 +394,7 @@ CS=Computer Science
 
 The system features a highly interactive, terminal-based user interface with a modern, box-drawing design for clarity and improved user experience.
 
-#### Main Menu Structure (Visual Representation)
+#### **Main Menu Structure (Visual Representation)**
 ```
 ╔═════════════════════════════════════════╗╔════════════════════════════════╗
 ║                   MENU                  ║║              KEYS              ║
@@ -417,8 +419,7 @@ The system features a highly interactive, terminal-based user interface with a m
 - **Error Display**: A dedicated area at the bottom shows feedback and error messages without disrupting the menu layout.
 - **State-Aware Options**: Menu options are dynamically enabled or disabled based on the application's state (e.g., "Edit Employee" is disabled if no employee list is active).
 
-
-#### Employee Management Submenu
+#### **Employee Management Submenu**
 - Create Employee List
 - Switch Active List
 - Add Employee
@@ -429,7 +430,7 @@ The system features a highly interactive, terminal-based user interface with a m
 - Search Employee
 - Edit Employee
 
-#### Student Management Submenu
+#### **Student Management Submenu**
 - Create Student List
 - Switch Active List
 - Add Student
@@ -443,7 +444,7 @@ The system features a highly interactive, terminal-based user interface with a m
 
 ### 2. **State Management**
 
-#### Menu State Awareness
+#### **Menu State Awareness**
 - **Context-Sensitive Options**: Menu items enabled/disabled based on system state
 - **Active List Tracking**: Current working list for each entity type
 - **Data Validation**: Input validation and error handling
@@ -455,7 +456,7 @@ The system features a highly interactive, terminal-based user interface with a m
 
 ### 1. **CRUD Operations**
 
-#### For All Entity Types
+#### **For All Entity Types**
 - **Create**: Add new records with validation
 - **Read**: Display individual or all records
 - **Update**: Edit existing records with change tracking
@@ -463,30 +464,30 @@ The system features a highly interactive, terminal-based user interface with a m
 
 ### 2. **Search & Filter Capabilities**
 
-#### Employee Search
+#### **Employee Search**
 - Search by Employee Number (exact match)
 - Search by Full Name (exact match)
 - Display search results with full details
 
-#### Student Search
+#### **Student Search**
 - Search by Student Number (exact match)
 - Search by Full Name (exact match)
 - Sort by Final Grade (ascending/descending)
 
-#### Course Search
+#### **Course Search**
 - Search by Course Code (exact match)
 - Search by Course Name (partial match)
 - Filter by Course Type
 
 ### 3. **Reporting System**
 
-#### Payroll Reports
+#### **Payroll Reports**
 - **Individual Payroll**: Detailed pay breakdown per employee
 - **Payroll Summary**: Company-wide payroll statistics
 - **File Output**: Formatted text reports with timestamps
 - **Custom Naming**: User-defined report filenames
 
-#### Academic Reports
+#### **Academic Reports**
 - **Individual Transcripts**: Complete academic record per student
 - **Class Reports**: Grade distribution and statistics
 - **Program Reports**: Performance by academic program
@@ -494,13 +495,13 @@ The system features a highly interactive, terminal-based user interface with a m
 
 ### 4. **Data Persistence**
 
-#### File Management
+#### **File Management**
 - **Binary Format**: Efficient storage using binary files
 - **Custom Naming**: User-defined list names and filenames
 - **Automatic Backup**: Timestamp-based file naming
 - **Data Integrity**: Validation on load operations
 
-#### Supported Operations
+#### **Supported Operations**
 ```c
 // Save operations
 int saveListWithCustomName(list* dataList, const char* listName, const char* dataType);
@@ -519,7 +520,7 @@ list* loadStudentDataFromFile(const char* filename, ListType listType);
 
 ### 1. **Name Structure & Storage**
 
-#### Employee Name Components
+#### **Employee Name Components**
 ```c
 typedef struct {
     char firstName[employeeFirstNameLen];    // 32 characters
@@ -529,7 +530,7 @@ typedef struct {
 } EmployeeName;
 ```
 
-#### Student Name Components
+#### **Student Name Components**
 ```c
 typedef struct {
     char firstName[studentFirstNameLen];     // 32 characters
@@ -541,7 +542,7 @@ typedef struct {
 
 ### 2. **Fullname Composition Algorithm**
 
-#### Core Logic Flow
+#### **Core Logic Flow**
 Both employee and student names follow a sophisticated multi-stage composition process:
 
 1. **Input Validation**: Check if first/last names exceed safe length limits
@@ -549,7 +550,7 @@ Both employee and student names follow a sophisticated multi-stage composition p
 3. **Fallback Strategy**: Gracefully degrade to shorter formats when needed
 4. **Error Handling**: Reject names that cannot be formatted properly
 
-#### Employee Name Composition (`composeEmployeeName`)
+#### **Employee Name Composition (`composeEmployeeName`)**
 ```c
 int composeEmployeeName(EmployeeName* name) {
     // Stage 1: Length validation (prevents unreadable truncation)
@@ -578,7 +579,7 @@ int composeEmployeeName(EmployeeName* name) {
 }
 ```
 
-#### Student Name Composition (`composeStudentName`)
+#### **Student Name Composition (`composeStudentName`)**
 ```c
 int composeStudentName(StudentName* name) {
     // Similar validation and format selection as employees
@@ -603,7 +604,7 @@ int composeStudentName(StudentName* name) {
 
 ### 3. **Format Examples & Outcomes**
 
-#### Employee Names (16-character limit)
+#### **Employee Names (16-character limit)**
 | Input Names | Output Format | Reasoning |
 |-------------|---------------|-----------|
 | "John", "", "Smith" | "Smith, John" | Optimal format fits |
@@ -611,7 +612,7 @@ int composeStudentName(StudentName* name) {
 | "Alex", "", "Van Der Berg" | "Van Der Ber..." | Last name truncated |
 | "Alexander", "", "Constantinopolous" | Rejected | Names too long to format |
 
-#### Student Names (31-character limit)
+#### **Student Names (31-character limit)**
 | Input Names | Output Format | Reasoning |
 |-------------|---------------|-----------|
 | "John", "Michael", "Smith" | "Smith, John M." | Full name with middle initial |
@@ -621,19 +622,19 @@ int composeStudentName(StudentName* name) {
 
 ### 4. **Key Design Principles**
 
-#### Smart Length Management
+#### **Smart Length Management**
 - **Proactive Validation**: Reject names that would become unreadable when truncated
 - **Graceful Degradation**: Multiple fallback strategies maintain readability
 - **Space Optimization**: Maximize information density within buffer constraints
 - **Consistent Format**: "Last, First" convention for professional appearance
 
-#### Buffer Size Strategy
+#### **Buffer Size Strategy**
 - **Employee Names**: 16 characters (compact for reports and tables)
 - **Student Names**: 31 characters (more space for academic records)
 - **Input Buffers**: 32 characters each for first/middle/last names
 - **Safety Margins**: Built-in space for formatting characters and null terminators
 
-#### Error Prevention
+#### **Error Prevention**
 - **Length Validation**: Prevent buffer overflows and unreadable output
 - **Input Sanitization**: Validate name components before composition
 - **Rollback Support**: Revert to previous valid names on edit failures
@@ -641,13 +642,13 @@ int composeStudentName(StudentName* name) {
 
 ### 5. **Integration with System Operations**
 
-#### Name Usage Throughout System
+#### **Name Usage Throughout System**
 - **Search Operations**: Users can search by the composed fullName
 - **Display Lists**: Formatted names appear in all tabular displays
 - **Reports**: Professional name formatting in generated reports
 - **Data Persistence**: Both components and composed names are saved
 
-#### Validation Integration
+#### **Validation Integration**
 ```c
 // Employee input validation with name composition
 int isNameValid = 0;
@@ -664,7 +665,7 @@ while (!isNameValid) {
 }
 ```
 
-#### Edit Operation Safety
+#### **Edit Operation Safety**
 - **Backup Creation**: Store original name before editing
 - **Composition Validation**: Test new name composition before committing
 - **Rollback Capability**: Restore original name if composition fails
@@ -676,13 +677,13 @@ while (!isNameValid) {
 
 ### 1. **Memory Management**
 
-#### Automatic Cleanup
+#### **Automatic Cleanup**
 - **Reference Counting**: Track data structure usage
 - **Custom Free Functions**: Type-specific memory deallocation
 - **Resource Management**: Automatic cleanup on exit
 - **Leak Prevention**: Consistent allocation/deallocation patterns
 
-#### Memory Safety
+#### **Memory Safety**
 ```c
 void freeEmployee(void* employeeData);
 void freeStudent(void* studentData);
@@ -692,13 +693,13 @@ void destroyList(list** l, void (*freeData)(void* data));
 
 ### 2. **Input Validation & Security**
 
-#### Safe Input Handling
+#### **Safe Input Handling**
 - **Buffer Overflow Prevention**: Use of `fgets()` instead of `scanf()`
 - **Input Sanitization**: Validation of all user inputs
 - **Type Checking**: Ensure data type consistency
 - **Range Validation**: Check numeric ranges and string lengths
 
-#### Validation Functions
+#### **Validation Functions**
 ```c
 int composeEmployeeName(EmployeeName* name);
 int composeStudentName(StudentName* name);
@@ -708,7 +709,7 @@ void calculatePayroll(Employee* employee);
 
 ### 3. **Error Handling**
 
-#### Comprehensive Error Management
+#### **Comprehensive Error Management**
 - **Return Codes**: Consistent error code system
 - **User Feedback**: Clear error messages and guidance
 - **Graceful Degradation**: Continue operation when possible
@@ -716,7 +717,7 @@ void calculatePayroll(Employee* employee);
 
 ### 4. **Performance Optimizations**
 
-#### Efficient Operations
+#### **Efficient Operations**
 - **Linked List Implementation**: Dynamic memory allocation
 - **Binary File I/O**: Fast data persistence
 - **Modular Loading**: Load only required components
@@ -728,14 +729,14 @@ void calculatePayroll(Employee* employee);
 
 ### 1. **Application Lifecycle**
 
-#### Startup Sequence
+#### **Startup Sequence**
 1. **Configuration Loading**: Read system settings from `config.ini`
 2. **Manager Initialization**: Set up multi-list managers
 3. **Program Loading**: Load academic programs and courses
 4. **Menu Activation**: Start main menu loop
 5. **User Interaction**: Process user commands
 
-#### Shutdown Sequence
+#### **Shutdown Sequence**
 1. **Resource Cleanup**: Free all allocated memory
 2. **Manager Cleanup**: Clean up multi-list managers
 3. **Final Cleanup**: Course catalog and system resources
@@ -743,12 +744,12 @@ void calculatePayroll(Employee* employee);
 
 ### 2. **Data Flow**
 
-#### Input Processing
+#### **Input Processing**
 ```
 User Input → Validation → Business Logic → Data Storage → UI Feedback
 ```
 
-#### Report Generation
+#### **Report Generation**
 ```
 Data Retrieval → Calculations → Formatting → File Output → User Notification
 ```
@@ -759,7 +760,7 @@ Data Retrieval → Calculations → Formatting → File Output → User Notifica
 
 ### 1. **Code Consolidation Success**
 
-#### Quantified Improvements
+#### **Quantified Improvements**
 - **File Reduction**: 40 files → 8 core files (80% reduction)
 - **Code Reduction**: ~4,900 lines → ~1,800 lines (63% reduction)
 - **Duplication Elimination**: Zero code redundancy
@@ -767,7 +768,7 @@ Data Retrieval → Calculations → Formatting → File Output → User Notifica
 
 ### 2. **Architectural Excellence**
 
-#### Design Principles
+#### **Design Principles**
 - **Single Responsibility**: Each module has a clear purpose
 - **DRY Principle**: No duplicate code across modules
 - **Modularity**: Clean separation of concerns
@@ -775,7 +776,7 @@ Data Retrieval → Calculations → Formatting → File Output → User Notifica
 
 ### 3. **Enhanced User Experience**
 
-#### Usability Improvements
+#### **Usability Improvements**
 - **Unified Interface**: Single entry point for all operations
 - **Consistent Navigation**: Standardized menu patterns
 - **Better Performance**: Optimized data operations
@@ -787,20 +788,20 @@ Data Retrieval → Calculations → Formatting → File Output → User Notifica
 
 ### 1. **System Requirements**
 
-#### Development Environment
+#### **Development Environment**
 - **Language**: C (C99 standard)
 - **Compiler**: GCC (MinGW on Windows)
 - **Platform**: Windows 10/11
 - **Dependencies**: Standard C libraries only
 
-#### Runtime Requirements
+#### **Runtime Requirements**
 - **Memory**: Minimal (dynamic allocation)
 - **Storage**: Variable (depends on data volume)
 - **Configuration**: `config.ini` file required
 
 ### 2. **Build System**
 
-#### Compilation
+#### **Compilation**
 ```batch
 # Use provided compilation script
 compile.bat
@@ -809,7 +810,7 @@ compile.bat
 bin\UnifiedManagementSystem.exe
 ```
 
-#### Project Structure
+#### **Project Structure**
 ```
 C-002-Case-Study/
 ├── src/                    # Main source code
@@ -826,7 +827,7 @@ C-002-Case-Study/
 
 ### 1. **Functional Enhancements**
 
-#### Potential Features
+#### **Potential Features**
 - **Advanced Reporting**: Statistical analysis and charts
 - **Data Import/Export**: CSV, Excel format support
 - **User Authentication**: Multi-user access control
@@ -835,7 +836,7 @@ C-002-Case-Study/
 
 ### 2. **Technical Improvements**
 
-#### Performance Optimizations
+#### **Performance Optimizations**
 - **Database Integration**: Move from file-based to database storage
 - **Indexing**: Improve search performance
 - **Caching**: Cache frequently accessed data
@@ -843,7 +844,7 @@ C-002-Case-Study/
 
 ### 3. **User Interface Enhancements**
 
-#### UI/UX Improvements
+#### **UI/UX Improvements**
 - **Graphical Interface**: Move from console to GUI
 - **Web Interface**: Browser-based access
 - **Mobile Support**: Responsive design
@@ -864,25 +865,30 @@ This system demonstrates the power of thoughtful software consolidation and serv
 
 ---
 
-*This document provides a comprehensive overview of the PUP Information Management System's features, mechanics, and technical implementation. For specific implementation details, refer to the source code and inline documentation.*
-
 ## 🔄 Recent Updates (June 2025)
 
 The latest development sprint introduced several important business-rule refinements and infrastructure tweaks that you should be aware of before digging into the code:
 
+### **Enhanced Business Rules**
 1. **Employee & Student Number Validation**  
    • Added new validation type `IV_EXACT_LEN` (see *apctxt.h*) to require *exactly* 10 characters for both employee and student numbers.  
    • All related input prompts were updated (`empio.c`, `stuio.c`).
+
 2. **Hours-Worked Constraints**  
    • Hours worked are now accepted in the range **0 – 744** (maximum possible hours in a 31-day month).  
    • Regular-hours configuration range was widened to 40 – 744 and reflected in the Configuration UI.
+
 3. **Payroll Safety Caps**  
-   • Basic pay is capped at **₱ 999 999.00**.  
-   • Deductions are capped at **₱ 99 999.99**.  
+   • Basic pay is capped at **₱999,999.00**.  
+   • Deductions are capped at **₱99,999.99**.  
    • Warnings are printed whenever a calculation exceeds these thresholds (`payroll.c`).
+
 4. **Deduction Calculation Simplification**  
    • Manual entry of deductions has been removed; deductions are now computed automatically from lack-of-hours.
+
 5. **Documentation & Guides**  
    • This summary, the C Keywords guide, and a new *Program Flow* document were updated to explain the new behaviour.
 
---- 
+---
+
+*This document provides a comprehensive overview of the PUP Information Management System's features, mechanics, and technical implementation. For specific implementation details, refer to the source code and inline documentation.* 
