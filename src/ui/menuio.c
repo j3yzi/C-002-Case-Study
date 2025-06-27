@@ -34,6 +34,10 @@
 #include "../../include/models/student.h"
 #include "../../include/headers/list.h"
 
+// Forward declarations for submenu functions
+int handleAddEmployeeMenu(void);
+int handleAddStudentMenu(void);
+
 // Global managers
 EmployeeManager empManager;
 StudentManager stuManager;
@@ -644,7 +648,7 @@ int runStudentManagement(void) {
                 handleSwitchStudentList();
                 break;
             case '3':
-                handleAddStudent();
+                handleAddStudentMenu();
                 break;
             case '4': {
                 int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
@@ -2005,14 +2009,39 @@ int handleAddEmployeeMenu(void) {
         return -1;
     }
 
-    char choice;
-    Menu addEmpMenu = {1, "Add Employees", (MenuOption[]){
+    // Base options (4 functional)
+    MenuOption baseOpts[] = {
         {'1', "Add an Employee", "Add a single employee to the active list", false, false, 9,0,7,0,8,0,NULL},
         {'2', "Add 5 Employees", "Add five employees in succession", false, false, 9,0,7,0,8,0,NULL},
         {'3', "Add N Employees", "Specify a custom number of employees to add", false, false, 9,0,7,0,8,0,NULL},
         {'B', "Back", "Return to Employee Management menu", false, false, 9,0,7,0,8,0,NULL}
-    }, 4};
+    };
 
+    // Ensure minimum height of option box (5 options)
+    const int MIN_MENU_OPTIONS = 5;
+    int totalMenuOptions = (sizeof(baseOpts)/sizeof(MenuOption) < MIN_MENU_OPTIONS) ? MIN_MENU_OPTIONS : (sizeof(baseOpts)/sizeof(MenuOption));
+    MenuOption* options = (MenuOption*)malloc(sizeof(MenuOption)*totalMenuOptions);
+    if(!options) return -1;
+
+    // Copy base options
+    memcpy(options, baseOpts, sizeof(baseOpts));
+
+    // Fill remaining with disabled placeholders
+    for(int i=sizeof(baseOpts)/sizeof(MenuOption); i<totalMenuOptions; ++i){
+        options[i].key='\0';
+        options[i].text="";
+        options[i].description="";
+        options[i].isDisabled=true;
+        options[i].isSelected=false;
+        options[i].highlightTextColor=8; options[i].highlightBgColor=0;
+        options[i].textColor=8; options[i].bgColor=0;
+        options[i].disabledTextColor=8; options[i].disabledBgColor=0;
+        options[i].onSelect=NULL;
+    }
+
+    Menu addEmpMenu = {1, "Add Employees", options, totalMenuOptions};
+
+    char choice;
     do {
         choice = runMenuWithInterface(&addEmpMenu);
         switch(choice) {
@@ -2022,8 +2051,7 @@ int handleAddEmployeeMenu(void) {
             case '2': {
                 for (int i = 0; i < 5; i++) {
                     if (handleAddEmployee() != 0) {
-                        // If user cancels, stop the loop
-                        break;
+                        break; // stop if user cancels
                     }
                 }
                 break;
@@ -2035,7 +2063,67 @@ int handleAddEmployeeMenu(void) {
                 int n = atoi(numBuf);
                 for (int i = 0; i < n; i++) {
                     if (handleAddEmployee() != 0) {
-                        // Stop if user cancels
+                        break; // user cancelled
+                    }
+                }
+                break;
+            }
+            case 'B':
+            case 'b':
+                free(options);
+                return 0;
+            default:
+                break;
+        }
+    } while (1);
+    // not reached
+} 
+
+int handleAddStudentMenu(void) {
+    int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
+    if (!checkActiveList(hasActiveList, 0, "No active student list!")) {
+        return -1;
+    }
+
+    MenuOption baseOpts[] = {
+        {'1', "Add a Student", "Add a single student to the active list", false, false, 9,0,7,0,8,0,NULL},
+        {'2', "Add 10 Students", "Add ten students in succession", false, false, 9,0,7,0,8,0,NULL},
+        {'3', "Add N Students", "Specify a custom number of students to add", false, false, 9,0,7,0,8,0,NULL},
+        {'B', "Back", "Return to Student Management menu", false, false, 9,0,7,0,8,0,NULL}
+    };
+    const int MIN_MENU_OPTIONS = 5;
+    int totalMenuOptions = (sizeof(baseOpts)/sizeof(MenuOption) < MIN_MENU_OPTIONS)? MIN_MENU_OPTIONS : (sizeof(baseOpts)/sizeof(MenuOption));
+    MenuOption* options = (MenuOption*)malloc(sizeof(MenuOption)*totalMenuOptions);
+    if(!options) return -1;
+    memcpy(options, baseOpts, sizeof(baseOpts));
+    for(int i=sizeof(baseOpts)/sizeof(MenuOption); i<totalMenuOptions; ++i){
+        options[i].key='\0'; options[i].text=""; options[i].description=""; options[i].isDisabled=true; options[i].isSelected=false;
+        options[i].highlightTextColor=8; options[i].highlightBgColor=0; options[i].textColor=8; options[i].bgColor=0; options[i].disabledTextColor=8; options[i].disabledBgColor=0; options[i].onSelect=NULL;
+    }
+
+    Menu addStuMenu = {1, "Add Students", options, totalMenuOptions};
+    char choice;
+    do {
+        choice = runMenuWithInterface(&addStuMenu);
+        switch(choice) {
+            case '1':
+                handleAddStudent();
+                break;
+            case '2': {
+                for (int i = 0; i < 10; i++) {
+                    if (handleAddStudent() != 0) {
+                        break;
+                    }
+                }
+                break;
+            }
+            case '3': {
+                char numBuf[6]="";
+                appFormField fld = { "Enter number of students to add (1-200): ", numBuf, sizeof(numBuf), IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 200}} };
+                appGetValidatedInput(&fld,1);
+                int n=atoi(numBuf);
+                for(int i=0;i<n;i++){
+                    if(handleAddStudent()!=0){
                         break;
                     }
                 }
@@ -2043,10 +2131,10 @@ int handleAddEmployeeMenu(void) {
             }
             case 'B':
             case 'b':
+                free(options);
                 return 0;
             default:
                 break;
         }
-    } while (1);
-    return 0;
+    } while(1);
 } 
