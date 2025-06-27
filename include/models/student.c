@@ -410,8 +410,16 @@ void displayAllStudents(const list* studentList) {
     int consoleWidth, consoleHeight;
     getConsoleSize(&consoleWidth, &consoleHeight);
     
-    // Calculate the width of our academic records report
-    int reportWidth = 105; // Total width of our formatted table
+    // Determine dynamic column widths based on console width
+    // Fixed columns: StudentNo(12) 2sp  Course(8) 2sp Year(4) 2sp FinalGrade(11) 2sp Remarks(8) 2sp Standing(12)
+    int fixedWidth = 12 + 2 + 8 + 2 + 4 + 2 + 11 + 2 + 8 + 2 + 12; // = 65
+    int fullNameWidth = 25; // default
+    int available = consoleWidth - 4; // keep small padding on both sides
+    if (available > fixedWidth + 10) {
+        fullNameWidth = available - fixedWidth;
+        if (fullNameWidth > 40) fullNameWidth = 40; // cap so it doesn't get too wide
+    }
+    int reportWidth = fixedWidth + fullNameWidth;
     int margin = (consoleWidth - reportWidth) / 2;
     if (margin < 0) margin = 0;
 
@@ -434,14 +442,15 @@ void displayAllStudents(const list* studentList) {
     
     printf("\n");
 
-    // Table header with proper formatting (centered)
-    printf("%*s%-12s  %-25s  %-8s  %-4s  %-11s  %-7s\n", 
+    // Table header with proper formatting (centered) and added Standing column
+    printf("%*s%-12s  %-*s  %-8s  %-4s  %-11s  %-8s  %-12s\n", 
            margin, "",
-           "Student No.", "Full Name", "Course", "Year", "Final Grade", "Remarks");
+           "Student No.", fullNameWidth, "Full Name", "Course", "Year", "Final Grade", "Remarks", "Standing");
     
-    // Separator line (centered)
+    // Separator line (centered) – length adjusted
     printf("%*s", margin, "");
-    printf("─────────────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+    for(int i=0;i<reportWidth;i++) printf("─");
+    printf("\n");
 
     node* current = studentList->head;
     int count = 0;
@@ -454,14 +463,18 @@ void displayAllStudents(const list* studentList) {
         while (current != NULL && count < studentList->size) {
             Student* student = (Student*)current->data;
             if (student) {
-                printf("%*s%-12s  %-25s  %-8s  %-4d  %11.2f  %-7s\n", 
+                // Refresh final grade, remarks, and standing in case data changed
+                calculateFinalGrade(student);
+                const char* standingStr = (student->standing == acadDeansLister) ? "Dean's Lister" : (student->standing == acadRegular) ? "Regular" : "Probation";
+                printf("%*s%-12s  %-*.*s  %-8s  %-4d  %11.2f  %-8s  %-12s\n", 
                        margin, "",
                        student->personal.studentNumber,
-                       student->personal.name.fullName,
+                       fullNameWidth, fullNameWidth, student->personal.name.fullName,
                        student->personal.programCode,
                        student->personal.yearLevel,
                        student->academic.finalGrade,
-                       student->academic.remarks);
+                       student->academic.remarks,
+                       standingStr);
                 
                 // Add to statistics
                 totalGrades += student->academic.finalGrade;
@@ -481,14 +494,18 @@ void displayAllStudents(const list* studentList) {
             do {
                 Student* student = (Student*)current->data;
                 if (student) {
-                    printf("%*s%-12s  %-25s  %-8s  %-4d  %11.2f  %-7s\n", 
+                    // Refresh final grade, remarks, and standing in case data changed
+                    calculateFinalGrade(student);
+                    const char* standingStr = (student->standing == acadDeansLister) ? "Dean's Lister" : (student->standing == acadRegular) ? "Regular" : "Probation";
+                    printf("%*s%-12s  %-*.*s  %-8s  %-4d  %11.2f  %-8s  %-12s\n", 
                            margin, "",
                            student->personal.studentNumber,
-                           student->personal.name.fullName,
+                           fullNameWidth, fullNameWidth, student->personal.name.fullName,
                            student->personal.programCode,
                            student->personal.yearLevel,
                            student->academic.finalGrade,
-                           student->academic.remarks);
+                           student->academic.remarks,
+                           standingStr);
                     
                     // Add to statistics
                     totalGrades += student->academic.finalGrade;
@@ -511,7 +528,8 @@ void displayAllStudents(const list* studentList) {
 
     // Footer separator (centered)
     printf("%*s", margin, "");
-    printf("─────────────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+    for(int i=0;i<reportWidth;i++) printf("─");
+    printf("\n");
     
     // Display statistics if we have students (centered)
     if (count > 0) {
@@ -521,7 +539,8 @@ void displayAllStudents(const list* studentList) {
                "AVERAGE GRADE:", 
                averageGrade);
         printf("%*s", margin, "");
-        printf("─────────────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+        for(int i=0;i<reportWidth;i++) printf("─");
+        printf("\n");
     }
     
     // Center the summary statistics

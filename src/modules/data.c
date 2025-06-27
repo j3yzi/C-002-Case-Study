@@ -183,9 +183,18 @@ int generateStudentReportFile(const list* studentList, char* generatedFilePath, 
 
     fprintf(file, "Generated on: %s\n\n", timestamp);
 
+    // Determine dynamic column widths similar to displayAllStudents
+    int consoleWidth = reportWidth; // file width fixed
+    int fixedWidth = 12 + 2 + 8 + 2 + 4 + 2 + 11 + 2 + 8 + 2 + 12; // 65
+    int fullNameWidth = 25;
+    if (consoleWidth - 4 > fixedWidth + 10) {
+        fullNameWidth = consoleWidth - 4 - fixedWidth;
+        if (fullNameWidth > 40) fullNameWidth = 40;
+    }
+
     /* ------------------ Table Header ---------------- */
-    fprintf(file, "%-12s  %-25s  %-8s  %-4s  %-11s  %-7s\n",
-            "Student No.", "Full Name", "Course", "Year", "Final Grade", "Remarks");
+    fprintf(file, "%-12s  %-*s  %-8s  %-4s  %-11s  %-8s  %-12s\n",
+            "Student No.", fullNameWidth, "Full Name", "Course", "Year", "Final Grade", "Remarks", "Standing");
 
     for (int i = 0; i < reportWidth; ++i) fputc('-', file);
     fputc('\n', file);
@@ -201,20 +210,18 @@ int generateStudentReportFile(const list* studentList, char* generatedFilePath, 
         do {
             Student* stu = (Student*)current->data;
             if (stu) {
-                double finalGrade = stu->academic.finalGrade;
-                if (finalGrade == 0.0) {
-                    finalGrade = (stu->academic.prelimGrade + stu->academic.midtermGrade + stu->academic.finalExamGrade) / 3.0;
-                }
-
-                fprintf(file, "%-12s  %-25s  %-8s  %-4d  %11.2f  %-7s\n",
+                calculateFinalGrade(stu);
+                const char* standingStr = (stu->standing == acadDeansLister) ? "Dean's Lister" : (stu->standing == acadRegular) ? "Regular" : "Probation";
+                fprintf(file, "%-12s  %-*.*s  %-8s  %-4d  %11.2f  %-8s  %-12s\n",
                         stu->personal.studentNumber,
-                        stu->personal.name.fullName,
+                        fullNameWidth, fullNameWidth, stu->personal.name.fullName,
                         stu->personal.programCode,
                         stu->personal.yearLevel,
-                        finalGrade,
-                        stu->academic.remarks);
+                        stu->academic.finalGrade,
+                        stu->academic.remarks,
+                        standingStr);
 
-                totalFinalGrade += finalGrade;
+                totalFinalGrade += stu->academic.finalGrade;
                 if (strcmp(stu->academic.remarks, "Passed") == 0) {
                     passedCount++;
                 } else {
