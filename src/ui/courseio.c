@@ -200,9 +200,28 @@ int runCourseManagement(void) {
  */
 int handleCreateCourseCatalog(void) {
     winTermClearScreen();
-    printf("=== Create New Course Catalog ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
     
-    // Check for unsaved changes
+    // Calculate visible text length for centering
+    char headerText[] = "Create New Course Catalog";
+    int boxWidth = 69; // Total width including borders
+    int borderSpace = 2; // Space for "║" on each side
+    int availableSpace = boxWidth - borderSpace;
+    int headerLen = strlen(headerText);
+    int leftPadding = (availableSpace - headerLen) / 2;
+    int rightPadding = availableSpace - headerLen - leftPadding;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
+    
+    // Check for unsaved changes before creating new catalog
     if (courseMgr.hasUnsavedChanges) {
         if (appYesNoPrompt("You have unsaved changes. Do you want to save before creating a new catalog?")) {
             handleSaveCatalog();
@@ -210,7 +229,7 @@ int handleCreateCourseCatalog(void) {
     }
     
     char catalogName[50];
-    appFormField field = { "Enter name for the new catalog: ", catalogName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appFormField field = { "📚 Enter name for the new catalog: ", catalogName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
     appGetValidatedInput(&field, 1);
     
     // Clean up existing catalog
@@ -255,17 +274,36 @@ int listCourseCatalogFiles(void) {
  */
 int handleAddCourse(void) {
     winTermClearScreen();
-    printf("=== Add New Course ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText2[] = "Add New Course";
+    int boxWidth2 = 69; // Total width including borders
+    int borderSpace2 = 2; // Space for "║" on each side
+    int availableSpace2 = boxWidth2 - borderSpace2;
+    int headerLen2 = strlen(headerText2);
+    int leftPadding2 = (availableSpace2 - headerLen2) / 2;
+    int rightPadding2 = availableSpace2 - headerLen2 - leftPadding2;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding2; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText2, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding2; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     if (!courseMgr.catalog.courseList) {
-        printf("No active catalog! Please create or load a catalog first.\n");
+        printf("%s❌ No active catalog! Please create or load a catalog first.%s\n", UI_ERROR, TXT_RESET);
         waitForKeypress(NULL);
         return -1;
     }
     
     Course* newCourse = (Course*)malloc(sizeof(Course));
     if (!newCourse) {
-        printf("Memory allocation failed!\n");
+        printf("%s❌ Memory allocation failed!%s\n", UI_ERROR, TXT_RESET);
         waitForKeypress(NULL);
         return -1;
     }
@@ -276,7 +314,7 @@ int handleAddCourse(void) {
     
     // Get course data from user
     if (getCourseDataFromUser(newCourse, true) != 0) {
-        printf("Course creation cancelled.\n");
+        printf("%sCourse creation cancelled.%s\n", UI_WARNING, TXT_RESET);
         free(newCourse);
         waitForKeypress(NULL);
         return -1;
@@ -284,14 +322,14 @@ int handleAddCourse(void) {
     
     // Add course to catalog
     if (addCourse(&courseMgr.catalog, newCourse) != 0) {
-        printf("Failed to add course to catalog! Course code may already exist.\n");
+        printf("%s❌ Failed to add course to catalog! Course code may already exist.%s\n", UI_ERROR, TXT_RESET);
         free(newCourse);
         waitForKeypress(NULL);
         return -1;
     }
     
     courseMgr.hasUnsavedChanges = true;
-    printf("\nCourse '%s - %s' added successfully!\n", newCourse->code, newCourse->name);
+    printf("\n%s✅ Course '%s - %s' added successfully!%s\n", UI_SUCCESS, newCourse->code, newCourse->name, TXT_RESET);
     waitForKeypress(NULL);
     return 0;
 }

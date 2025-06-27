@@ -27,6 +27,7 @@
 #include "../modules/data.h"
 #include "../modules/payroll.h"
 #include "../../include/headers/apctxt.h"
+#include "../../include/headers/apclrs.h"
 #include "../../include/headers/state.h"
 #include "../../include/headers/interface.h"
 #include "../../include/models/employee.h"
@@ -238,8 +239,6 @@ void cleanupMultiListManager(void) {
     
     printf("PUP Information Management System cleaned up!\n");
 }
-
-
 
 /**
  * @brief Main menu loop
@@ -577,23 +576,42 @@ int runStudentManagement(void) {
  */
 int handleCreateEmployeeList(void) {
     winTermClearScreen();
-    printf("=== Create New Employee List ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText[] = "Create New Employee List";
+    int boxWidth = 69; // Total width including borders
+    int borderSpace = 2; // Space for "║" on each side
+    int availableSpace = boxWidth - borderSpace;
+    int headerLen = strlen(headerText);
+    int leftPadding = (availableSpace - headerLen) / 2;
+    int rightPadding = availableSpace - headerLen - leftPadding;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     if (empManager.employeeListCount >= 10) {
-        printf("Maximum number of employee lists (10) reached!\n");
+        printf("%s⚠️  Maximum number of employee lists (10) reached!%s\n", UI_WARNING, TXT_RESET);
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
     char listName[50];
-    appFormField field = { "Enter name for this employee list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appFormField field = { "📝 Enter name for this employee list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
     appGetValidatedInput(&field, 1);
     
     // Create new list
     list* newList = NULL;
     if (createEmployeeList(&newList) != 0) {
-        printf("Failed to create employee list!\n");
+        printf("%s❌ Failed to create employee list!%s\n", UI_ERROR, TXT_RESET);
         printf("Press any key to continue...");
         _getch();
         return -1;
@@ -606,8 +624,8 @@ int handleCreateEmployeeList(void) {
     empManager.activeEmployeeList = empManager.employeeListCount;
     empManager.employeeListCount++;
     
-    printf("Employee list '%s' created successfully!\n", listName);
-    printf("This list is now active. Add employees to get started.\n");
+    printf("%s✅ Employee list '%s' created successfully!%s\n", UI_SUCCESS, listName, TXT_RESET);
+    printf("%sThis list is now active. Add employees to get started.%s\n", UI_INFO, TXT_RESET);
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -685,67 +703,61 @@ int handleDisplayAllEmployees(void) {
 
 int handlePayrollReport(void) {
     winTermClearScreen();
-    printf("=== Payroll Report ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText2[] = "Payroll Report";
+    int boxWidth = 69; // Total width including borders
+    int borderSpace = 2; // Space for "║" on each side
+    int availableSpace = boxWidth - borderSpace;
+    int headerLen2 = strlen(headerText2);
+    int leftPadding2 = (availableSpace - headerLen2) / 2;
+    int rightPadding2 = availableSpace - headerLen2 - leftPadding2;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding2; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText2, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding2; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
     if (!checkActiveList(hasActiveList, 0, "No active employee list!")) {
         return -1;
     }
     
-    printf("Generating payroll report for: %s\n\n", empManager.employeeListNames[empManager.activeEmployeeList]);
+    printf("%s📊 Generating payroll report for: %s%s%s\n\n", UI_INFO, UI_HIGHLIGHT, empManager.employeeListNames[empManager.activeEmployeeList], TXT_RESET);
     
     // Generate the payroll report file
     char reportFilePath[512];
     int reportResult = generatePayrollReportFile(empManager.employeeLists[empManager.activeEmployeeList], reportFilePath, sizeof(reportFilePath));
     
     if (reportResult > 0) {
-        printf("Successfully generated payroll report!\n");
-        printf("Report saved to: %s\n", reportFilePath);
-        printf("Processed %d employees\n\n", reportResult);
+        printf("%s✅ Successfully generated payroll report!%s\n", UI_SUCCESS, TXT_RESET);
+        printf("%sReport saved to: %s%s\n", UI_INFO, reportFilePath, TXT_RESET);
+        printf("%sProcessed %d employees%s\n\n", UI_INFO, reportResult, TXT_RESET);
         
         // Display the report content in the terminal
-        printf("=== Employee Payroll Report ===\n");
-        printf("%-12s | %-20s | %-8s | %-10s | %-10s | %-10s | %-10s | %-6s\n",
-               "Emp. Number", "Employee Name", "Status", "Basic Pay", "Overtime", "Deductions", "Net Pay", "Hours");
-        printf("------------------------------------------------------------------------------------------------------\n");
+        printf("%s", UI_HEADER);
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
         
-        list* employeeList = empManager.employeeLists[empManager.activeEmployeeList];
-        node* current = employeeList->head;
-        int count = 0;
-        double totalBasicPay = 0.0;
-        double totalOvertimePay = 0.0;
-        double totalDeductions = 0.0;
-        double totalNetPay = 0.0;
+        // Calculate visible text length for centering
+        char headerText3[] = "Employee Payroll Report";
+        int headerLen3 = strlen(headerText3);
+        int leftPadding3 = (boxWidth - borderSpace - headerLen3) / 2;
+        int rightPadding3 = boxWidth - borderSpace - headerLen3 - leftPadding3;
         
-        if (current != NULL) {
-            do {
-                Employee* emp = (Employee*)current->data;
-                if (emp != NULL) {
-                    count++;
-                    
-                    printf("%-12s | %-20s | %-8s | %10.2f | %10.2f | %10.2f | %10.2f | %6d\n",
-                           emp->personal.employeeNumber,
-                           emp->personal.name.fullName,
-                           (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                           emp->payroll.basicPay,
-                           emp->payroll.overtimePay,
-                           emp->payroll.deductions,
-                           emp->payroll.netPay,
-                           emp->employment.hoursWorked);
-                           
-                    totalBasicPay += emp->payroll.basicPay;
-                    totalOvertimePay += emp->payroll.overtimePay;
-                    totalDeductions += emp->payroll.deductions;
-                    totalNetPay += emp->payroll.netPay;
-                }
-                current = current->next;
-            } while (current != employeeList->head && current != NULL);
-        }
+        printf("║");
+        for (int i = 0; i < leftPadding3; i++) printf(" ");
+        printf("%s%s%s", TXT_BOLD, headerText3, TXT_RESET UI_HEADER);
+        for (int i = 0; i < rightPadding3; i++) printf(" ");
+        printf("║\n");
         
-        printf("------------------------------------------------------------------------------------------------------\n");
-        printf("%-32s | %10.2f | %10.2f | %10.2f | %10.2f |\n",
-               "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
-        printf("------------------------------------------------------------------------------------------------------\n");
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("%s", TXT_RESET);
     } else {
         printf("Failed to generate payroll report.\n");
     }
@@ -791,25 +803,46 @@ int handleSaveEmployeeList(void) {
 
 int handleLoadEmployeeList(void) {
     winTermClearScreen();
-    printf("=== Load Employee List ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText4[] = "Load Employee List";
+    int boxWidth4 = 69; // Total width including borders
+    int borderSpace4 = 2; // Space for "║" on each side
+    int availableSpace4 = boxWidth4 - borderSpace4;
+    int headerLen4 = strlen(headerText4);
+    int leftPadding4 = (availableSpace4 - headerLen4) / 2;
+    int rightPadding4 = availableSpace4 - headerLen4 - leftPadding4;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding4; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText4, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding4; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     // List available employee data files
+    printf("%s📁 Available Employee Data Files:%s\n", UI_INFO, TXT_RESET);
+    printf("─────────────────────────────────────\n");
     listEmployeeDataFiles();
-    printf("\n");
+    printf("─────────────────────────────────────\n\n");
     
     char filename[100];
     char listName[50];
     appFormField fields[] = {
-        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
-        { "Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
+        { "📂 Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
+        { "📝 Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
     };
     appGetValidatedInput(fields, 2);
     
     // Load the data
     list* newList = loadListWithName(filename, "employee", SINGLY);
     if (!newList) {
-        printf("Failed to load employee data from file '%s'!\n", filename);
-        printf("Make sure the file exists and is in the correct format.\n");
+        printf("%s❌ Failed to load employee data from file '%s'!%s\n", UI_ERROR, filename, TXT_RESET);
+        printf("%sPlease make sure the file exists and is in the correct format.%s\n", UI_WARNING, TXT_RESET);
         printf("Press any key to continue...");
         _getch();
         return -1;
@@ -817,7 +850,7 @@ int handleLoadEmployeeList(void) {
     
     // Add to manager
     if (empManager.employeeListCount >= 10) {
-        printf("Maximum number of employee lists reached!\n");
+        printf("%s⚠️  Maximum number of employee lists reached!%s\n", UI_WARNING, TXT_RESET);
         destroyList(&newList, freeEmployee);
         printf("Press any key to continue...");
         _getch();
@@ -830,9 +863,9 @@ int handleLoadEmployeeList(void) {
     empManager.activeEmployeeList = empManager.employeeListCount;
     empManager.employeeListCount++;
     
-    printf("Employee list '%s' loaded successfully!\n", listName);
-    printf("Loaded %d employee records.\n", newList->size);
-    printf("This list is now active.\n");
+    printf("%s✅ Employee list '%s' loaded successfully!%s\n", UI_SUCCESS, listName, TXT_RESET);
+    printf("%s📊 Loaded %d employee records.%s\n", UI_INFO, newList->size, TXT_RESET);
+    printf("%sThis list is now active.%s\n", UI_INFO, TXT_RESET);
     printf("Press any key to continue...");
     _getch();
     return 0;
@@ -977,66 +1010,61 @@ int handleSortStudentsByGrade(void) {
 
 int handleStudentReport(void) {
     winTermClearScreen();
-    printf("=== Student Report ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText5[] = "Student Report";
+    int boxWidth5 = 69; // Total width including borders
+    int borderSpace5 = 2; // Space for "║" on each side
+    int availableSpace5 = boxWidth5 - borderSpace5;
+    int headerLen5 = strlen(headerText5);
+    int leftPadding5 = (availableSpace5 - headerLen5) / 2;
+    int rightPadding5 = availableSpace5 - headerLen5 - leftPadding5;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding5; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText5, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding5; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
     if (!checkActiveList(hasActiveList, 0, "No active student list!")) {
         return -1;
     }
     
-    printf("Generating student report for: %s\n\n", stuManager.studentListNames[stuManager.activeStudentList]);
+    printf("%s📊 Generating student report for: %s%s%s\n\n", UI_INFO, UI_HIGHLIGHT, stuManager.studentListNames[stuManager.activeStudentList], TXT_RESET);
     
     // Generate the student report file
     char reportFilePath[512];
     int reportResult = generateStudentReportFile(stuManager.studentLists[stuManager.activeStudentList], reportFilePath, sizeof(reportFilePath));
     
     if (reportResult > 0) {
-        printf("Successfully generated student report!\n");
-        printf("Report saved to: %s\n", reportFilePath);
-        printf("Processed %d students\n\n", reportResult);
+        printf("%s✅ Successfully generated student report!%s\n", UI_SUCCESS, TXT_RESET);
+        printf("%sReport saved to: %s%s\n", UI_INFO, reportFilePath, TXT_RESET);
+        printf("%sProcessed %d students%s\n\n", UI_INFO, reportResult, TXT_RESET);
         
         // Display the report content in the terminal
-        printf("=== Student Academic Report ===\n");
-        printf("%-12s | %-20s | %-8s | %-6s | %-6s | %-6s | %-6s | %-8s\n",
-               "Student No.", "Student Name", "Program", "Year", "Prelim", "Midterm", "Final", "Remarks");
-        printf("-------------------------------------------------------------------------------------\n");
+        printf("%s", UI_HEADER);
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
         
-        list* studentList = stuManager.studentLists[stuManager.activeStudentList];
-        node* current = studentList->head;
-        int count = 0;
-        double totalFinalGrade = 0.0;
-        int passedCount = 0;
+        // Calculate visible text length for centering
+        char headerText6[] = "Student Academic Report";
+        int headerLen6 = strlen(headerText6);
+        int leftPadding6 = (boxWidth5 - borderSpace5 - headerLen6) / 2;
+        int rightPadding6 = boxWidth5 - borderSpace5 - headerLen6 - leftPadding6;
         
-        if (current != NULL) {
-            do {
-                Student* stu = (Student*)current->data;
-                if (stu != NULL) {
-                    count++;
-                    
-                    printf("%-12s | %-20s | %-8s | %6d | %6.2f | %6.2f | %6.2f | %-8s\n",
-                           stu->personal.studentNumber,
-                           stu->personal.name.fullName,
-                           stu->personal.programCode,
-                           stu->personal.yearLevel,
-                           stu->academic.prelimGrade,
-                           stu->academic.midtermGrade,
-                           stu->academic.finalExamGrade,
-                           stu->academic.remarks);
-                           
-                    totalFinalGrade += stu->academic.finalGrade;
-                    if (strcmp(stu->academic.remarks, "Passed") == 0) {
-                        passedCount++;
-                    }
-                }
-                current = current->next;
-            } while (current != studentList->head && current != NULL);
-        }
+        printf("║");
+        for (int i = 0; i < leftPadding6; i++) printf(" ");
+        printf("%s%s%s", TXT_BOLD, headerText6, TXT_RESET UI_HEADER);
+        for (int i = 0; i < rightPadding6; i++) printf(" ");
+        printf("║\n");
         
-        printf("-------------------------------------------------------------------------------------\n");
-        printf("Total students: %d\n", count);
-        printf("Average grade: %.2f\n", totalFinalGrade / count);
-        printf("Passed: %d (%.1f%%)\n", passedCount, (passedCount * 100.0) / count);
-        printf("Failed: %d (%.1f%%)\n", count - passedCount, ((count - passedCount) * 100.0) / count);
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("%s", TXT_RESET);
     } else {
         printf("Failed to generate student report.\n");
     }
@@ -1082,25 +1110,46 @@ int handleSaveStudentList(void) {
 
 int handleLoadStudentList(void) {
     winTermClearScreen();
-    printf("=== Load Student List ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText7[] = "Load Student List";
+    int boxWidth7 = 69; // Total width including borders
+    int borderSpace7 = 2; // Space for "║" on each side
+    int availableSpace7 = boxWidth7 - borderSpace7;
+    int headerLen7 = strlen(headerText7);
+    int leftPadding7 = (availableSpace7 - headerLen7) / 2;
+    int rightPadding7 = availableSpace7 - headerLen7 - leftPadding7;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding7; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText7, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding7; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     // List available student data files
+    printf("%s📁 Available Student Data Files:%s\n", UI_INFO, TXT_RESET);
+    printf("─────────────────────────────────────\n");
     listStudentDataFiles();
-    printf("\n");
+    printf("─────────────────────────────────────\n\n");
     
     char filename[100];
     char listName[50];
     appFormField fields[] = {
-        { "Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
-        { "Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
+        { "📂 Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
+        { "📝 Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
     };
     appGetValidatedInput(fields, 2);
     
     // Load the data
     list* newList = loadListWithName(filename, "student", SINGLY);
     if (!newList) {
-        printf("Failed to load student data from file '%s'!\n", filename);
-        printf("Make sure the file exists and is in the correct format.\n");
+        printf("%s❌ Failed to load student data from file '%s'!%s\n", UI_ERROR, filename, TXT_RESET);
+        printf("%sPlease make sure the file exists and is in the correct format.%s\n", UI_WARNING, TXT_RESET);
         printf("Press any key to continue...");
         _getch();
         return -1;
@@ -1108,7 +1157,7 @@ int handleLoadStudentList(void) {
     
     // Add to manager
     if (stuManager.studentListCount >= 10) {
-        printf("Maximum number of student lists reached!\n");
+        printf("%s⚠️  Maximum number of student lists reached!%s\n", UI_WARNING, TXT_RESET);
         destroyList(&newList, freeStudent);
         printf("Press any key to continue...");
         _getch();
@@ -1121,9 +1170,9 @@ int handleLoadStudentList(void) {
     stuManager.activeStudentList = stuManager.studentListCount;
     stuManager.studentListCount++;
     
-    printf("Student list '%s' loaded successfully!\n", listName);
-    printf("Loaded %d student records.\n", newList->size);
-    printf("This list is now active.\n");
+    printf("%s✅ Student list '%s' loaded successfully!%s\n", UI_SUCCESS, listName, TXT_RESET);
+    printf("%s📊 Loaded %d student records.%s\n", UI_INFO, newList->size, TXT_RESET);
+    printf("%sThis list is now active.%s\n", UI_INFO, TXT_RESET);
     printf("Press any key to continue...");
     _getch();
     return 0;

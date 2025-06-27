@@ -1,4 +1,5 @@
 #include "../headers/apctxt.h"
+#include "../headers/apclrs.h"
 
 // Forward declaration for internal helper function
 static const char* extractFieldName(const char* prompt);
@@ -112,7 +113,7 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
     }
     
     if (input[0] == '\0') {
-        printf("   [Error] %s cannot be empty. Please enter a value.\n", fieldName);
+        printf("%s   [Error] %s cannot be empty. Please enter a value.%s\n", UI_ERROR, fieldName, TXT_RESET);
         return false;
     }
 
@@ -123,8 +124,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
 
         case IV_MAX_LEN:
             if (strlen(input) > (size_t)params.rangeInt.max) {
-                printf("   [Error] %s cannot exceed %ld characters. Current length: %zu\n", 
-                       fieldName, params.rangeInt.max, strlen(input));
+                printf("%s   [Error] %s cannot exceed %ld characters. Current length: %zu%s\n", 
+                       UI_ERROR, fieldName, params.rangeInt.max, strlen(input), TXT_RESET);
                 return false;
             }
             return true; 
@@ -135,14 +136,15 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                     return true;
                 }
             }
-            printf("   [Error] Invalid %s '%s'. Valid options are: ", fieldName, input);
+            printf("%s   [Error] Invalid %s '%s'. Valid options are: %s", 
+                   UI_ERROR, fieldName, input, UI_WARNING);
             for (int i = 0; i < params.choices.count; i++) {
                 printf("%s", params.choices.choices[i]);
                 if (i < params.choices.count - 1) {
                     printf(", ");
                 }
             }
-            printf("\n");
+            printf("%s\n", TXT_RESET);
             return false;
 
         case IV_RANGE_FLT:
@@ -150,13 +152,13 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 char* end;
                 double val = strtod(input, &end);
                 if (end == input || *end != '\0') {
-                    printf("   [Error] %s must be a valid decimal number. '%s' is not a valid format.\n", 
-                           fieldName, input);
+                    printf("%s   [Error] %s must be a valid decimal number. '%s' is not a valid format.%s\n", 
+                           UI_ERROR, fieldName, input, TXT_RESET);
                     return false;
                 }
                 if (val < params.rangeFloat.min || val > params.rangeFloat.max) {
-                    printf("   [Error] %s must be between %.2f and %.2f. You entered: %.2f\n", 
-                           fieldName, params.rangeFloat.min, params.rangeFloat.max, val);
+                    printf("%s   [Error] %s must be between %.2f and %.2f. You entered: %.2f%s\n", 
+                           UI_ERROR, fieldName, params.rangeFloat.min, params.rangeFloat.max, val, TXT_RESET);
                     return false;
                 }
                 return true;
@@ -167,13 +169,13 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 char* end;
                 long val = strtol(input, &end, 10);
                 if (end == input || *end != '\0') {
-                    printf("   [Error] %s must be a valid whole number. '%s' is not a valid format.\n", 
-                           fieldName, input);
+                    printf("%s   [Error] %s must be a valid whole number. '%s' is not a valid format.%s\n", 
+                           UI_ERROR, fieldName, input, TXT_RESET);
                     return false;
                 }
                 if (val < params.rangeInt.min || val > params.rangeInt.max) {
-                    printf("   [Error] %s must be between %ld and %ld. You entered: %ld\n", 
-                           fieldName, params.rangeInt.min, params.rangeInt.max, val);
+                    printf("%s   [Error] %s must be between %ld and %ld. You entered: %ld%s\n", 
+                           UI_ERROR, fieldName, params.rangeInt.min, params.rangeInt.max, val, TXT_RESET);
                     return false;
                 }
                 return true;
@@ -181,8 +183,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
             
         case IV_MAX_LEN_CHARS:
             if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
-                printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 
-                       fieldName, params.maxLengthChars.maxLength, strlen(input));
+                printf("%s   [Error] %s cannot exceed %d characters. Current length: %zu%s\n", 
+                       UI_ERROR, fieldName, params.maxLengthChars.maxLength, strlen(input), TXT_RESET);
                 return false;
             }
             return true;
@@ -193,8 +195,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                     char c = input[i];
                     // Allow only alphabetic characters and spaces
                     if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
-                        printf("   [Error] %s can only contain letters and spaces. Invalid character: '%c'\n", 
-                               fieldName, c);
+                        printf("%s   [Error] %s can only contain letters and spaces. Invalid character: '%c'%s\n", 
+                               UI_ERROR, fieldName, c, TXT_RESET);
                         return false;
                     }
                 }
@@ -205,8 +207,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
             {
                 // First check length
                 if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
-                    printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 
-                           fieldName, params.maxLengthChars.maxLength, strlen(input));
+                    printf("%s   [Error] %s cannot exceed %d characters. Current length: %zu%s\n", 
+                           UI_ERROR, fieldName, params.maxLengthChars.maxLength, strlen(input), TXT_RESET);
                     return false;
                 }
                 
@@ -215,8 +217,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                     char c = input[i];
                     // Allow only alphabetic characters and spaces
                     if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
-                        printf("   [Error] %s can only contain letters and spaces. Invalid character: '%c'\n", 
-                               fieldName, c);
+                        printf("%s   [Error] %s can only contain letters and spaces. Invalid character: '%c'%s\n", 
+                               UI_ERROR, fieldName, c, TXT_RESET);
                         return false;
                     }
                 }
@@ -228,8 +230,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 // Validate as alphabetic with max length
                 // First check length
                 if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
-                    printf("   [Error] %s cannot exceed %d characters. Current length: %zu\n", 
-                           fieldName, params.maxLengthChars.maxLength, strlen(input));
+                    printf("%s   [Error] %s cannot exceed %d characters. Current length: %zu%s\n", 
+                           UI_ERROR, fieldName, params.maxLengthChars.maxLength, strlen(input), TXT_RESET);
                     return false;
                 }
                 
@@ -238,8 +240,8 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                     char c = input[i];
                     // Allow only alphabetic characters and spaces
                     if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ')) {
-                        printf("   [Error] %s can only contain letters and spaces. Invalid character: '%c'\n", 
-                               fieldName, c);
+                        printf("%s   [Error] %s can only contain letters and spaces. Invalid character: '%c'%s\n", 
+                               UI_ERROR, fieldName, c, TXT_RESET);
                         return false;
                     }
                 }
@@ -268,7 +270,7 @@ void appGetValidatedInput(appFormField* fields, int fieldCount) {
         const char* fieldName = extractFieldName(fields[i].prompt);
         
         while (!validInput) {
-            printf("%s", fields[i].prompt);
+            printf("%s%s%s", UI_PROMPT, fields[i].prompt, TXT_RESET);
             readLine(tempBuffer, sizeof(tempBuffer));
             validInput = isValid(tempBuffer, fields[i].validationType, fields[i].validationParams, fieldName);
             if (validInput) {

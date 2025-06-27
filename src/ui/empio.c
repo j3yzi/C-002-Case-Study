@@ -5,6 +5,7 @@
 #include "empio.h"
 #include "../modules/payroll.h"
 #include "../../include/headers/apctxt.h"
+#include "../../include/headers/apclrs.h"
 #include "../../include/headers/interface.h"
 #include "../../include/models/employee.h"
 
@@ -80,50 +81,133 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
     int isNameValid = 0;
     while (!isNameValid) {
         winTermClearScreen();
-        printf("=== Enter Employee Name ===\n\n");
+        printf("%s", UI_HEADER);
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                  %sEnter Employee Name%s                   ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("%s\n", TXT_RESET);
         
         appFormField nameFields[] = {
-            { "Enter First Name: ", newEmployee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
-            { "Enter Middle Name (optional): ", newEmployee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
-            { "Enter Last Name: ", newEmployee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
+            { "👤 Enter First Name: ", newEmployee->personal.name.firstName, employeeFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeFirstNameLen - 1}} },
+            { "👥 Enter Middle Name (optional): ", newEmployee->personal.name.middleName, employeeMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeMiddleNameLen - 1}} },
+            { "👤 Enter Last Name: ", newEmployee->personal.name.lastName, employeeLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeLastNameLen - 1}} }
         };
-        appGetValidatedInput(nameFields, 3);        isNameValid = composeEmployeeName(&newEmployee->personal.name);
+        appGetValidatedInput(nameFields, 3);        
+        
+        isNameValid = composeEmployeeName(&newEmployee->personal.name);
         if (!isNameValid) {
-            printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
-            printf("        less than %d characters to fit in the %d character full name format.\n", employeeNameLen - 5, employeeNameLen);
-            printf("Press any key to try again, or ESC to cancel...");
+            printf("\n%s[Error] Name is too long to format properly.%s\n", UI_WARNING, TXT_RESET);
+            printf("%sFirst and last names must each be less than %d characters to fit in the %d character full name format.%s\n", 
+                   UI_WARNING, employeeNameLen - 5, employeeNameLen, TXT_RESET);
+            printf("\n%sPress any key to try again, or ESC to cancel...%s", UI_PROMPT, TXT_RESET);
             if (_getch() == 27) return -1; // ESC key
         }
     }
 
     winTermClearScreen();
-    printf("=== Enter Employment Details ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    printf("║               %sEnter Employment Details%s                ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
-    char statusInput[3];
-    char hoursBuffer[10], rateBuffer[20];
+    char statusInput[3], hoursBuffer[4], basicRateBuffer[10], deductionsBuffer[10];
     
     appFormField employmentFields[] = {
-        { "Enter Employee Number: ", newEmployee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} },
-        { "Enter Status (R/C): ", statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} },
-        { "Enter Hours Worked (0-400): ", hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} },
-        { "Enter Basic Rate (minimum 0.00): ", rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} }
+        { "🆔 Enter Employee Number (10 digits): ", newEmployee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} },
+        { "💼 Enter Employment Status (R for Regular, C for Casual): ", statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} },
+        { "⏰ Enter Hours Worked (1-240): ", hoursBuffer, 4, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 240}} },
+        { "💰 Enter Basic Rate (per hour): ", basicRateBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.01, .max = 9999.99}} },
+        { "📉 Enter Deductions: ", deductionsBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 9999.99}} }
     };
-    appGetValidatedInput(employmentFields, 4);
+    appGetValidatedInput(employmentFields, 5);
 
     // Convert string inputs to appropriate data types
     newEmployee->employment.status = (statusInput[0] == 'R' || statusInput[0] == 'r') ? statusRegular : statusCasual;
     newEmployee->employment.hoursWorked = atoi(hoursBuffer);
-    newEmployee->employment.basicRate = (float)atof(rateBuffer);
+    newEmployee->employment.basicRate = (float)atof(basicRateBuffer);
 
-    printf("\n=== Employee Information Summary ===\n");
-    printf("Name: %s\n", newEmployee->personal.name.fullName);
-    printf("Employee Number: %s\n", newEmployee->personal.employeeNumber);
-    printf("Status: %s\n", (newEmployee->employment.status == statusRegular) ? "Regular" : "Casual");
-    printf("Hours Worked: %d\n", newEmployee->employment.hoursWorked);
-    printf("Basic Rate: %.2f\n", newEmployee->employment.basicRate);
+    printf("\n%s", UI_INFO);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    printf("║              %s💼 Employee Information Summary 💼%s              ║\n", TXT_BOLD, TXT_RESET UI_INFO);
+    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
     
-    if (!appYesNoPrompt("Confirm this information?")) {
-        printf("Employee creation cancelled.\n");
+    // Define box width (should match the border width)
+    int boxWidth = 69; // Total width including borders "╔" and "╗"
+    int borderSpace = 2; // Space taken by "║ " and " ║"
+    int availableSpace = boxWidth - borderSpace;
+    
+    // Employee Name row
+    char nameLabel[] = "👤 Name:";
+    // When calculating content length, we need the visible length only (no ANSI codes)
+    int labelVisibleLen = strlen(nameLabel);
+    int nameVisibleLen = strlen(newEmployee->personal.name.fullName);
+    int nameContentLen = labelVisibleLen + 1 + nameVisibleLen; // +1 for space after label
+    int namePadding = availableSpace - nameContentLen;
+    if (namePadding < 0) namePadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, nameLabel, TXT_RESET, newEmployee->personal.name.fullName);
+    for (int i = 0; i < namePadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Employee Number row
+    char empNumLabel[] = "🆔 Employee Number:";
+    int empNumLabelLen = strlen(empNumLabel);
+    int empNumValueLen = strlen(newEmployee->personal.employeeNumber);
+    int empNumContentLen = empNumLabelLen + 1 + empNumValueLen;
+    int empNumPadding = availableSpace - empNumContentLen;
+    if (empNumPadding < 0) empNumPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, empNumLabel, TXT_RESET, newEmployee->personal.employeeNumber);
+    for (int i = 0; i < empNumPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Status row
+    char statusLabel[] = "💼 Status:";
+    const char* statusText = (newEmployee->employment.status == statusRegular) ? "Regular" : "Casual";
+    int statusLabelLen = strlen(statusLabel);
+    int statusValueLen = strlen(statusText);
+    int statusContentLen = statusLabelLen + 1 + statusValueLen;
+    int statusPadding = availableSpace - statusContentLen;
+    if (statusPadding < 0) statusPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, statusLabel, TXT_RESET, statusText);
+    for (int i = 0; i < statusPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Hours Worked row
+    char hoursLabel[] = "⏰ Hours Worked:";
+    char hoursText[20];
+    sprintf(hoursText, "%d", newEmployee->employment.hoursWorked);
+    int hoursLabelLen = strlen(hoursLabel);
+    int hoursValueLen = strlen(hoursText);
+    int hoursContentLen = hoursLabelLen + 1 + hoursValueLen;
+    int hoursPadding = availableSpace - hoursContentLen;
+    if (hoursPadding < 0) hoursPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, hoursLabel, TXT_RESET, hoursText);
+    for (int i = 0; i < hoursPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Basic Rate row
+    char rateLabel[] = "💰 Basic Rate:";
+    char rateText[30];
+    sprintf(rateText, "$%.2f", newEmployee->employment.basicRate);
+    int rateLabelLen = strlen(rateLabel);
+    int rateValueLen = strlen(rateText);
+    int rateContentLen = rateLabelLen + 1 + rateValueLen;
+    int ratePadding = availableSpace - rateContentLen;
+    if (ratePadding < 0) ratePadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, rateLabel, TXT_RESET, rateText);
+    for (int i = 0; i < ratePadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
+    
+    if (!appYesNoPrompt("✅ Confirm this information?")) {
+        printf("%s🚫 Employee creation cancelled.%s\n", UI_WARNING, TXT_RESET);
         return -1;
     }
 

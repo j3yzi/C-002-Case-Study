@@ -3,8 +3,11 @@
 #include <string.h>
 #include <conio.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include "stuio.h"
 #include "../../include/headers/apctxt.h"
+#include "../../include/headers/apclrs.h"
 #include "../../include/headers/interface.h"
 #include "../../include/models/student.h"
 
@@ -80,22 +83,34 @@ int getStudentDataFromUser(Student* newStudent) {
     int isNameValid = 0;
     while (!isNameValid) {
         winTermClearScreen();
-        printf("=== Enter Student Name ===\n\n");
+        printf("%s", UI_HEADER);
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                  %sEnter Student Name%s                    ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("%s\n", TXT_RESET);
         
         appFormField nameFields[] = {
-            { "Enter First Name: ", newStudent->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
-            { "Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
-            { "Enter Last Name: ", newStudent->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
-        };        appGetValidatedInput(nameFields, 3);        isNameValid = composeStudentName(&newStudent->personal.name);
+            { "👤 Enter First Name: ", newStudent->personal.name.firstName, studentFirstNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentFirstNameLen - 1}} },
+            { "👥 Enter Middle Name (optional): ", newStudent->personal.name.middleName, studentMiddleNameLen, IV_OPTIONAL_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentMiddleNameLen - 1}} },
+            { "👤 Enter Last Name: ", newStudent->personal.name.lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} }
+        };
+        appGetValidatedInput(nameFields, 3);
+        
+        isNameValid = composeStudentName(&newStudent->personal.name);
         if (!isNameValid) {
-            printf("\n[Error] Name is too long to format properly. First and last names must each be\n");
-            printf("        less than %d characters to fit in the %d character full name format.\n", studentNameLen - 5, studentNameLen);
+            printf("\n%s[Error] Name is too long to format properly.%s\n", UI_ERROR, TXT_RESET);
+            printf("%sFirst and last names must each be less than %d characters to fit in the %d character full name format.%s\n", 
+                   UI_WARNING, studentNameLen - 5, studentNameLen, TXT_RESET);
             waitForKeypress(NULL);
         }
     }
 
     winTermClearScreen();
-    printf("=== Enter Student Details ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    printf("║                %sEnter Student Details%s                 ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     char genderInput[3], programInput[programCodeLen];
     char yearBuffer[3], unitsBuffer[3];
@@ -106,12 +121,15 @@ int getStudentDataFromUser(Student* newStudent) {
         loadProgramsFromConfig();
     }
     
-    // Display available programs
-    printf("Available Programs:\n");
+    // Display available programs with better formatting
+    printf("%s📚 Available Academic Programs:%s\n", UI_INFO, TXT_RESET);
+    printf("┌─────────────────────────────────────────────────────────────────┐\n");
     for (int i = 0; i < g_programCount; i++) {
-        printf("%s = %s\n", g_programs[i].code, g_programs[i].name);
+        printf("│ %s%-6s%s = %s%-51s%s │\n", 
+               UI_HIGHLIGHT, g_programs[i].code, TXT_RESET,
+               UI_SUBHEADER, g_programs[i].name, TXT_RESET);
     }
-    printf("\n");
+    printf("└─────────────────────────────────────────────────────────────────┘\n\n");
     
     // Create program choices array for validation
     const char* programChoices[maxProgramCount];
@@ -120,11 +138,11 @@ int getStudentDataFromUser(Student* newStudent) {
     }
     
     appFormField detailFields[] = {
-        { "Enter Student Number (10 digits): ", newStudent->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} },
-        { "Enter Gender (M/F): ", genderInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"M", "F", "m", "f"}, .count = 4}} },
-        { "Enter Program Code: ", programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} },
-        { "Enter Year Level (1-4): ", yearBuffer, 2, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} },
-        { "Enter Units Enrolled (1-30): ", unitsBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 30}} }
+        { "🆔 Enter Student Number (10 digits): ", newStudent->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} },
+        { "👤 Enter Gender (M/F): ", genderInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"M", "F", "m", "f"}, .count = 4}} },
+        { "📚 Enter Program Code: ", programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} },
+        { "📊 Enter Year Level (1-4): ", yearBuffer, 2, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} },
+        { "📖 Enter Units Enrolled (1-30): ", unitsBuffer, 3, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 30}} }
     };
     appGetValidatedInput(detailFields, 5);
 
@@ -136,12 +154,16 @@ int getStudentDataFromUser(Student* newStudent) {
     newStudent->academic.unitsEnrolled = atoi(unitsBuffer);
 
     winTermClearScreen();
-    printf("=== Enter Academic Grades ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    printf("║                %sEnter Academic Grades%s                  ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     appFormField gradeFields[] = {
-        { "Enter Prelim Grade (0.0-100.0): ", prelimBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
-        { "Enter Midterm Grade (0.0-100.0): ", midtermBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
-        { "Enter Final Exam Grade (0.0-100.0): ", finalExamBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} }
+        { "📝 Enter Prelim Grade (0.0-100.0): ", prelimBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
+        { "📝 Enter Midterm Grade (0.0-100.0): ", midtermBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} },
+        { "📝 Enter Final Exam Grade (0.0-100.0): ", finalExamBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 100.0}} }
     };
     appGetValidatedInput(gradeFields, 3);
 
@@ -156,20 +178,168 @@ int getStudentDataFromUser(Student* newStudent) {
     // Set default academic standing
     newStudent->standing = acadRegular;
 
-    printf("\n=== Student Information Summary ===\n");
-    printf("Name: %s\n", newStudent->personal.name.fullName);
-    printf("Student Number: %s\n", newStudent->personal.studentNumber);
-    printf("Gender: %s\n", (newStudent->personal.gender == genderMale) ? "Male" : "Female");
-    printf("Program: %s (%s)\n", newStudent->personal.programCode, getProgramName(newStudent->personal.programCode));
-    printf("Year Level: %d\n", newStudent->personal.yearLevel);
-    printf("Units Enrolled: %d\n", newStudent->academic.unitsEnrolled);
-    printf("Prelim Grade: %.2f\n", newStudent->academic.prelimGrade);
-    printf("Midterm Grade: %.2f\n", newStudent->academic.midtermGrade);
-    printf("Final Exam Grade: %.2f\n", newStudent->academic.finalExamGrade);
-    printf("Final Grade: %.2f (%s)\n", newStudent->academic.finalGrade, newStudent->academic.remarks);
+    printf("\n%s", UI_INFO);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    printf("║              %s📚 Student Information Summary 📚%s               ║\n", TXT_BOLD, TXT_RESET UI_INFO);
+    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
     
-    if (!appYesNoPrompt("Confirm this information?")) {
-        printf("Student creation cancelled.\n");
+    // Define box width (should match the border width)
+    int boxWidth = 69; // Total width including borders "╔" and "╗"
+    int borderSpace = 2; // Space taken by "║ " and " ║"
+    int availableSpace = boxWidth - borderSpace;
+    
+    // Student Name row
+    char nameLabel[] = "👤 Name:";
+    int nameLabelLen = strlen(nameLabel);
+    int nameValueLen = strlen(newStudent->personal.name.fullName);
+    int nameContentLen = nameLabelLen + 1 + nameValueLen; // +1 for space after label
+    int namePadding = availableSpace - nameContentLen;
+    if (namePadding < 0) namePadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, nameLabel, TXT_RESET, newStudent->personal.name.fullName);
+    for (int i = 0; i < namePadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Student Number row
+    char stuNumLabel[] = "🆔 Student Number:";
+    int stuNumLabelLen = strlen(stuNumLabel);
+    int stuNumValueLen = strlen(newStudent->personal.studentNumber);
+    int stuNumContentLen = stuNumLabelLen + 1 + stuNumValueLen;
+    int stuNumPadding = availableSpace - stuNumContentLen;
+    if (stuNumPadding < 0) stuNumPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, stuNumLabel, TXT_RESET, newStudent->personal.studentNumber);
+    for (int i = 0; i < stuNumPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Gender row
+    char genderLabel[] = "👥 Gender:";
+    const char* genderText = (newStudent->personal.gender == genderMale) ? "Male" : "Female";
+    int genderLabelLen = strlen(genderLabel);
+    int genderValueLen = strlen(genderText);
+    int genderContentLen = genderLabelLen + 1 + genderValueLen;
+    int genderPadding = availableSpace - genderContentLen;
+    if (genderPadding < 0) genderPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, genderLabel, TXT_RESET, genderText);
+    for (int i = 0; i < genderPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Program row
+    char programLabel[] = "📚 Program:";
+    char programText[60];
+    sprintf(programText, "%s (%s)", newStudent->personal.programCode, getProgramName(newStudent->personal.programCode));
+    int programLabelLen = strlen(programLabel);
+    int programValueLen = strlen(programText);
+    int programContentLen = programLabelLen + 1 + programValueLen;
+    int programPadding = availableSpace - programContentLen;
+    if (programPadding < 0) programPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, programLabel, TXT_RESET, programText);
+    for (int i = 0; i < programPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Year Level row
+    char yearLabel[] = "📊 Year Level:";
+    char yearText[10];
+    sprintf(yearText, "%d", newStudent->personal.yearLevel);
+    int yearLabelLen = strlen(yearLabel);
+    int yearValueLen = strlen(yearText);
+    int yearContentLen = yearLabelLen + 1 + yearValueLen;
+    int yearPadding = availableSpace - yearContentLen;
+    if (yearPadding < 0) yearPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, yearLabel, TXT_RESET, yearText);
+    for (int i = 0; i < yearPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Units Enrolled row
+    char unitsLabel[] = "📖 Units Enrolled:";
+    char unitsText[10];
+    sprintf(unitsText, "%d", newStudent->academic.unitsEnrolled);
+    int unitsLabelLen = strlen(unitsLabel);
+    int unitsValueLen = strlen(unitsText);
+    int unitsContentLen = unitsLabelLen + 1 + unitsValueLen;
+    int unitsPadding = availableSpace - unitsContentLen;
+    if (unitsPadding < 0) unitsPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, unitsLabel, TXT_RESET, unitsText);
+    for (int i = 0; i < unitsPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+    printf("║                      %s📝 Academic Grades 📝%s                      ║\n", TXT_BOLD, TXT_RESET UI_INFO);
+    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+    
+    // Prelim Grade row
+    char prelimLabel[] = "📝 Prelim Grade:";
+    char prelimText[10];
+    sprintf(prelimText, "%.2f", newStudent->academic.prelimGrade);
+    int prelimLabelLen = strlen(prelimLabel);
+    int prelimValueLen = strlen(prelimText);
+    int prelimContentLen = prelimLabelLen + 1 + prelimValueLen;
+    int prelimPadding = availableSpace - prelimContentLen;
+    if (prelimPadding < 0) prelimPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, prelimLabel, TXT_RESET, prelimText);
+    for (int i = 0; i < prelimPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Midterm Grade row
+    char midtermLabel[] = "📝 Midterm Grade:";
+    char midtermText[10];
+    sprintf(midtermText, "%.2f", newStudent->academic.midtermGrade);
+    int midtermLabelLen = strlen(midtermLabel);
+    int midtermValueLen = strlen(midtermText);
+    int midtermContentLen = midtermLabelLen + 1 + midtermValueLen;
+    int midtermPadding = availableSpace - midtermContentLen;
+    if (midtermPadding < 0) midtermPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, midtermLabel, TXT_RESET, midtermText);
+    for (int i = 0; i < midtermPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Final Exam Grade row
+    char finalExamLabel[] = "📝 Final Exam Grade:";
+    char finalExamText[10];
+    sprintf(finalExamText, "%.2f", newStudent->academic.finalExamGrade);
+    int finalExamLabelLen = strlen(finalExamLabel);
+    int finalExamValueLen = strlen(finalExamText);
+    int finalExamContentLen = finalExamLabelLen + 1 + finalExamValueLen;
+    int finalExamPadding = availableSpace - finalExamContentLen;
+    if (finalExamPadding < 0) finalExamPadding = 0;
+    
+    printf("║ %s%s%s %s", UI_HIGHLIGHT, finalExamLabel, TXT_RESET, finalExamText);
+    for (int i = 0; i < finalExamPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    // Final Grade row with conditional coloring - complex because of color in the middle
+    char finalLabel[] = "🎯 Final Grade:";
+    char gradeValue[10];
+    sprintf(gradeValue, "%.2f", newStudent->academic.finalGrade);
+    char remarksText[30];
+    sprintf(remarksText, "(%s)", newStudent->academic.remarks);
+    
+    // Calculate visible content length: label + space + grade + space + remarks
+    int finalLabelLen = strlen(finalLabel);
+    int gradeValueLen = strlen(gradeValue);
+    int remarksLen = strlen(remarksText);
+    int finalContentLen = finalLabelLen + 1 + gradeValueLen + 1 + remarksLen;
+    int finalPadding = availableSpace - finalContentLen;
+    if (finalPadding < 0) finalPadding = 0;
+    
+    printf("║ %s%s%s %s %s%s%s", UI_SUCCESS, finalLabel, TXT_RESET, 
+           gradeValue,
+           (newStudent->academic.finalGrade >= 75.0) ? UI_SUCCESS : UI_ERROR, 
+           remarksText, TXT_RESET);
+    for (int i = 0; i < finalPadding; i++) printf(" ");
+    printf(" ║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
+    
+    if (!appYesNoPrompt("✅ Confirm this information?")) {
+        printf("%s🚫 Student creation cancelled.%s\n", UI_WARNING, TXT_RESET);
         return -1;
     }
 
