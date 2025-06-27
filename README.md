@@ -1,5 +1,5 @@
 <div id="top" align="center">
-  <img src="/markdown files/Polytechnic_University_of_the_Philippines_Quezon_City_Logo.svg.png" alt="PUP IMS Logo" width="150"/>
+  <img src="Polytechnic_University_of_the_Philippines_Quezon_City_Logo.svg.png" alt="PUP IMS Logo" width="150"/>
   
   # PUP Information Management System
    *A consolidated solution that transformed three
