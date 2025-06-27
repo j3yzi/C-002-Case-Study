@@ -13,17 +13,17 @@
   <img src="https://img.shields.io/badge/Status-Optimized-success.svg?style=for-the-badge&logo=github" alt="Status Optimized">  
 </div>
 
-<h2 style="text-align:center;">📑 Table of Contents </h2>
+<span><h2 style="text-align:center;">📑 Table of Contents </h2></span>
 
-<style>
+<span>
+  <style>
  .button-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
-  margin-top: 50px;
+  margin-top: 30px;
 }
-
 .button-container .button {
   padding: 10px 20px;
   border: none;
@@ -37,20 +37,18 @@
   display: inline-block;
   text-align: center;
 }
-
 .about { background-color: #007bff; }
 .getting-started { background-color: #8bc34a; }
 .features { background-color: #9c27b0; }
 .consolidation { background-color: #ff9800; }
 .architecture { background-color: #f44336; }
 .team { background-color: #ffc107; }
-
 .button-container .button:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 </style>
-
+</span>
  <div class="button-container">
   <a href="#about" class="button about">ABOUT</a>
   <a href="#getting-started" class="button getting-started">GETTING STARTED</a>
@@ -166,9 +164,8 @@ Management System</strong> that demonstrates the power of thoughtful code consol
   </p>
 </div>
 
-## ✨ Features
-
 <div id="features"></div>
+## ✨ Features
 
 <style>
 .features-section {
@@ -315,7 +312,7 @@ Management System</strong> that demonstrates the power of thoughtful code consol
   </tbody>
 </table>
 
- All features from the original case studies have been preserved with 100% functional equivalence while improving code organization and reducing redundancy.
+All features from the original case studies have been preserved with 100% functional equivalence while improving code organization and reducing redundancy.
 
 </details>
 <br>
@@ -1068,7 +1065,6 @@ ensuring that every architectural decision was informed by established software 
     The new PUP Information Management System is not just a consolidation—it's an evolution that combines the best aspects of all three original case studies into a superior, more maintainable, and user-friendly application.
   </blockquote>
 </div>
-
 
 ## 🙏 Acknowledgments
 
