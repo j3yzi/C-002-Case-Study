@@ -331,8 +331,8 @@ Student* searchStudentByNumber(const list* studentList, const char* studentNumbe
  * @param fullName The full name to search for.
  * @return Pointer to the student if found, NULL otherwise.
  */
-Student* searchStudentByName(const list* studentList, const char* fullName) {
-    if (!studentList || !fullName || !studentList->head) {
+Student* searchStudentByName(const list* studentList, const char* lastName) {
+    if (!studentList || !lastName || !studentList->head) {
         return NULL;
     }
     
@@ -342,7 +342,7 @@ Student* searchStudentByName(const list* studentList, const char* fullName) {
         // Non-circular lists
         while (current != NULL) {
             Student* student = (Student*)current->data;
-            if (student && strcmp(student->personal.name.fullName, fullName) == 0) {
+            if (student && strcmp(student->personal.name.lastName, lastName) == 0) {
                 return student;
             }
             current = current->next;
@@ -352,7 +352,7 @@ Student* searchStudentByName(const list* studentList, const char* fullName) {
         if (current != NULL) {
             do {
                 Student* student = (Student*)current->data;
-                if (student && strcmp(student->personal.name.fullName, fullName) == 0) {
+                if (student && strcmp(student->personal.name.lastName, lastName) == 0) {
                     return student;
                 }
                 current = current->next;

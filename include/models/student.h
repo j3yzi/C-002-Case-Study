@@ -90,7 +90,7 @@ int removeProgram(const char* code);
 int composeStudentName(StudentName* name);
 void calculateFinalGrade(Student* student);
 Student* searchStudentByNumber(const list* studentList, const char* studentNumber);
-Student* searchStudentByName(const list* studentList, const char* fullName);
+Student* searchStudentByName(const list* studentList, const char* lastName);
 void displayStudentDetails(const Student* student);
 void displayAllStudents(const list* studentList);
 int createStudent(Student* student, list** studentList);

@@ -376,7 +376,7 @@ int handleSearchStudent(const list* studentList) {
     
     Menu searchMenu = {1, "Search Student", (MenuOption[]){
         {'1', "Search by Student Number", "Find student using their ID number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Search by Name", "Find student by first or last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Last Name", "Find student by last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'3', "Display All Students", "Show complete list of all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'4', "Back to Main Menu", "Return to the student management menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
     }, 4};
@@ -399,17 +399,17 @@ int handleSearchStudent(const list* studentList) {
             break;
         }
         case '2': {
-            char fullName[studentNameLen];
-            printf("=== Search by Name ===\n");
-            appFormField field = { "Enter Full Name: ", fullName, studentNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentNameLen - 1}} };
+            char lastName[studentLastNameLen];
+            printf("=== Search by Last Name ===\n");
+            appFormField field = { "Enter Last Name: ", lastName, studentLastNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = studentLastNameLen - 1}} };
             appGetValidatedInput(&field, 1);
             
-            Student* stu = searchStudentByName(studentList, fullName);
+            Student* stu = searchStudentByName(studentList, lastName);
             if (stu) {
                 printf("\n=== Student Found ===\n");
                 displayStudentDetails(stu);
             } else {
-                printf("\nStudent with name '%s' not found.\n", fullName);
+                printf("\nStudent with last name '%s' not found.\n", lastName);
             }
             break;
         }
@@ -447,11 +447,7 @@ int handleEditStudent(list* studentList) {
     }
     
     winTermClearScreen();
-    printf("=== Edit Student ===\n\n");
-    printf("Current students in the list:\n");
-    printf("═══════════════════════════════════════════════════════════════════\n");
     displayAllStudents(studentList);
-    printf("═══════════════════════════════════════════════════════════════════\n\n");
     
     char stuNumber[studentNumberLen];
     printf("Which student would you like to edit?\n");

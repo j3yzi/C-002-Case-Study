@@ -71,7 +71,7 @@ void freeEmployee(void* employeeData);
 
 // Search operations
 Employee* searchEmployeeByNumber(const list* employeeList, const char* employeeNumber);
-Employee* searchEmployeeByName(const list* employeeList, const char* fullName);
+Employee* searchEmployeeByName(const list* employeeList, const char* lastName);
 int searchEmployeeIndexByNumber(const list* employeeList, const char* employeeNumber);
 
 // Edit operations

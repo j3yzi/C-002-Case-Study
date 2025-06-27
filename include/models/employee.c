@@ -126,18 +126,18 @@ Employee* searchEmployeeByNumber(const list* employeeList, const char* employeeN
 /**
  * @brief Searches for an employee by full name.
  * @param employeeList Pointer to the employee list.
- * @param fullName The full name to search for.
+ * @param lastName The last name to search for.
  * @return Pointer to the Employee if found, NULL otherwise.
  */
-Employee* searchEmployeeByName(const list* employeeList, const char* fullName) {
-    if (!employeeList || !employeeList->head || !fullName) {
+Employee* searchEmployeeByName(const list* employeeList, const char* lastName) {
+    if (!employeeList || !employeeList->head || !lastName) {
         return NULL;
     }
 
     node* current = employeeList->head;
     do {
         Employee* emp = (Employee*)current->data;
-        if (emp && strcmp(emp->personal.name.fullName, fullName) == 0) {
+        if (emp && strcmp(emp->personal.name.lastName, lastName) == 0) {
             return emp;
         }
         current = current->next;
