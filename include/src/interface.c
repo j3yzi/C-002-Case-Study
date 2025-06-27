@@ -811,7 +811,7 @@ int calculateTotalPages(int totalItems, int itemsPerPage) {
 void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination) {
     char title[] = "STUDENT RECORDS";
     char keys[3][30] = {
-        " ⇄     Navigate pages",
+        " ⇄      Navigate pages",
         "Enter  View details",
         "Esc    Return to menu"
     };
@@ -1135,6 +1135,396 @@ int runStudentTableView(const list* studentList) {
     }
     
 exit_table:
+    // Restore original console mode
+    SetConsoleMode(hStdin, prevMode);
+    return 0;
+}
+
+// Employee Table Display Functions
+
+/**
+ * @brief Display the header portion of the employee table
+ * @param consoleWidth Current console width
+ * @param tableWidth Width of the main table
+ * @param smlBoxWidth Width of the side box
+ * @param tblMargin Left margin for centering
+ * @param pagination Pagination state for page info
+ */
+void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination) {
+    char title[] = "EMPLOYEE RECORDS";
+    char keys[3][30] = {
+        " ⇄      Navigate pages",
+        "Enter  View details", 
+        "Esc    Return to menu"
+    };
+    
+    int tablepad = (tableWidth - strlen(title)) / 2 - 1;
+    int extra = (tableWidth - (int)strlen(title)) % 2;
+    if (tablepad < 0) tablepad = 0;
+    
+    // Calculate responsive column widths
+    int numWidth = 3;           // "NO." column width
+    int empNumWidth = 10;       // "EMP NUMBER" column width
+    int nameWidth = 15;         // "NAME" column width  
+    int statusWidth = 8;        // "STATUS" column width
+    
+    // Calculate remaining width for salary column
+    // Total format: "║ NO. ║ EMP NUMBER ║ NAME ║ STATUS ║ BASIC SALARY ║"
+    // Width calculation: 2 + numWidth + 3 + empNumWidth + 3 + nameWidth + 3 + statusWidth + 3 + salaryWidth + 2
+    int usedWidth = 2 + numWidth + 3 + empNumWidth + 3 + nameWidth + 3 + statusWidth + 3 + 2; // borders and separators
+    int salaryWidth = tableWidth - usedWidth;
+    if (salaryWidth < 12) salaryWidth = 12; // minimum width for salary column
+    
+    // Column separator positions (where ╦/╬ should be placed)
+    int sep1 = 1 + numWidth + 1;                    // After NO. column
+    int sep2 = sep1 + 1 + empNumWidth + 2;          // After EMP NUMBER column  
+    int sep3 = sep2 + 1 + nameWidth + 2;            // After NAME column
+    int sep4 = sep3 + 1 + statusWidth + 2;          // After STATUS column
+    int sep5 = sep4 + 1 + salaryWidth + 4;          // After BASIC SALARY column
+    
+    // Page info - calculate items on current page
+    int itemsOnPage = pagination->endIndex - pagination->startIndex + 1;
+    if (pagination->totalItems == 0) itemsOnPage = 0;
+    
+    printf("%*sPage %d of %d", tblMargin, "", pagination->currentPage, pagination->totalPages);
+    printf("%*s%d out of %d Employees\n", tableWidth - 11 - 24, "", itemsOnPage, pagination->totalItems);
+    
+    // Draw top border
+    printf("%*s╔", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++)
+        printf("═");
+    printf("╗╔");
+    for (int i = 0; i < smlBoxWidth; i++)
+        printf("═");
+    printf("╗\n");
+    
+    // Draw title centered
+    printf("%*s║%*s%s%*s║", tblMargin, "", tablepad, "", title, tablepad + extra, "");
+    printf("║ %-22s ║\n", keys[0]);
+    
+    // Header separator
+    printf("%*s╠", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++){
+        if (i == sep1 || i == sep2 || i == sep3 || i == sep4 || i == sep5)
+            printf("╦");
+        else
+            printf("═");
+    }
+    printf("╣║ %-22s ║\n", keys[1]);
+    
+    // Column headers with dynamic widths
+    printf("%*s║ %-*s ║ %-*s ║ %-*s ║ %-*s ║ %-*s ║", 
+            tblMargin, "",
+            numWidth, "NO.",
+            empNumWidth, "EMP NUMBER", 
+            nameWidth, "NAME",
+            statusWidth, "STATUS",
+            salaryWidth, "BASIC SALARY"
+        );
+    printf("║ %-22s ║\n", keys[2]);
+    
+    // Header bottom border
+    printf("%*s╠", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++){
+        if (i == sep1 || i == sep2 || i == sep3 || i == sep4 || i == sep5)
+            printf("╬");
+        else
+            printf("═");
+    }
+    printf("╣");
+    printf("╚");
+    for (int i = 0; i < smlBoxWidth; i++)
+        printf("═");
+    printf("╝\n");
+}
+
+/**
+ * @brief Display a single employee row in the table
+ * @param employee Pointer to employee data
+ * @param rowNumber Row number for display (1-indexed)
+ * @param consoleWidth Current console width
+ * @param tableWidth Width of the main table
+ * @param tblMargin Left margin for centering
+ */
+void displayEmployeeTableRow(const Employee* employee, int rowNumber, int consoleWidth, int tableWidth, int tblMargin) {
+    if (!employee) return;
+    
+    // Calculate responsive column widths (same as header)
+    int numWidth = 3;           
+    int empNumWidth = 10;       
+    int nameWidth = 15;         
+    int statusWidth = 8;        
+    
+    // Calculate remaining width for salary column
+    int usedWidth = 2 + numWidth + 3 + empNumWidth + 3 + nameWidth + 3 + statusWidth + 3 + 2; // borders and separators
+    int salaryWidth = tableWidth - usedWidth + 2;
+    if (salaryWidth < 12) salaryWidth = 12;
+    
+    // Handle long names by splitting
+    char *fullName = (char*)employee->personal.name.fullName;
+    int nameLen = strlen(fullName);
+    
+    char name1[nameWidth + 1];
+    char name2[nameWidth + 1];
+    memset(name1, 0, nameWidth + 1);
+    memset(name2, 0, nameWidth + 1);
+    
+    if (nameLen <= nameWidth) {
+        // Name fits in one line
+        strncpy(name1, fullName, nameWidth);
+        name1[nameWidth] = '\0';
+        name2[0] = '\0';
+    } else {
+        // Find last space before nameWidth to split nicely
+        int split = nameWidth;
+        for (int j = nameWidth; j > 0; j--) {
+            if (fullName[j] == ' ') {
+                split = j;
+                break;
+            }   
+        }
+        
+        strncpy(name1, fullName, split);
+        name1[split] = '\0';
+        
+        // Skip spaces after split for second line
+        int startSecondLine = split;
+        while (fullName[startSecondLine] == ' ') startSecondLine++;
+        
+        strncpy(name2, fullName + startSecondLine, nameWidth);
+        name2[nameWidth] = '\0';
+    }
+    
+    // Format salary with proper width
+    char salaryStr[salaryWidth + 1];
+    memset(salaryStr, 0, salaryWidth + 1);
+    snprintf(salaryStr, salaryWidth + 1, "₱%.2f", employee->payroll.basicPay);
+    
+    // Display first line of employee data
+    printf("%*s║ %-*d ║ %-*s ║ %-*s ║ %-*s ║ %-*s ║\n",
+        tblMargin, "",
+        numWidth, rowNumber,
+        empNumWidth, employee->personal.employeeNumber,
+        nameWidth, name1,
+        statusWidth, (employee->employment.status == statusRegular) ? "Regular" : "Casual",
+        salaryWidth, salaryStr
+    );
+    
+    // Display second line if name was split
+    if (name2[0] != '\0'){
+        printf("%*s║ %-*s ║ %-*s ║ %-*s ║ %-*s ║ %-*s ║\n",
+            tblMargin, "",
+            numWidth, "",
+            empNumWidth, "", // empty employee number
+            nameWidth, name2,
+            statusWidth, "", // empty status
+            salaryWidth, ""); // empty salary
+    }
+}
+
+/**
+ * @brief Display the footer of the employee table
+ * @param consoleWidth Current console width
+ * @param tableWidth Width of the main table
+ * @param tblMargin Left margin for centering
+ */
+void displayEmployeeTableFooter(int consoleWidth, int tableWidth, int tblMargin) {
+    // Calculate responsive column widths (same as header and row)
+    int numWidth = 3;           
+    int empNumWidth = 10;       
+    int nameWidth = 15;         
+    int statusWidth = 8;        
+    
+    // Calculate remaining width for salary column
+    int usedWidth = 2 + numWidth + 3 + empNumWidth + 3 + nameWidth + 3 + statusWidth + 3 + 2; // borders and separators
+    int salaryWidth = tableWidth - usedWidth;
+    if (salaryWidth < 12) salaryWidth = 12;
+    
+    // Column separator positions (same as header)
+    int sep1 = 1 + numWidth + 1;                    // After NO. column
+    int sep2 = sep1 + 1 + empNumWidth + 2;          // After EMP NUMBER column  
+    int sep3 = sep2 + 1 + nameWidth + 2;            // After NAME column
+    int sep4 = sep3 + 1 + statusWidth + 2;          // After STATUS column
+    int sep5 = sep4 + 1 + salaryWidth + 6;          // After BASIC SALARY column
+    
+    printf("%*s╚", tblMargin, "");
+    for (int i = 0; i < tableWidth - 2; i++){
+        if (i == sep1 || i == sep2 || i == sep3 || i == sep4 || i == sep5)
+            printf("╩");
+        else
+            printf("═");
+    }
+    printf("╝\n");
+}
+
+/**
+ * @brief Display the complete employee table with pagination
+ * @param employeeList Pointer to employee list
+ * @param pagination Pagination state
+ */
+void displayEmployeeTable(const list* employeeList, PaginationState* pagination) {
+    if (!employeeList || !pagination) return;
+    
+    int consoleWidth, consoleHeight;
+    getConsoleSize(&consoleWidth, &consoleHeight);
+    
+    int tableWidth = 79;
+    int smlBoxWidth = 24;
+    int tblMargin = (consoleWidth - (tableWidth + smlBoxWidth)) / 2;
+    if (tblMargin < 0) tblMargin = 0;
+    
+    // Display header
+    displayEmployeeTableHeader(consoleWidth, tableWidth, smlBoxWidth, tblMargin, pagination);
+    
+    // Display employee rows
+    if (employeeList->size > 0 && employeeList->head) {
+        node* current = employeeList->head;
+        int index = 0;
+        int displayedRows = 0;
+        
+        // Navigate to start position
+        do {
+            if (index >= pagination->startIndex && index <= pagination->endIndex) {
+                Employee* employee = (Employee*)current->data;
+                if (employee) {
+                    displayEmployeeTableRow(employee, displayedRows + 1, consoleWidth, tableWidth, tblMargin);
+                    displayedRows++;
+                }
+            }
+            current = current->next;
+            index++;
+        } while (current != employeeList->head && current != NULL && index <= pagination->endIndex);
+        
+        // Fill remaining rows with empty space if needed
+        for (int i = displayedRows; i < pagination->itemsPerPage; i++) {
+            // Calculate responsive column widths for empty rows
+            int numWidth = 3, empNumWidth = 10, nameWidth = 15, statusWidth = 8;
+            int usedWidth = 2 + numWidth + 3 + empNumWidth + 3 + nameWidth + 3 + statusWidth + 3 + 2;
+            int salaryWidth = tableWidth - usedWidth;
+            if (salaryWidth < 12) salaryWidth = 12;
+            
+            printf("%*s║ %-*s ║ %-*s ║ %-*s ║ %-*s ║ %-*s ║\n",
+                tblMargin, "", 
+                numWidth, "",
+                empNumWidth, "", 
+                nameWidth, "",
+                statusWidth, "",
+                salaryWidth, "");
+        }
+    } else {
+        // Display empty rows
+        for (int i = 0; i < pagination->itemsPerPage; i++) {
+            // Calculate responsive column widths for empty rows
+            int numWidth = 3, empNumWidth = 10, nameWidth = 15, statusWidth = 8;
+            int usedWidth = 2 + numWidth + 3 + empNumWidth + 3 + nameWidth + 3 + statusWidth + 3 + 2;
+            int salaryWidth = tableWidth - usedWidth;
+            if (salaryWidth < 12) salaryWidth = 12;
+            
+            printf("%*s║ %-*s ║ %-*s ║ %-*s ║ %-*s ║ %-*s ║\n",
+                tblMargin, "", 
+                numWidth, "",
+                empNumWidth, "", 
+                nameWidth, "",
+                statusWidth, "",
+                salaryWidth, "");
+        }
+    }
+    
+    // Display footer
+    displayEmployeeTableFooter(consoleWidth, tableWidth, tblMargin);
+}
+
+/**
+ * @brief Run the interactive employee table view with pagination
+ * @param employeeList Pointer to employee list to display
+ * @return Returns 0 on normal exit
+ */
+int runEmployeeTableView(const list* employeeList) {
+    if (!employeeList) {
+        printf("Error: No employee list provided!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Initialize pagination
+    PaginationState pagination;
+    initPagination(&pagination, employeeList->size, EMPLOYEES_PER_PAGE);
+    
+    // Enable window input events for responsiveness
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD prevMode;
+    GetConsoleMode(hStdin, &prevMode);
+    SetConsoleMode(hStdin, ENABLE_WINDOW_INPUT | prevMode);
+    
+    // Initial display
+    winTermClearScreen();
+    displayEmployeeTable(employeeList, &pagination);
+    
+    INPUT_RECORD inputRecord;
+    DWORD events;
+    
+    while (1) {
+        // Wait for input event
+        ReadConsoleInput(hStdin, &inputRecord, 1, &events);
+        
+        if (inputRecord.EventType == WINDOW_BUFFER_SIZE_EVENT) {
+            // Console window resized - redraw
+            winTermClearScreen();
+            displayEmployeeTable(employeeList, &pagination);
+        } 
+        else if (inputRecord.EventType == KEY_EVENT && inputRecord.Event.KeyEvent.bKeyDown) {
+            WORD key = inputRecord.Event.KeyEvent.wVirtualKeyCode;
+            
+            switch (key) {
+                case VK_ESCAPE:
+                    // Exit table view
+                    goto exit_emp_table;
+                    
+                case VK_LEFT:
+                    // Previous page
+                    if (pagination.currentPage > 1) {
+                        updatePagination(&pagination, pagination.currentPage - 1);
+                        winTermClearScreen();
+                        displayEmployeeTable(employeeList, &pagination);
+                    }
+                    break;
+                    
+                case VK_RIGHT:
+                    // Next page
+                    if (pagination.currentPage < pagination.totalPages) {
+                        updatePagination(&pagination, pagination.currentPage + 1);
+                        winTermClearScreen();
+                        displayEmployeeTable(employeeList, &pagination);
+                    }
+                    break;
+                    
+                case VK_HOME:
+                    // First page
+                    if (pagination.currentPage != 1) {
+                        updatePagination(&pagination, 1);
+                        winTermClearScreen();
+                        displayEmployeeTable(employeeList, &pagination);
+                    }
+                    break;
+                    
+                case VK_END:
+                    // Last page
+                    if (pagination.currentPage != pagination.totalPages) {
+                        updatePagination(&pagination, pagination.totalPages);
+                        winTermClearScreen();
+                        displayEmployeeTable(employeeList, &pagination);
+                    }
+                    break;
+                    
+                default:
+                    // Ignore other keys
+                    break;
+            }
+        }
+    }
+    
+exit_emp_table:
     // Restore original console mode
     SetConsoleMode(hStdin, prevMode);
     return 0;

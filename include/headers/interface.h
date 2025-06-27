@@ -19,7 +19,9 @@
 // Table display constants
 #define NAME_COL_WIDTH 15
 #define STUDENTS_PER_PAGE 10
+#define EMPLOYEES_PER_PAGE 10
 #define MAX_STUDENTS 50
+#define MAX_EMPLOYEES 50
 
 // Pagination state structure
 typedef struct {
@@ -66,6 +68,13 @@ void displayStudentTableRow(const Student* student, int rowNumber, int consoleWi
 void displayStudentTableFooter(int consoleWidth, int tableWidth, int tblMargin);
 void displayStudentTable(const list* studentList, PaginationState* pagination);
 int runStudentTableView(const list* studentList);
+
+// Employee table display functions
+void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination);
+void displayEmployeeTableRow(const Employee* employee, int rowNumber, int consoleWidth, int tableWidth, int tblMargin);
+void displayEmployeeTableFooter(int consoleWidth, int tableWidth, int tblMargin);
+void displayEmployeeTable(const list* employeeList, PaginationState* pagination);
+int runEmployeeTableView(const list* employeeList);
 
 // Menu display functions
 void displayMenuHeader(const Menu* menu, int consoleWidth, int totalMenuNameWidth, int paddingX, int paddingY);

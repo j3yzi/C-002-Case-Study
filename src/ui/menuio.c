@@ -367,10 +367,11 @@ int runEmployeeManagement(void) {
         {'5', "Delete Employee", "Remove an employee from the database", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'6', "Search Employee", "Find employees by number or name", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'7', "Display All Employees", "Show complete list of all employees", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'T', "Employee Table View", "View employees in paginated table format", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'8', "Payroll Report", "Generate payroll calculations and reports", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'9', "Save Employee List", "Save current list to file", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'A', "Load Employee List", "Load employee data from saved file", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'B', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 11};
+        {'B', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 12};
     
     do {
         // Update menu title with current active list info before displaying menu
@@ -425,6 +426,10 @@ int runEmployeeManagement(void) {
             }
             case '7':
                 handleDisplayAllEmployees();
+                break;
+            case 'T':
+            case 't':
+                handleDisplayEmployeeTable();
                 break;
             case '8':
                 handlePayrollReport();

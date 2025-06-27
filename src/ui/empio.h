@@ -14,4 +14,7 @@ int handleSearchEmployee(const list* employeeList);
 int handleEditEmployee(list* employeeList);
 int handleDeleteEmployee(list* employeeList);
 
+// Employee table view function
+void handleDisplayEmployeeTable();
+
 #endif 

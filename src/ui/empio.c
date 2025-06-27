@@ -776,4 +776,31 @@ int editEmployeeDataFromUser(Employee* employee) {
     }
 
     return 0; // Success
+}
+
+// Employee Table View Function
+
+/**
+ * @brief Handle the display of employee list in table format
+ * Shows employees in a responsive tabular display with pagination
+ */
+void handleDisplayEmployeeTable() {
+    // Check if we have an active employee list and data
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+    if (!checkActiveList(hasActiveList, 0, "No employees available for table view")) {
+        return;
+    }
+    
+    list* employeeList = empManager.employeeLists[empManager.activeEmployeeList];
+    
+    printf("Loading Employee Table View...\n");
+    printf("Press any key to continue...");
+    _getch();
+    
+    // Run the interactive table view
+    runEmployeeTableView(employeeList);
+    
+    printf("\nTable view closed.\n");
+    printf("Press any key to continue...");
+    _getch();
 } 
