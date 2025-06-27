@@ -63,14 +63,14 @@ void updatePagination(PaginationState* pagination, int newPage);
 int calculateTotalPages(int totalItems, int itemsPerPage);
 
 // Student table display functions
-void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination);
+void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination, int actualItemsOnPage);
 void displayStudentTableRow(const Student* student, int rowNumber, int consoleWidth, int tableWidth, int tblMargin);
 void displayStudentTableFooter(int consoleWidth, int tableWidth, int tblMargin);
 void displayStudentTable(const list* studentList, PaginationState* pagination);
 int runStudentTableView(const list* studentList);
 
 // Employee table display functions
-void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination);
+void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination, int actualItemsOnPage);
 void displayEmployeeTableRow(const Employee* employee, int rowNumber, int consoleWidth, int tableWidth, int tblMargin);
 void displayEmployeeTableFooter(int consoleWidth, int tableWidth, int tblMargin);
 void displayEmployeeTable(const list* employeeList, PaginationState* pagination);

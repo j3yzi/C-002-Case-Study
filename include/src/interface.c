@@ -807,8 +807,9 @@ int calculateTotalPages(int totalItems, int itemsPerPage) {
  * @param smlBoxWidth Width of the side box
  * @param tblMargin Left margin for centering
  * @param pagination Pagination state for page info
+ * @param actualItemsOnPage Actual number of items displayed on current page
  */
-void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination) {
+void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination, int actualItemsOnPage) {
     char title[] = "STUDENT RECORDS";
     char keys[3][30] = {
         " ⇄      Navigate pages",
@@ -823,12 +824,9 @@ void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth
     // Column positions
     int num = 5, id = 18, name = 36, prog = 46, yr = 53, grd = 67, rm = 77;
     
-    // Page info
-    int itemsOnPage = pagination->endIndex - pagination->startIndex + 1;
-    if (pagination->totalItems == 0) itemsOnPage = 0;
-    
+    // Page info - show actual items on current page out of total
     printf("%*sPage %d of %d", tblMargin, "", pagination->currentPage, pagination->totalPages);
-    printf("%*s%d out of %d Students\n", tableWidth - 11 - 22, "", itemsOnPage, pagination->totalItems);
+    printf("%*s%d out of %d Students\n", tableWidth - 11 - 22, "", actualItemsOnPage, pagination->totalItems);
     
     // Draw top border
     printf("%*s╔", tblMargin, "");
@@ -1005,8 +1003,27 @@ void displayStudentTable(const list* studentList, PaginationState* pagination) {
     int tblMargin = (consoleWidth - (tableWidth + smlBoxWidth)) / 2;
     if (tblMargin < 0) tblMargin = 0;
     
-    // Display header
-    displayStudentTableHeader(consoleWidth, tableWidth, smlBoxWidth, tblMargin, pagination);
+    // Count actual items on current page first
+    int actualItemsOnPage = 0;
+    if (studentList->size > 0 && studentList->head) {
+        node* current = studentList->head;
+        int index = 0;
+        
+        // Count items in current page range
+        do {
+            if (index >= pagination->startIndex && index <= pagination->endIndex) {
+                Student* student = (Student*)current->data;
+                if (student) {
+                    actualItemsOnPage++;
+                }
+            }
+            current = current->next;
+            index++;
+        } while (current != studentList->head && current != NULL && index <= pagination->endIndex);
+    }
+    
+    // Display header with actual count
+    displayStudentTableHeader(consoleWidth, tableWidth, smlBoxWidth, tblMargin, pagination, actualItemsOnPage);
     
     // Display student rows
     if (studentList->size > 0 && studentList->head) {
@@ -1019,7 +1036,7 @@ void displayStudentTable(const list* studentList, PaginationState* pagination) {
             if (index >= pagination->startIndex && index <= pagination->endIndex) {
                 Student* student = (Student*)current->data;
                 if (student) {
-                    displayStudentTableRow(student, displayedRows + 1, consoleWidth, tableWidth, tblMargin);
+                    displayStudentTableRow(student, index + 1, consoleWidth, tableWidth, tblMargin);
                     displayedRows++;
                 }
             }
@@ -1149,8 +1166,9 @@ exit_table:
  * @param smlBoxWidth Width of the side box
  * @param tblMargin Left margin for centering
  * @param pagination Pagination state for page info
+ * @param actualItemsOnPage Actual number of items displayed on current page
  */
-void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination) {
+void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth, int tblMargin, PaginationState* pagination, int actualItemsOnPage) {
     char title[] = "EMPLOYEE RECORDS";
     char keys[3][30] = {
         " ⇄      Navigate pages",
@@ -1182,12 +1200,9 @@ void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidt
     int sep4 = sep3 + 1 + statusWidth + 2;          // After STATUS column
     int sep5 = sep4 + 1 + salaryWidth + 4;          // After BASIC SALARY column
     
-    // Page info - calculate items on current page
-    int itemsOnPage = pagination->endIndex - pagination->startIndex + 1;
-    if (pagination->totalItems == 0) itemsOnPage = 0;
-    
+    // Page info - show actual items on current page out of total
     printf("%*sPage %d of %d", tblMargin, "", pagination->currentPage, pagination->totalPages);
-    printf("%*s%d out of %d Employees\n", tableWidth - 11 - 24, "", itemsOnPage, pagination->totalItems);
+    printf("%*s%d out of %d Employees\n", tableWidth - 11 - 24, "", actualItemsOnPage, pagination->totalItems);
     
     // Draw top border
     printf("%*s╔", tblMargin, "");
@@ -1373,8 +1388,27 @@ void displayEmployeeTable(const list* employeeList, PaginationState* pagination)
     int tblMargin = (consoleWidth - (tableWidth + smlBoxWidth)) / 2;
     if (tblMargin < 0) tblMargin = 0;
     
-    // Display header
-    displayEmployeeTableHeader(consoleWidth, tableWidth, smlBoxWidth, tblMargin, pagination);
+    // Count actual items on current page first
+    int actualItemsOnPage = 0;
+    if (employeeList->size > 0 && employeeList->head) {
+        node* current = employeeList->head;
+        int index = 0;
+        
+        // Count items in current page range
+        do {
+            if (index >= pagination->startIndex && index <= pagination->endIndex) {
+                Employee* employee = (Employee*)current->data;
+                if (employee) {
+                    actualItemsOnPage++;
+                }
+            }
+            current = current->next;
+            index++;
+        } while (current != employeeList->head && current != NULL && index <= pagination->endIndex);
+    }
+    
+    // Display header with actual count
+    displayEmployeeTableHeader(consoleWidth, tableWidth, smlBoxWidth, tblMargin, pagination, actualItemsOnPage);
     
     // Display employee rows
     if (employeeList->size > 0 && employeeList->head) {
@@ -1387,7 +1421,7 @@ void displayEmployeeTable(const list* employeeList, PaginationState* pagination)
             if (index >= pagination->startIndex && index <= pagination->endIndex) {
                 Employee* employee = (Employee*)current->data;
                 if (employee) {
-                    displayEmployeeTableRow(employee, displayedRows + 1, consoleWidth, tableWidth, tblMargin);
+                    displayEmployeeTableRow(employee, index + 1, consoleWidth, tableWidth, tblMargin);
                     displayedRows++;
                 }
             }
