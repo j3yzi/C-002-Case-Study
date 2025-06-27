@@ -287,7 +287,7 @@ int menuLoop(void) {
                 runCourseManagement();
                 break;
             case '4':
-                displaySystemStatistics();
+                displaySystemInformation();
                 break;
             case '5':
                 runConfigurationManagement();
@@ -307,59 +307,189 @@ int menuLoop(void) {
 }
 
 /**
- * @brief Displays comprehensive system statistics
+ * @brief Displays comprehensive system information with enhanced UI/UX
  */
-void displaySystemStatistics(void) {
+void displaySystemInformation(void) {
     winTermClearScreen();
-    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-    printf("║                         SYSTEM STATISTICS                        ║\n");
-    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
-    printf("║                                                                   ║\n");
-    printf("║  EMPLOYEE MANAGEMENT:                                             ║\n");
-    printf("║    Total Employee Lists: %-41d║\n", empManager.employeeListCount);
     
+    // Box specifications
+    const int boxWidth = 69; // Total width including borders
+    const int contentWidth = boxWidth - 2; // Width for content (excluding ║ characters)
+    
+    // Header with colors
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Centered title with proper spacing calculation
+    char titleText[] = "SYSTEM INFORMATION";
+    int titleLen = strlen(titleText);
+    int titlePadding = (contentWidth - titleLen) / 2;
+    int titleRightPadding = contentWidth - titleLen - titlePadding;
+    
+    printf("║");
+    for (int i = 0; i < titlePadding; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, titleText, TXT_RESET UI_HEADER);
+    for (int i = 0; i < titleRightPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+    printf("║%*s║\n", contentWidth, ""); // Empty line
+    printf("%s", TXT_RESET);
+    
+    // Application Details Section
+    printf("║  %sAPPLICATION DETAILS:%s", UI_HIGHLIGHT, TXT_RESET);
+    int sectionPadding = contentWidth - strlen("  APPLICATION DETAILS:");
+    for (int i = 0; i < sectionPadding; i++) printf(" ");
+    printf("║\n");
+    
+    // App details with proper spacing and colors
+    char appName[] = "PUP Information Management System";
+    char nameLabel[] = "    Name: ";
+    int nameLabelLen = strlen(nameLabel);
+    int nameValueLen = strlen(appName);
+    int namePadding = contentWidth - nameLabelLen - nameValueLen;
+    printf("║%s%s%s%s", nameLabel, UI_INFO, appName, TXT_RESET);
+    for (int i = 0; i < namePadding; i++) printf(" ");
+    printf("║\n");
+    
+    char version[] = "1.0";
+    char versionLabel[] = "    Version: ";
+    int versionLabelLen = strlen(versionLabel);
+    int versionValueLen = strlen(version);
+    int versionPadding = contentWidth - versionLabelLen - versionValueLen;
+    printf("║%s%s%s%s", versionLabel, UI_SUCCESS, version, TXT_RESET);
+    for (int i = 0; i < versionPadding; i++) printf(" ");
+    printf("║\n");
+    
+    char license[] = "MIT License";
+    char licenseLabel[] = "    License: ";
+    int licenseLabelLen = strlen(licenseLabel);
+    int licenseValueLen = strlen(license);
+    int licensePadding = contentWidth - licenseLabelLen - licenseValueLen;
+    printf("║%s%s%s%s", licenseLabel, UI_WARNING, license, TXT_RESET);
+    for (int i = 0; i < licensePadding; i++) printf(" ");
+    printf("║\n");
+    
+    char creator[] = "C002 - Group 1";
+    char creatorLabel[] = "    Creator: ";
+    int creatorLabelLen = strlen(creatorLabel);
+    int creatorValueLen = strlen(creator);
+    int creatorPadding = contentWidth - creatorLabelLen - creatorValueLen;
+    printf("║%s%s%s%s", creatorLabel, UI_HIGHLIGHT, creator, TXT_RESET);
+    for (int i = 0; i < creatorPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("║%*s║\n", contentWidth, ""); // Empty line
+    
+    // System Statistics Section
+    printf("║  %sSYSTEM STATISTICS:%s", UI_HIGHLIGHT, TXT_RESET);
+    int statsSectionPadding = contentWidth - strlen("  SYSTEM STATISTICS:");
+    for (int i = 0; i < statsSectionPadding; i++) printf(" ");
+    printf("║\n");
+    
+    // Calculate statistics
     int totalEmployees = 0;
     for (int i = 0; i < empManager.employeeListCount; i++) {
         if (empManager.employeeLists[i]) {
-            int count = empManager.employeeLists[i]->size;
-            totalEmployees += count;
-            printf("║      - %-30s: %-15d║\n", empManager.employeeListNames[i], count);
+            totalEmployees += empManager.employeeLists[i]->size;
         }
     }
-    printf("║    Total Employees: %-42d║\n", totalEmployees);
-    
-    if (empManager.activeEmployeeList >= 0) {
-        printf("║    Active List: %-46s║\n", empManager.employeeListNames[empManager.activeEmployeeList]);
-    } else {
-        printf("║    Active List: %-46s║\n", "None");
-    }
-    printf("║                                                                   ║\n");
-    
-    printf("║  STUDENT MANAGEMENT:                                              ║\n");
-    printf("║    Total Student Lists: %-42d║\n", stuManager.studentListCount);
     
     int totalStudents = 0;
     for (int i = 0; i < stuManager.studentListCount; i++) {
         if (stuManager.studentLists[i]) {
-            int count = stuManager.studentLists[i]->size;
-            totalStudents += count;
-            printf("║      - %-30s: %-15d║\n", stuManager.studentListNames[i], count);
+            totalStudents += stuManager.studentLists[i]->size;
         }
     }
-    printf("║    Total Students: %-43d║\n", totalStudents);
     
-    if (stuManager.activeStudentList >= 0) {
-        printf("║    Active List: %-46s║\n", stuManager.studentListNames[stuManager.activeStudentList]);
-    } else {
-        printf("║    Active List: %-46s║\n", "None");
-    }
-    printf("║                                                                   ║\n");
+    // Display statistics with proper spacing
+    char empListsStr[20], empCountStr[20], stuListsStr[20], stuCountStr[20], totalStr[20];
+    sprintf(empListsStr, "%d", empManager.employeeListCount);
+    sprintf(empCountStr, "%d", totalEmployees);
+    sprintf(stuListsStr, "%d", stuManager.studentListCount);
+    sprintf(stuCountStr, "%d", totalStudents);
+    sprintf(totalStr, "%d", totalEmployees + totalStudents);
     
-    printf("║  OVERALL STATISTICS:                                              ║\n");
-    printf("║    Total Records: %-44d║\n", totalEmployees + totalStudents);
-    printf("║    Total Lists: %-46d║\n", empManager.employeeListCount + stuManager.studentListCount);
-    printf("║                                                                   ║\n");
+    char empListsLabel[] = "    Employee Lists: ";
+    int empListsLabelLen = strlen(empListsLabel);
+    int empListsValueLen = strlen(empListsStr);
+    int empListsPadding = contentWidth - empListsLabelLen - empListsValueLen;
+    printf("║%s%s%s%s", empListsLabel, UI_INFO, empListsStr, TXT_RESET);
+    for (int i = 0; i < empListsPadding; i++) printf(" ");
+    printf("║\n");
+    
+    char empCountLabel[] = "    Total Employees: ";
+    int empCountLabelLen = strlen(empCountLabel);
+    int empCountValueLen = strlen(empCountStr);
+    int empCountPadding = contentWidth - empCountLabelLen - empCountValueLen;
+    printf("║%s%s%s%s", empCountLabel, UI_INFO, empCountStr, TXT_RESET);
+    for (int i = 0; i < empCountPadding; i++) printf(" ");
+    printf("║\n");
+    
+    char stuListsLabel[] = "    Student Lists: ";
+    int stuListsLabelLen = strlen(stuListsLabel);
+    int stuListsValueLen = strlen(stuListsStr);
+    int stuListsPadding = contentWidth - stuListsLabelLen - stuListsValueLen;
+    printf("║%s%s%s%s", stuListsLabel, UI_INFO, stuListsStr, TXT_RESET);
+    for (int i = 0; i < stuListsPadding; i++) printf(" ");
+    printf("║\n");
+    
+    char stuCountLabel[] = "    Total Students: ";
+    int stuCountLabelLen = strlen(stuCountLabel);
+    int stuCountValueLen = strlen(stuCountStr);
+    int stuCountPadding = contentWidth - stuCountLabelLen - stuCountValueLen;
+    printf("║%s%s%s%s", stuCountLabel, UI_INFO, stuCountStr, TXT_RESET);
+    for (int i = 0; i < stuCountPadding; i++) printf(" ");
+    printf("║\n");
+    
+    char totalLabel[] = "    Total Records: ";
+    int totalLabelLen = strlen(totalLabel);
+    int totalValueLen = strlen(totalStr);
+    int totalPadding = contentWidth - totalLabelLen - totalValueLen;
+    printf("║%s%s%s%s", totalLabel, UI_SUCCESS, totalStr, TXT_RESET);
+    for (int i = 0; i < totalPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("║%*s║\n", contentWidth, ""); // Empty line
+    
+    // Active Lists Section
+    printf("║  %sACTIVE LISTS:%s", UI_HIGHLIGHT, TXT_RESET);
+    int activeSectionPadding = contentWidth - strlen("  ACTIVE LISTS:");
+    for (int i = 0; i < activeSectionPadding; i++) printf(" ");
+    printf("║\n");
+    
+    // Employee List Status
+    char empListLabel[] = "    Employee List: ";
+    char* empListValue = (empManager.activeEmployeeList >= 0) ? 
+                         empManager.employeeListNames[empManager.activeEmployeeList] : "None";
+    char* empListColor = (empManager.activeEmployeeList >= 0) ? UI_SUCCESS : UI_WARNING;
+    
+    int empListLabelLen = strlen(empListLabel);
+    int empListValueLen = strlen(empListValue);
+    int empListPadding = contentWidth - empListLabelLen - empListValueLen;
+    printf("║%s%s%s%s", empListLabel, empListColor, empListValue, TXT_RESET);
+    for (int i = 0; i < empListPadding; i++) printf(" ");
+    printf("║\n");
+    
+    // Student List Status
+    char stuListLabel[] = "    Student List: ";
+    char* stuListValue = (stuManager.activeStudentList >= 0) ? 
+                         stuManager.studentListNames[stuManager.activeStudentList] : "None";
+    char* stuListColor = (stuManager.activeStudentList >= 0) ? UI_SUCCESS : UI_WARNING;
+    
+    int stuListLabelLen = strlen(stuListLabel);
+    int stuListValueLen = strlen(stuListValue);
+    int stuListPadding = contentWidth - stuListLabelLen - stuListValueLen;
+    printf("║%s%s%s%s", stuListLabel, stuListColor, stuListValue, TXT_RESET);
+    for (int i = 0; i < stuListPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("║%*s║\n", contentWidth, ""); // Empty line
+    
+    // Footer
+    printf("%s", UI_HEADER);
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s", TXT_RESET);
     
     waitForKeypress("\nPress any key to continue...");
 }

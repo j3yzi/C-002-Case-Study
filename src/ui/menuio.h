@@ -12,7 +12,7 @@ void initMultiListManager(void);
 void cleanupMultiListManager(void);
 int menuLoop(void);
 void checkStates(void);
-void displaySystemStatistics(void);
+void displaySystemInformation(void);
 
 // Configuration management functions
 int runConfigurationManagement(void);

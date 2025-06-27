@@ -48,12 +48,20 @@ int main(void)
     int programCount = loadProgramsFromConfig();
     printf("Loaded %d program(s) from configuration.\n", programCount);
     
+    // Initialize AppConfig with specified values
+    AppConfig appConfig = {
+        "PUP Information Management System",
+        "1.0",
+        "MIT License",
+        "C002 - Group 1"
+    };
+    
     // Update the main menu to include course management
     mainMenu = (Menu){1, "PUP Information Management System", (MenuOption[]){
         {'1', "Employee Management", "Manage employee records and payroll information", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'2', "Student Management", "Handle student enrollment and academic records", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'3', "Course Management", "Create and manage course catalogs and schedules", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "System Statistics", "View system usage and performance statistics", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "System Information", "View system information and application details", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'5', "Configuration Settings", "Modify system configuration and settings", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'6', "Exit", "Close the application and return to system", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 6
     };
