@@ -13,11 +13,10 @@
   <img src="https://img.shields.io/badge/Status-Optimized-success.svg?style=for-the-badge&logo=github" alt="Status Optimized">  
 </div>
 
-<span><h2 style="text-align:center;">📑 Table of Contents </h2></span>
+<h2 style="text-align:center;">📑 Table of Contents </h2>
 
 <span>
   <link rel="stylesheet" href="styles.css">
-</span>
  <div class="button-container">
   <a href="#about" class="button about">ABOUT</a>
   <a href="#getting-started" class="button getting-started">GETTING STARTED</a>
@@ -26,7 +25,7 @@
   <a href="#architecture" class="button architecture">ARCHITECTURE</a>
   <a href="#team" class="button team">TEAM</a>
 </div>
-
+</span>
 <br>
 <h2 id="about" style="text-align:center;">📖 About The Project </h2>
 
