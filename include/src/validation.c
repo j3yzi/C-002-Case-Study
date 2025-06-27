@@ -1,5 +1,6 @@
 #include "../headers/apctxt.h"
 #include "../headers/apclrs.h"
+#include <ctype.h>
 
 // Forward declaration for internal helper function
 static const char* extractFieldName(const char* prompt);
@@ -135,6 +136,14 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 printf("%s   [Error] %s must be exactly %ld characters. Current length: %zu%s\n", 
                        UI_ERROR, fieldName, params.rangeInt.max, strlen(input), TXT_RESET);
                 return false;
+            }
+            /* Additional check: all characters must be numeric digits (0-9) */
+            for (size_t i = 0; i < strlen(input); i++) {
+                if (input[i] < '0' || input[i] > '9') {
+                    printf("%s   [Error] %s must contain only digits (0-9). Invalid character: '%c'%s\n", 
+                           UI_ERROR, fieldName, input[i], TXT_RESET);
+                    return false;
+                }
             }
             return true;
 
