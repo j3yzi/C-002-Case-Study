@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "payroll.h"
 #include "../../include/models/employee.h"
 #include "../../include/headers/apctxt.h"
@@ -36,6 +37,13 @@ void calculateBasicPay(Employee* employee) {
     } else {
         employee->payroll.basicPay = employee->employment.hoursWorked * employee->employment.basicRate;
     }
+    
+    // Ensure basic pay doesn't exceed maximum limit
+    if (employee->payroll.basicPay > 999999.0f) {
+        printf("WARNING: Basic pay calculation exceeded maximum limit of 999999.00\n");
+        printf("         Capping basic pay at 999999.00\n");
+        employee->payroll.basicPay = 999999.0f;
+    }
 }
 
 void calculateOvertimePay(Employee* employee) {
@@ -63,6 +71,13 @@ void calculateDeductions(Employee* employee) {
     if (employee->employment.hoursWorked < configRegularHours) {
         float lackOfHours = configRegularHours - employee->employment.hoursWorked;
         employee->payroll.deductions = employee->employment.basicRate * lackOfHours;
+        
+        // Ensure deductions don't exceed maximum limit
+        if (employee->payroll.deductions > 99999.99f) {
+            printf("WARNING: Deductions calculation exceeded maximum limit of 99999.99\n");
+            printf("         Capping deductions at 99999.99\n");
+            employee->payroll.deductions = 99999.99f;
+        }
     } else {
         // No deductions if regular hours are met or exceeded
         employee->payroll.deductions = 0.0;

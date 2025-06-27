@@ -34,6 +34,10 @@ float getRegularHours(void);
 float getOvertimeRate(void);
 float getPassingGrade(void);
 
+// File system utility functions (replacements for system() calls)
+int appCreateDirectory(const char* dirPath);
+int appListFiles(const char* directory, const char* pattern);
+
 typedef struct {
     char* appName;
     char* appVersion;
@@ -49,6 +53,7 @@ typedef struct {
 typedef struct {
     char key;
     const char* text;
+    const char* description; // Description text to display in the side box
     bool isDisabled;
     bool isSelected;
     int highlightTextColor; // Color for highlighting the option
@@ -78,6 +83,7 @@ typedef enum {
     IV_ALPHA_ONLY,
     IV_ALPHA_ONLY_MAX_LEN,
     IV_OPTIONAL_ALPHA_ONLY_MAX_LEN,
+    IV_EXACT_LEN
 } IValidationType;
 
 typedef union {
@@ -144,9 +150,9 @@ void winTermGetCursorPosition(winTermCursorPos* position);
 void winTermResetColors();
 
 // Menu creation helper
-static inline MenuOption createMenuOption(char key, const char* text, bool disabled) {
+static inline MenuOption createMenuOption(char key, const char* text, const char* description, bool disabled) {
     return (MenuOption){
-        key, text, disabled, false, 
+        key, text, description, disabled, false, 
         9, 0,  // highlight colors
         7, 0,  // normal colors
         8, 0,  // disabled colors

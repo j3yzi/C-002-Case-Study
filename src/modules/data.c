@@ -2,21 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "data.h"
 #include "../../include/models/employee.h"
 #include "../../include/models/student.h"
 #include "../../include/headers/list.h"
+#include "../../include/headers/apctxt.h"
 
 // Function to create data directory if it doesn't exist
 static int createDataDirectory(void) {
-    system("mkdir data 2>nul"); // Windows: redirect error to null
-    return 0;
+    return appCreateDirectory("data");
 }
 
 // Function to create output directory if it doesn't exist
 static int createOutputDirectory(void) {
-    system("mkdir output 2>nul"); // Windows: redirect error to null
-    return 0;
+    return appCreateDirectory("output");
 }
 
 // Function to list all .dat files in the data directory
@@ -25,8 +27,8 @@ int listDataFiles(void) {
     
     printf("=== Available Data Files ===\n");
     
-    int result = system("dir data\\*.dat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*.dat");
+    if (result != 1) {
         printf("No .dat files found in the data directory.\n");
         return 0;
     }
@@ -36,7 +38,7 @@ int listDataFiles(void) {
 }
 
 // Function to get current timestamp for filenames
-void getCurrentTimestamp(char* buffer, int bufferSize) {
+void getCurrentTimestamp(char* buffer, const int bufferSize) {
     time_t rawtime;
     struct tm * timeinfo;
     time(&rawtime);
@@ -46,7 +48,7 @@ void getCurrentTimestamp(char* buffer, int bufferSize) {
 }
 
 // Function to generate payroll report file
-int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, int pathBufferSize) {
+int generatePayrollReportFile(const list* employeeList, char* generatedFilePath, const int pathBufferSize) {
     if (!employeeList || !employeeList->head || employeeList->size == 0) {
         return -1;
     }
@@ -66,59 +68,87 @@ int generatePayrollReportFile(const list* employeeList, char* generatedFilePath,
         return -1;
     }
     
-    fprintf(file, "=== Employee Payroll Report ===\n");
+    /* -------------------- Header -------------------- */
+    int reportWidth = 98;
+
+    const char* univName = "POLYTECHNIC UNIVERSITY OF THE PHILIPPINES";
+    int margin = (reportWidth - (int)strlen(univName)) / 2;
+    if (margin < 0) margin = 0;
+    fprintf(file, "%*s%s\n", margin, "", univName);
+
+    const char* cityName = "Quezon City";
+    margin = (reportWidth - (int)strlen(cityName)) / 2;
+    if (margin < 0) margin = 0;
+    fprintf(file, "%*s%s\n", margin, "", cityName);
+
+    fprintf(file, "\n");
+
+    const char* payrollTitle = "Payroll";
+    margin = (reportWidth - (int)strlen(payrollTitle)) / 2;
+    if (margin < 0) margin = 0;
+    fprintf(file, "%*s%s\n\n", margin, "", payrollTitle);
+
     fprintf(file, "Generated on: %s\n\n", timestamp);
-    
-    fprintf(file, "%-12s | %-20s | %-8s | %-10s | %-10s | %-10s | %-10s | %-6s\n",
-           "Emp. Number", "Employee Name", "Status", "Basic Pay", "Overtime", "Deductions", "Net Pay", "Hours");
-    fprintf(file, "------------------------------------------------------------------------------------------------------\n");
-    
+
+    /* ------------------ Table Header ---------------- */
+    fprintf(file, "%-12s  %-20s  %-8s  %-12s  %-12s  %-12s  %-12s\n",
+            "Employee", "Employee", "Status", "Basic", "Overtime", "Deductions", "Net");
+    fprintf(file, "%-12s  %-20s  %-8s  %-12s  %-12s  %-12s  %-12s\n",
+            "Number", "Name", "", "Salary", "Pay", "", "Pay");
+
+    for (int i = 0; i < reportWidth; ++i) fputc('-', file);
+    fputc('\n', file);
+
+    /* ------------------- Table Rows ----------------- */
     node* current = employeeList->head;
     int count = 0;
     double totalBasicPay = 0.0;
     double totalOvertimePay = 0.0;
     double totalDeductions = 0.0;
     double totalNetPay = 0.0;
-    
-    if (current != NULL) {
+
+    if (current) {
         do {
             Employee* emp = (Employee*)current->data;
-            if (emp != NULL) {
-                count++;
-                
-                fprintf(file, "%-12s | %-20s | %-8s | %10.2f | %10.2f | %10.2f | %10.2f | %6d\n",
-                       emp->personal.employeeNumber,
-                       emp->personal.name.fullName,
-                       (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                       emp->payroll.basicPay,
-                       emp->payroll.overtimePay,
-                       emp->payroll.deductions,
-                       emp->payroll.netPay,
-                       emp->employment.hoursWorked);
-                       
+            if (emp) {
+                fprintf(file, "%-12s  %-20s  %-8s  %12.2f  %12.2f  %12.2f  %12.2f\n",
+                        emp->personal.employeeNumber,
+                        emp->personal.name.fullName,
+                        (emp->employment.status == statusRegular) ? "Regular" : "Casual",
+                        emp->payroll.basicPay,
+                        emp->payroll.overtimePay,
+                        emp->payroll.deductions,
+                        emp->payroll.netPay);
+
                 totalBasicPay += emp->payroll.basicPay;
                 totalOvertimePay += emp->payroll.overtimePay;
                 totalDeductions += emp->payroll.deductions;
                 totalNetPay += emp->payroll.netPay;
+                count++;
             }
             current = current->next;
-        } while (current != employeeList->head && current != NULL);
+        } while (current && current != employeeList->head);
     }
-    
-    fprintf(file, "------------------------------------------------------------------------------------------------------\n");
-    fprintf(file, "%-32s | %10.2f | %10.2f | %10.2f | %10.2f |\n",
-           "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
-    fprintf(file, "------------------------------------------------------------------------------------------------------\n");
-    fprintf(file, "Total employees: %d\n\n", count);
-    
+
+    /* -------------------- Footer -------------------- */
+    for (int i = 0; i < reportWidth; ++i) fputc('-', file);
+    fputc('\n', file);
+
+    fprintf(file, "%-41s  %12.2f  %12.2f  %12.2f  %12.2f\n",
+            "TOTALS:", totalBasicPay, totalOvertimePay, totalDeductions, totalNetPay);
+
+    for (int i = 0; i < reportWidth; ++i) fputc('-', file);
+    fputc('\n', file);
+
+    fprintf(file, "Total employees displayed: %d\n\n", count);
     fprintf(file, "Report generated by PUP Information Management System\n");
-    
+
     fclose(file);
     return count;
 }
 
 // Function to generate student report file
-int generateStudentReportFile(const list* studentList, char* generatedFilePath, int pathBufferSize) {
+int generateStudentReportFile(const list* studentList, char* generatedFilePath, const int pathBufferSize) {
     if (!studentList || !studentList->head || studentList->size == 0) {
         return -1;
     }
@@ -138,51 +168,79 @@ int generateStudentReportFile(const list* studentList, char* generatedFilePath, 
         return -1;
     }
     
-    fprintf(file, "=== Student Academic Report ===\n");
+    /* -------------------- Header -------------------- */
+    int reportWidth = 105;
+
+    const char* univName = "POLYTECHNIC UNIVERSITY OF THE PHILIPPINES - QUEZON CITY";
+    int margin = (reportWidth - (int)strlen(univName)) / 2;
+    if (margin < 0) margin = 0;
+    fprintf(file, "%*s%s\n", margin, "", univName);
+
+    const char* academicYear = "Academic Records - AY 2024-2025";
+    margin = (reportWidth - (int)strlen(academicYear)) / 2;
+    if (margin < 0) margin = 0;
+    fprintf(file, "%*s%s\n\n", margin, "", academicYear);
+
     fprintf(file, "Generated on: %s\n\n", timestamp);
-    
-    fprintf(file, "%-12s | %-20s | %-8s | %-6s | %-6s | %-6s | %-6s | %-8s\n",
-           "Student No.", "Student Name", "Program", "Year", "Prelim", "Midterm", "Final", "Remarks");
-    fprintf(file, "-------------------------------------------------------------------------------------\n");
-    
+
+    /* ------------------ Table Header ---------------- */
+    fprintf(file, "%-12s  %-25s  %-8s  %-4s  %-11s  %-7s\n",
+            "Student No.", "Full Name", "Course", "Year", "Final Grade", "Remarks");
+
+    for (int i = 0; i < reportWidth; ++i) fputc('-', file);
+    fputc('\n', file);
+
+    /* ------------------- Table Rows ----------------- */
     node* current = studentList->head;
     int count = 0;
     double totalFinalGrade = 0.0;
     int passedCount = 0;
-    
-    if (current != NULL) {
+    int failedCount = 0;
+
+    if (current) {
         do {
             Student* stu = (Student*)current->data;
-            if (stu != NULL) {
-                count++;
-                
-                fprintf(file, "%-12s | %-20s | %-8s | %6d | %6.2f | %6.2f | %6.2f | %-8s\n",
-                       stu->personal.studentNumber,
-                       stu->personal.name.fullName,
-                       stu->personal.programCode,
-                       stu->personal.yearLevel,
-                       stu->academic.prelimGrade,
-                       stu->academic.midtermGrade,
-                       stu->academic.finalExamGrade,
-                       stu->academic.remarks);
-                       
-                totalFinalGrade += stu->academic.finalGrade;
+            if (stu) {
+                double finalGrade = stu->academic.finalGrade;
+                if (finalGrade == 0.0) {
+                    finalGrade = (stu->academic.prelimGrade + stu->academic.midtermGrade + stu->academic.finalExamGrade) / 3.0;
+                }
+
+                fprintf(file, "%-12s  %-25s  %-8s  %-4d  %11.2f  %-7s\n",
+                        stu->personal.studentNumber,
+                        stu->personal.name.fullName,
+                        stu->personal.programCode,
+                        stu->personal.yearLevel,
+                        finalGrade,
+                        stu->academic.remarks);
+
+                totalFinalGrade += finalGrade;
                 if (strcmp(stu->academic.remarks, "Passed") == 0) {
                     passedCount++;
+                } else {
+                    failedCount++;
                 }
+                count++;
             }
             current = current->next;
-        } while (current != studentList->head && current != NULL);
+        } while (current && current != studentList->head);
     }
-    
-    fprintf(file, "-------------------------------------------------------------------------------------\n");
-    fprintf(file, "Total students: %d\n", count);
-    fprintf(file, "Average grade: %.2f\n", totalFinalGrade / count);
-    fprintf(file, "Passed: %d (%.1f%%)\n", passedCount, (passedCount * 100.0) / count);
-    fprintf(file, "Failed: %d (%.1f%%)\n", count - passedCount, ((count - passedCount) * 100.0) / count);
-    
-    fprintf(file, "\nReport generated by PUP Information Management System\n");
-    
+
+    /* -------------------- Footer -------------------- */
+    for (int i = 0; i < reportWidth; ++i) fputc('-', file);
+    fputc('\n', file);
+
+    if (count > 0) {
+        double averageGrade = totalFinalGrade / count;
+        fprintf(file, "%-50s  %11.2f\n", "AVERAGE GRADE:", averageGrade);
+
+        for (int i = 0; i < reportWidth; ++i) fputc('-', file);
+        fputc('\n', file);
+    }
+
+    fprintf(file, "Total students: %d | Passed: %d | Failed: %d\n\n", count, passedCount, failedCount);
+    fprintf(file, "Report generated by PUP Information Management System\n");
+
     fclose(file);
     return count;
 }
@@ -461,7 +519,7 @@ static node* mergeSortList(node* head, node* tail, int descending,
     return mergeSortedLists(leftSorted, rightSorted, tail, descending, compareFunc);
 }
 
-int sortStudentsByGrade(list* studentList, int descending) {
+int sortStudentsByGrade(list* studentList, const int descending) {
     if (!studentList || studentList->size <= 1) {
         return 0;
     }
@@ -494,22 +552,88 @@ int sortStudentsByGrade(list* studentList, int descending) {
 
 int listEmployeeDataFiles(void) {
     printf("=== Available Employee Data Files ===\n");
-    int result = system("dir data\\*employee*.dat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*employee*.dat");
+    if (result != 1) {
         printf("No employee .dat files found.\n");
         return 0;
     }
     return 1;
 }
 
+int getEmployeeDataFileNames(char fileNames[][256], int maxFiles) {
+    if (!fileNames || maxFiles <= 0) {
+        return 0;
+    }
+    
+    createDataDirectory();
+    
+    // Construct the search path
+    char searchPath[512];
+    snprintf(searchPath, sizeof(searchPath), "data\\*employee*.dat");
+    
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile(searchPath, &findFileData);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return 0; // No files found
+    }
+    
+    int fileCount = 0;
+    
+    do {
+        // Skip directories and ensure we don't exceed maxFiles
+        if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileCount < maxFiles) {
+            strncpy(fileNames[fileCount], findFileData.cFileName, 255);
+            fileNames[fileCount][255] = '\0'; // Ensure null termination
+            fileCount++;
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0 && fileCount < maxFiles);
+    
+    FindClose(hFind);
+    return fileCount;
+}
+
 int listStudentDataFiles(void) {
     printf("=== Available Student Data Files ===\n");
-    int result = system("dir data\\*student*.dat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*student*.dat");
+    if (result != 1) {
         printf("No student .dat files found.\n");
         return 0;
     }
     return 1;
+}
+
+int getStudentDataFileNames(char fileNames[][256], int maxFiles) {
+    if (!fileNames || maxFiles <= 0) {
+        return 0;
+    }
+    
+    createDataDirectory();
+    
+    // Construct the search path
+    char searchPath[512];
+    snprintf(searchPath, sizeof(searchPath), "data\\*student*.dat");
+    
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile(searchPath, &findFileData);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return 0; // No files found
+    }
+    
+    int fileCount = 0;
+    
+    do {
+        // Skip directories and ensure we don't exceed maxFiles
+        if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileCount < maxFiles) {
+            strncpy(fileNames[fileCount], findFileData.cFileName, 255);
+            fileNames[fileCount][255] = '\0'; // Ensure null termination
+            fileCount++;
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0 && fileCount < maxFiles);
+    
+    FindClose(hFind);
+    return fileCount;
 }
 
 int saveListWithCustomName(list* dataList, const char* listName, const char* dataType) {

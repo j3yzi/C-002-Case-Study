@@ -21,7 +21,7 @@ gcc -o bin/PUP-InformationManagementSystem.exe ^
     include/src/auth.c ^
     include/src/lismgr.c ^
     include/src/lisops.c ^
-    include/src/menu.c ^
+    include/src/interface.c ^
     include/src/state.c ^
     include/src/validation.c ^
     -Iinclude ^

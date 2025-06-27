@@ -257,7 +257,7 @@ void displayEmployeeDetails(const Employee* employee) {
 }
 
 /**
- * @brief Displays all employees in the list.
+ * @brief Displays all employees in a professional payroll report format.
  * @param employeeList Pointer to the employee list.
  */
 void displayAllEmployees(const list* employeeList) {
@@ -271,24 +271,83 @@ void displayAllEmployees(const list* employeeList) {
         return;
     }
 
-    printf("\n=== All Employees ===\n");
-    printf("%-12s | %-20s | %-8s | %-10s | %-10s\n", "Emp. Number", "Full Name", "Status", "Hours", "Rate");
-    printf("------------------------------------------------------------------------\n");
+    // Get console dimensions for centering
+    extern void getConsoleSize(int* width, int* height);
+    int consoleWidth, consoleHeight;
+    getConsoleSize(&consoleWidth, &consoleHeight);
+    
+    // Calculate the width of our payroll report
+    int reportWidth = 98; // Total width of our formatted table
+    int margin = (consoleWidth - reportWidth) / 2;
+    if (margin < 0) margin = 0;
+
+    // Clear screen and display professional header (centered)
+    printf("\n");
+    
+    // Center the university name
+    const char* univName = "POLYTECHNIC UNIVERSITY OF THE PHILIPPINES";
+    int univNameLen = strlen(univName);
+    int univMargin = (consoleWidth - univNameLen) / 2;
+    if (univMargin < 0) univMargin = 0;
+    printf("%*s%s\n", univMargin, "", univName);
+    
+    // Center the city name
+    const char* cityName = "Quezon City";
+    int cityNameLen = strlen(cityName);
+    int cityMargin = (consoleWidth - cityNameLen) / 2;
+    if (cityMargin < 0) cityMargin = 0;
+    printf("%*s%s\n", cityMargin, "", cityName);
+    
+    printf("\n");
+    
+    // Center the "Payroll" title
+    const char* payrollTitle = "Payroll";
+    int payrollTitleLen = strlen(payrollTitle);
+    int payrollMargin = (consoleWidth - payrollTitleLen) / 2;
+    if (payrollMargin < 0) payrollMargin = 0;
+    printf("%*s%s\n", payrollMargin, "", payrollTitle);
+    
+    printf("\n");
+
+    // Table header with proper formatting (centered)
+    printf("%*s%-12s  %-20s  %-8s  %-12s  %-12s  %-12s  %-12s\n", 
+           margin, "",
+           "Employee", "Employee", "Status", "Basic", "Overtime", "Deductions", "Net");
+    printf("%*s%-12s  %-20s  %-8s  %-12s  %-12s  %-12s  %-12s\n", 
+           margin, "",
+           "Number", "Name", "", "Salary", "Pay", "", "Pay");
+    
+    // Separator line (centered)
+    printf("%*s", margin, "");
+    printf("─────────────────────────────────────────────────────────────────────────────────────────────────────\n");
 
     node* current = employeeList->head;
     int count = 0;
+    float totalBasicPay = 0.0f;
+    float totalOvertimePay = 0.0f;
+    float totalDeductions = 0.0f;
+    float totalNetPay = 0.0f;
     
     // For non-circular lists
     if (employeeList->type == SINGLY || employeeList->type == DOUBLY) {
         while (current != NULL) {
             Employee* emp = (Employee*)current->data;
             if (emp) {
-                printf("%-12s | %-20s | %-8s | %-10d | %-10.2f\n", 
+                printf("%*s%-12s  %-20s  %-8s  %12.2f  %12.2f  %12.2f  %12.2f\n", 
+                       margin, "",
                        emp->personal.employeeNumber,
                        emp->personal.name.fullName,
                        (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                       emp->employment.hoursWorked,
-                       emp->employment.basicRate);
+                       emp->payroll.basicPay,
+                       emp->payroll.overtimePay,
+                       emp->payroll.deductions,
+                       emp->payroll.netPay);
+                
+                // Add to totals
+                totalBasicPay += emp->payroll.basicPay;
+                totalOvertimePay += emp->payroll.overtimePay;
+                totalDeductions += emp->payroll.deductions;
+                totalNetPay += emp->payroll.netPay;
                 count++;
             }
             current = current->next;
@@ -300,12 +359,21 @@ void displayAllEmployees(const list* employeeList) {
             do {
                 Employee* emp = (Employee*)current->data;
                 if (emp) {
-                    printf("%-12s | %-20s | %-8s | %-10d | %-10.2f\n", 
+                    printf("%*s%-12s  %-20s  %-8s  %12.2f  %12.2f  %12.2f  %12.2f\n", 
+                           margin, "",
                            emp->personal.employeeNumber,
                            emp->personal.name.fullName,
                            (emp->employment.status == statusRegular) ? "Regular" : "Casual",
-                           emp->employment.hoursWorked,
-                           emp->employment.basicRate);
+                           emp->payroll.basicPay,
+                           emp->payroll.overtimePay,
+                           emp->payroll.deductions,
+                           emp->payroll.netPay);
+                    
+                    // Add to totals
+                    totalBasicPay += emp->payroll.basicPay;
+                    totalOvertimePay += emp->payroll.overtimePay;
+                    totalDeductions += emp->payroll.deductions;
+                    totalNetPay += emp->payroll.netPay;
                     count++;
                 }
                 current = current->next;
@@ -318,11 +386,38 @@ void displayAllEmployees(const list* employeeList) {
         }
     }
 
-    printf("------------------------------------------------------------------------\n");
-    printf("Total employees displayed: %d\n", count);
+    // Footer separator and totals (centered)
+    printf("%*s", margin, "");
+    printf("─────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+    
+    // Display totals if we have employees (centered)
+    if (count > 0) {
+        printf("%*s%-41s  %12.2f  %12.2f  %12.2f  %12.2f\n", 
+               margin, "",
+               "TOTALS:", 
+               totalBasicPay,
+               totalOvertimePay,
+               totalDeductions,
+               totalNetPay);
+        printf("%*s", margin, "");
+        printf("─────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+    }
+    
+    // Center the summary
+    char summaryText[50];
+    snprintf(summaryText, sizeof(summaryText), "Total employees displayed: %d", count);
+    int summaryLen = strlen(summaryText);
+    int summaryMargin = (consoleWidth - summaryLen) / 2;
+    if (summaryMargin < 0) summaryMargin = 0;
+    printf("%*s%s\n", summaryMargin, "", summaryText);
     
     if (count == 0) {
-        printf("Note: List has %d entries but no valid employee data found.\n", employeeList->size);
+        char noteText[100];
+        snprintf(noteText, sizeof(noteText), "Note: List has %d entries but no valid employee data found.", employeeList->size);
+        int noteLen = strlen(noteText);
+        int noteMargin = (consoleWidth - noteLen) / 2;
+        if (noteMargin < 0) noteMargin = 0;
+        printf("%*s%s\n", noteMargin, "", noteText);
     }
 }
 

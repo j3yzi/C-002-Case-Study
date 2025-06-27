@@ -7,10 +7,71 @@
 #include "menuio.h"
 #include "../../include/headers/apctxt.h"
 #include "../../include/headers/apclrs.h"
+#include "../../include/headers/interface.h"
 #include "../../include/models/course.h"
 
 // Global course catalog manager
 static CourseCatalogManager courseMgr;
+
+/**
+ * @brief Helper function to run a menu with the new interface system
+ * @param menu Pointer to the menu to display
+ * @return Returns the selected menu option character
+ */
+static char runMenuWithInterface(Menu* menu) {
+    int selected = 0;
+    int key;
+    
+    // Find first non-disabled option
+    while (selected < menu->optionCount && menu->options[selected].isDisabled) {
+        selected++;
+    }
+    if (selected >= menu->optionCount) selected = 0;
+    
+    while (1) {
+        // Clear screen and display the menu
+        winTermClearScreen();
+        displayMenu(menu, selected);
+        
+        // Get user input
+        key = _getch();
+        
+        // Handle special keys (arrow keys)
+        if (key == 0 || key == 224) {
+            key = _getch();
+            if (key == 72) { // Up arrow
+                int oldSelected = selected;
+                do {
+                    selected--;
+                    if (selected < 0) selected = menu->optionCount - 1;
+                } while (menu->options[selected].isDisabled && selected != oldSelected);
+            }
+            else if (key == 80) { // Down arrow
+                int oldSelected = selected;
+                do {
+                    selected++;
+                    if (selected >= menu->optionCount) selected = 0;
+                } while (menu->options[selected].isDisabled && selected != oldSelected);
+            }
+        }
+        else if (key == 13) { // Enter key
+            if (!menu->options[selected].isDisabled) {
+                return menu->options[selected].key;
+            }
+        }
+        else if (key == 27) { // Escape key
+            return menu->options[menu->optionCount - 1].key; // Return last option (usually Exit/Back)
+        }
+        else {
+            // Check if key matches any menu option
+            for (int i = 0; i < menu->optionCount; i++) {
+                if (key == menu->options[i].key && !menu->options[i].isDisabled) {
+                    return menu->options[i].key;
+                }
+            }
+        }
+    }
+}
 
 /**
  * @brief Initializes the course catalog manager
@@ -31,7 +92,6 @@ void initCourseCatalogManager(void) {
  */
 void cleanupCourseCatalogManager(void) {
     destroyCourseCatalog(&courseMgr.catalog);
-    printf("Course Catalog Manager cleaned up!\n");
 }
 
 /**
@@ -53,15 +113,15 @@ int runCourseManagement(void) {
     }
     
     Menu courseMenu = {1, menuTitle, (MenuOption[]){
-        {'1', "Create New Catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Add Course", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'3', "Edit Course", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'4', "Delete Course", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'5', "Search Courses", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'6', "Display All Courses", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'7', "Save Catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'8', "Load Catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'9', "Back to Main Menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 9
+        {'1', "Create New Catalog", "Initialize a new course catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Add Course", "Add a new course to the catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'3', "Edit Course", "Modify existing course information", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'4', "Delete Course", "Remove a course from the catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'5', "Search Courses", "Find courses by code or title", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'6', "Display All Courses", "Show complete course catalog", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'7', "Save Catalog", "Save current catalog to file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'8', "Load Catalog", "Load course data from saved file", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'9', "Back to Main Menu", "Return to the main system menu", false, false, 9, 0, 7, 0, 8, 0, NULL}}, 9
     };
     
     do {
@@ -90,8 +150,7 @@ int runCourseManagement(void) {
         courseMenu.options[4].isDisabled = !hasCourses; // Search Courses
         courseMenu.options[5].isDisabled = !hasCourses; // Display All Courses
         
-        winTermClearScreen();
-        choice = initMenu(&courseMenu);
+        choice = runMenuWithInterface(&courseMenu);
         
         switch(choice) {
             case '1':
@@ -127,8 +186,6 @@ int runCourseManagement(void) {
                 }
                 return 0;
             default:
-                printf("\nInvalid option. Press any key to continue...");
-                _getch();
                 break;
         }
     } while (1);
@@ -142,9 +199,28 @@ int runCourseManagement(void) {
  */
 int handleCreateCourseCatalog(void) {
     winTermClearScreen();
-    printf("=== Create New Course Catalog ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
     
-    // Check for unsaved changes
+    // Calculate visible text length for centering
+    char headerText[] = "Create New Course Catalog";
+    int boxWidth = 69; // Total width including borders
+    int borderSpace = 2; // Space for "║" on each side
+    int availableSpace = boxWidth - borderSpace;
+    int headerLen = strlen(headerText);
+    int leftPadding = (availableSpace - headerLen) / 2;
+    int rightPadding = availableSpace - headerLen - leftPadding;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
+    
+    // Check for unsaved changes before creating new catalog
     if (courseMgr.hasUnsavedChanges) {
         if (appYesNoPrompt("You have unsaved changes. Do you want to save before creating a new catalog?")) {
             handleSaveCatalog();
@@ -152,7 +228,7 @@ int handleCreateCourseCatalog(void) {
     }
     
     char catalogName[50];
-    appFormField field = { "Enter name for the new catalog: ", catalogName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appFormField field = { "📚 Enter name for the new catalog: ", catalogName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
     appGetValidatedInput(&field, 1);
     
     // Clean up existing catalog
@@ -180,11 +256,11 @@ int handleCreateCourseCatalog(void) {
  */
 int listCourseCatalogFiles(void) {
     // Create data directory if it doesn't exist
-    system("mkdir data 2>nul");
+    appCreateDirectory("data");
     
     // List .cat files
-    int result = system("dir data\\*.cat /B 2>nul");
-    if (result != 0) {
+    int result = appListFiles("data", "*.cat");
+    if (result != 1) {
         return 0;
     }
     
@@ -197,17 +273,36 @@ int listCourseCatalogFiles(void) {
  */
 int handleAddCourse(void) {
     winTermClearScreen();
-    printf("=== Add New Course ===\n\n");
+    printf("%s", UI_HEADER);
+    printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+    
+    // Calculate visible text length for centering
+    char headerText2[] = "Add New Course";
+    int boxWidth2 = 69; // Total width including borders
+    int borderSpace2 = 2; // Space for "║" on each side
+    int availableSpace2 = boxWidth2 - borderSpace2;
+    int headerLen2 = strlen(headerText2);
+    int leftPadding2 = (availableSpace2 - headerLen2) / 2;
+    int rightPadding2 = availableSpace2 - headerLen2 - leftPadding2;
+    
+    printf("║");
+    for (int i = 0; i < leftPadding2; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText2, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding2; i++) printf(" ");
+    printf("║\n");
+    
+    printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+    printf("%s\n", TXT_RESET);
     
     if (!courseMgr.catalog.courseList) {
-        printf("No active catalog! Please create or load a catalog first.\n");
+        printf("%s❌ No active catalog! Please create or load a catalog first.%s\n", UI_ERROR, TXT_RESET);
         waitForKeypress(NULL);
         return -1;
     }
     
     Course* newCourse = (Course*)malloc(sizeof(Course));
     if (!newCourse) {
-        printf("Memory allocation failed!\n");
+        printf("%s❌ Memory allocation failed!%s\n", UI_ERROR, TXT_RESET);
         waitForKeypress(NULL);
         return -1;
     }
@@ -218,7 +313,7 @@ int handleAddCourse(void) {
     
     // Get course data from user
     if (getCourseDataFromUser(newCourse, true) != 0) {
-        printf("Course creation cancelled.\n");
+        printf("%sCourse creation cancelled.%s\n", UI_WARNING, TXT_RESET);
         free(newCourse);
         waitForKeypress(NULL);
         return -1;
@@ -226,14 +321,14 @@ int handleAddCourse(void) {
     
     // Add course to catalog
     if (addCourse(&courseMgr.catalog, newCourse) != 0) {
-        printf("Failed to add course to catalog! Course code may already exist.\n");
+        printf("%s❌ Failed to add course to catalog! Course code may already exist.%s\n", UI_ERROR, TXT_RESET);
         free(newCourse);
         waitForKeypress(NULL);
         return -1;
     }
     
     courseMgr.hasUnsavedChanges = true;
-    printf("\nCourse '%s - %s' added successfully!\n", newCourse->code, newCourse->name);
+    printf("\n%s✅ Course '%s - %s' added successfully!%s\n", UI_SUCCESS, newCourse->code, newCourse->name, TXT_RESET);
     waitForKeypress(NULL);
     return 0;
 }
@@ -324,21 +419,46 @@ int handleEditCourse(void) {
         return -1;
     }
     
-    // Display all courses for reference
-    displayAllCourses(&courseMgr.catalog);
+    int shouldContinue = 1;
+    Course* course = NULL;
     
-    // Get course code to edit
-    char courseCode[courseCodeLen];
-    appFormField field = { "\nEnter course code to edit: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
-    appGetValidatedInput(&field, 1);
-    
-    // Find the course
-    Course* course = findCourseByCode(&courseMgr.catalog, courseCode);
-    if (!course) {
-        printf("Course with code '%s' not found!\n", courseCode);
-        waitForKeypress(NULL);
-        return -1;
-    }
+    do {
+        // Display all courses for reference
+        winTermClearScreen();
+        printf("=== Edit Course ===\n\n");
+        displayAllCourses(&courseMgr.catalog);
+        
+        // Get course code to edit
+        char courseCode[courseCodeLen];
+        appFormField field = { "\nEnter course code to edit: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
+        appGetValidatedInput(&field, 1);
+        
+        // Find the course
+        course = findCourseByCode(&courseMgr.catalog, courseCode);
+        if (!course) {
+            printf("\n❌ Course with code '%s' not found!\n", courseCode);
+            printf("\nWhat would you like to do?\n");
+            printf("1. Try again with a different course code\n");
+            printf("2. View all courses again\n");
+            printf("3. Back to Course Menu\n");
+            printf("\nSelect an option (1-3): ");
+            
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            switch (choice) {
+                case '1':
+                    continue; // Loop to try again
+                case '2':
+                    continue; // Loop back to show courses and try again
+                case '3':
+                default:
+                    return -1; // Exit to course menu
+            }
+        } else {
+            shouldContinue = 0; // Found course, exit loop
+        }
+    } while (shouldContinue);
     
     // Display current course details
     printf("\nCurrent course details:\n");
@@ -356,7 +476,7 @@ int handleEditCourse(void) {
     }
     
     // Update the course
-    if (updateCourse(&courseMgr.catalog, courseCode, &updatedCourse) != 0) {
+    if (updateCourse(&courseMgr.catalog, course->code, &updatedCourse) != 0) {
         printf("Failed to update course! Course code may already exist.\n");
         waitForKeypress(NULL);
         return -1;
@@ -448,19 +568,46 @@ int handleSearchCourses(void) {
     
     if (choice == 1) {
         // Search by course code
-        char courseCode[courseCodeLen];
-        appFormField field = { "Enter course code to search: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
-        appGetValidatedInput(&field, 1);
+        int shouldContinue = 1;
         
-        Course* course = findCourseByCode(&courseMgr.catalog, courseCode);
-        if (!course) {
-            printf("Course with code '%s' not found!\n", courseCode);
-            waitForKeypress(NULL);
-            return -1;
-        }
-        
-        printf("\nSearch Results:\n");
-        displayCourseDetails(course);
+        do {
+            char courseCode[courseCodeLen];
+            appFormField field = { "Enter course code to search: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
+            appGetValidatedInput(&field, 1);
+            
+            Course* course = findCourseByCode(&courseMgr.catalog, courseCode);
+            if (!course) {
+                printf("\n❌ Course with code '%s' not found!\n", courseCode);
+                printf("\nWhat would you like to do?\n");
+                printf("1. Try again with a different course code\n");
+                printf("2. View all courses\n");
+                printf("3. Back to Search Menu\n");
+                printf("\nSelect an option (1-3): ");
+                
+                char choice = _getch();
+                printf("%c\n", choice);
+                
+                switch (choice) {
+                    case '1':
+                        continue; // Loop to try again
+                    case '2':
+                        winTermClearScreen();
+                        printf("=== All Courses ===\n\n");
+                        displayAllCourses(&courseMgr.catalog);
+                        printf("\nPress any key to continue...");
+                        _getch();
+                        continue; // Loop back to search prompt
+                    case '3':
+                    default:
+                        shouldContinue = 0; // Exit to search menu
+                        break;
+                }
+            } else {
+                printf("\nSearch Results:\n");
+                displayCourseDetails(course);
+                shouldContinue = 0; // Found course, exit loop
+            }
+        } while (shouldContinue);
     }
     else if (choice == 2) {
         // Search by course name

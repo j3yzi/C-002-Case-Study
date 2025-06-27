@@ -291,6 +291,7 @@ typedef enum {
     IV_ALPHA_ONLY,
     IV_ALPHA_ONLY_MAX_LEN,
     IV_OPTIONAL_ALPHA_ONLY_MAX_LEN,
+    IV_EXACT_LEN,
 } IValidationType;
 ```
 
@@ -813,6 +814,31 @@ void displayEmployee(const Employee* emp) {  // Protected from modification
 }
 ```
 
+#### **❌ Unsafe: Casting Away `const`**
+Sometimes, you might encounter legacy functions that don't accept `const` pointers, or you might be tempted to modify a `const` variable. Casting away the `const` qualifier is possible but dangerous.
+
+```c
+// From include/src/menu.c - A risky cast
+const char* description = menu->options[newSelection].description;
+char *full = (char*)description; // Casts away const!
+
+// This is done to use string functions that modify the string,
+// but it breaks the promise that the original data won't be changed.
+// This can lead to undefined behavior if the original data was in read-only memory.
+```
+
+#### **✅ Correct: Avoiding `const` Casts**
+The best practice is to avoid casting away `const`. If you need to modify data, the function parameter should not be `const` in the first place. If you're working with `const` data, use functions and techniques that respect its immutability.
+
+```c
+// A safer approach for string manipulation
+const char* original = "this is a constant string";
+char buffer[100];
+strncpy(buffer, original, sizeof(buffer) - 1);
+buffer[sizeof(buffer) - 1] = '\0';
+// Now manipulate the 'buffer', not the original constant string.
+```
+
 ---
 
 ## 📋 Quick Reference Table
@@ -902,3 +928,29 @@ Each keyword builds upon the previous ones and together they enable the sophisti
 ---
 
 *This guide covers the C keywords most relevant to understanding and contributing to the PUP Information Management System. Mastering these concepts will significantly improve your ability to write clean, efficient, and maintainable C code.* 
+
+#### **New Validation Type – `IV_EXACT_LEN`**
+
+`IV_EXACT_LEN` was added to the `IValidationType` enum in **apctxt.h** to enforce **exact-length** input (not just max-length).  It takes the same `rangeInt.max` field as the other length validators but treats it as a required length rather than an upper bound.
+
+```c
+// Example: require exactly 10 digits for an Employee Number
+appFormField field = {
+    "🆔 Enter Employee Number (10 digits): ",
+    employeeNumberBuf,
+    employeeNumberLen,
+    IV_EXACT_LEN,
+    {.rangeInt = {.max = 10}}  // 10 chars required
+};
+```
+
+Behind the scenes the validator now contains:
+```c
+case IV_EXACT_LEN:
+    if (strlen(input) != (size_t)params.rangeInt.max) {
+        // ... print error ...
+    }
+```
+The new type is already used throughout `src/ui/empio.c` and `src/ui/stuio.c`.
+
+--- 

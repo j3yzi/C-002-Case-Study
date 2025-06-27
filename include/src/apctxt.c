@@ -53,9 +53,7 @@ int loadConfig(const char* config_file) {
         }
         if (lastSlash) {
             *lastSlash = '\0';
-            char mkdir_cmd[300];
-            sprintf(mkdir_cmd, "mkdir %s 2>nul", path); // Create directory using system command (Windows-specific)
-            system(mkdir_cmd);
+            appCreateDirectory(path); // Create directory using utility function
         }
         int result = saveConfig(config_file); // Create default configuration file
         if (result == 0) {
@@ -127,4 +125,67 @@ float getOvertimeRate(void) {
 
 float getPassingGrade(void) {
     return g_config.passingGrade;
+}
+
+// File system utility functions (replacements for system() calls)
+
+/**
+ * @brief Creates a directory if it doesn't exist (Windows implementation)
+ * @param dirPath The directory path to create
+ * @return 0 on success (including if directory already exists), -1 on failure
+ */
+int appCreateDirectory(const char* dirPath) {
+    if (!dirPath) {
+        return -1;
+    }
+    
+    // CreateDirectory returns non-zero on success, zero on failure
+    if (CreateDirectory(dirPath, NULL)) {
+        return 0; // Successfully created
+    }
+    
+    // Check if it failed because directory already exists
+    DWORD error = GetLastError();
+    if (error == ERROR_ALREADY_EXISTS) {
+        return 0; // Directory already exists, that's fine
+    }
+    
+    return -1; // Other error occurred
+}
+
+/**
+ * @brief Lists files in a directory matching a pattern (Windows implementation)
+ * @param directory The directory to search in
+ * @param pattern The file pattern to match (e.g., "*.dat", "*.cat")
+ * @return 1 if files were found, 0 if no files found, -1 on error
+ */
+int appListFiles(const char* directory, const char* pattern) {
+    if (!directory || !pattern) {
+        return -1;
+    }
+    
+    // Construct the search path
+    char searchPath[MAX_PATH];
+    snprintf(searchPath, sizeof(searchPath), "%s\\%s", directory, pattern);
+    
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile(searchPath, &findFileData);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        // No files found
+        return 0;
+    }
+    
+    int fileCount = 0;
+    
+    do {
+        // Skip directories
+        if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            printf("%s\n", findFileData.cFileName);
+            fileCount++;
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0);
+    
+    FindClose(hFind);
+    return fileCount > 0 ? 1 : 0;
 } 
