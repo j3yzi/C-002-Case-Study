@@ -1059,7 +1059,7 @@ int handleLoadEmployeeList(void) {
     options[cancelIndex].onSelect = NULL;
     
     // Create the file selection menu
-    Menu fileMenu = {1, "📂 Load Employee List - Select File", options, totalMenuOptions};
+    Menu fileMenu = {1, "📂 Load Employee List - Select File  ", options, totalMenuOptions};
     
     char choice = runMenuWithInterface(&fileMenu);
     
@@ -1364,29 +1364,34 @@ int handleStudentReport(void) {
 int handleSaveStudentList(void) {
     winTermClearScreen();
     printf("=== Save Student List ===\n\n");
-    
+
     int hasActiveList = (stuManager.activeStudentList >= 0 && stuManager.studentLists[stuManager.activeStudentList]);
     if (!checkActiveList(hasActiveList, 0, "No active student list to save!")) {
         return -1;
     }
-    
-    printf("Saving list: %s\n", stuManager.studentListNames[stuManager.activeStudentList]);
-    
-    char filename[100];
+
+    // Build a simple menu for save options
+    MenuOption saveOpts[2] = {
+        {'1', "Enter Filename", "Specify a new filename to save", false, false, 9,0,7,0,8,0,NULL},
+        {27,  "Back",          "Return without saving",          false, false, 9,0,7,0,8,0,NULL}
+    };
+    Menu saveMenu = {1, "💾 Save Student List", saveOpts, 2};
+    char sel = runMenuWithInterface(&saveMenu);
+
+    if (sel == 27) return 0; // user chose Back / Esc
+    if (sel != '1') return 0;
+
+    // User selected to enter a filename
+    char filename[100] = "";
     appFormField field = { "Enter filename (will be saved as 'student_LISTNAME.dat'): ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} };
     appGetValidatedInput(&field, 1);
-    
-    // Use the custom save function
-    int savedCount = saveListWithCustomName(stuManager.studentLists[stuManager.activeStudentList], 
-                                           filename, "student");
-    
+
+    int savedCount = saveListWithCustomName(stuManager.studentLists[stuManager.activeStudentList], filename, "student");
     if (savedCount >= 0) {
-        printf("Successfully saved %d student records!\n", savedCount);
-        printf("Data saved to data directory.\n");
+        printf("Successfully saved %d student records!\nData saved to data directory.\n", savedCount);
     } else {
         printf("Failed to save student list.\n");
     }
-    
     waitForKeypress(NULL);
     return 0;
 }
@@ -1606,116 +1611,90 @@ int handleLoadStudentList(void) {
 }
 
 int handleSwitchEmployeeList(void) {
-    winTermClearScreen();
-    printf("=== Switch Employee List ===\n\n");
-    
+    // Ensure there are multiple lists
     if (empManager.employeeListCount == 0) {
-        printf("No employee lists available!\n");
-        printf("Create an employee list first.\n");
+        winTermClearScreen();
+        printf("No employee lists available!\nCreate an employee list first.\n");
         waitForKeypress(NULL);
         return -1;
     }
-    
     if (empManager.employeeListCount == 1) {
-        printf("Only one employee list available: %s\n", empManager.employeeListNames[0]);
-        printf("It is already active.\n");
+        winTermClearScreen();
+        printf("Only one employee list available: %s\nIt is already active.\n", empManager.employeeListNames[0]);
         waitForKeypress(NULL);
         return 0;
     }
-    
-    printf("Available Employee Lists:\n");
-    printf("=========================\n");
-    for (int i = 0; i < empManager.employeeListCount; i++) {
-        char activeMarker = (i == empManager.activeEmployeeList) ? '*' : ' ';
-        int listSize = empManager.employeeLists[i] ? empManager.employeeLists[i]->size : 0;
-        printf("%c %d. %s (%d employees)\n", 
-               activeMarker, i + 1, empManager.employeeListNames[i], listSize);
+
+    // Build dynamic menu options
+    int listCount = empManager.employeeListCount;
+    MenuOption* opts = malloc(sizeof(MenuOption) * (listCount + 1));
+    if (!opts) return -1;
+
+    for (int i = 0; i < listCount; ++i) {
+        static char desc[64];
+        int sz = empManager.employeeLists[i] ? empManager.employeeLists[i]->size : 0;
+        snprintf(desc, sizeof(desc), "Switch to this list (%d employees)", sz);
+        opts[i].key = '1' + i;               // works for up to 9 lists
+        opts[i].text = empManager.employeeListNames[i];
+        opts[i].description = desc;
+        opts[i].isDisabled = (i == empManager.activeEmployeeList);
     }
-    
-    printf("\n* = Currently Active List\n");
-    char input[10];
-    char prompt[100];
-    sprintf(prompt, "Enter the number of the list to switch to (1-%d): ", empManager.employeeListCount);
-    appFormField field = { prompt, input, 10, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = empManager.employeeListCount}} };
-    appGetValidatedInput(&field, 1);
-    
-    int choice = atoi(input) - 1; // Convert to 0-based index
-    
-    if (choice < 0 || choice >= empManager.employeeListCount) {
-        printf("Invalid choice! Please enter a number between 1 and %d.\n", empManager.employeeListCount);
-        waitForKeypress(NULL);
-        return -1;
-    }
-    
-    if (choice == empManager.activeEmployeeList) {
-        printf("List '%s' is already active!\n", empManager.employeeListNames[choice]);
-        waitForKeypress(NULL);
-        return 0;
-    }
-    
-    empManager.activeEmployeeList = choice;
-    int listSize = empManager.employeeLists[choice] ? empManager.employeeLists[choice]->size : 0;
-    
-    printf("Successfully switched to employee list: %s\n", empManager.employeeListNames[choice]);
-    printf("This list contains %d employees.\n", listSize);
-    waitForKeypress(NULL);
+    opts[listCount] = (MenuOption){ .key = 27, .text = "Back", .description = "Return to previous menu", .isDisabled = false };
+
+    Menu switchMenu = {1, "Switch Employee List", opts, listCount + 1};
+
+    char sel = runMenuWithInterface(&switchMenu);
+
+    free(opts);
+
+    if (sel == 27) return 0; // Back
+
+    int index = sel - '1';
+    if (index < 0 || index >= listCount) return 0;
+    if (index == empManager.activeEmployeeList) return 0;
+
+    empManager.activeEmployeeList = index;
     return 0;
 }
 
 int handleSwitchStudentList(void) {
-    winTermClearScreen();
-    printf("=== Switch Student List ===\n\n");
-    
     if (stuManager.studentListCount == 0) {
-        printf("No student lists available!\n");
-        printf("Create a student list first.\n");
+        winTermClearScreen();
+        printf("No student lists available!\nCreate a student list first.\n");
         waitForKeypress(NULL);
         return -1;
     }
-    
     if (stuManager.studentListCount == 1) {
-        printf("Only one student list available: %s\n", stuManager.studentListNames[0]);
-        printf("It is already active.\n");
+        winTermClearScreen();
+        printf("Only one student list available: %s\nIt is already active.\n", stuManager.studentListNames[0]);
         waitForKeypress(NULL);
         return 0;
     }
-    
-    printf("Available Student Lists:\n");
-    printf("========================\n");
-    for (int i = 0; i < stuManager.studentListCount; i++) {
-        char activeMarker = (i == stuManager.activeStudentList) ? '*' : ' ';
-        int listSize = stuManager.studentLists[i] ? stuManager.studentLists[i]->size : 0;
-        printf("%c %d. %s (%d students)\n", 
-               activeMarker, i + 1, stuManager.studentListNames[i], listSize);
+
+    int listCount = stuManager.studentListCount;
+    MenuOption* opts = malloc(sizeof(MenuOption) * (listCount + 1));
+    if (!opts) return -1;
+
+    for (int i = 0; i < listCount; ++i) {
+        static char desc[64];
+        int sz = stuManager.studentLists[i] ? stuManager.studentLists[i]->size : 0;
+        snprintf(desc, sizeof(desc), "Switch to this list (%d students)", sz);
+        opts[i].key = '1' + i;
+        opts[i].text = stuManager.studentListNames[i];
+        opts[i].description = desc;
+        opts[i].isDisabled = (i == stuManager.activeStudentList);
     }
-    
-    printf("\n* = Currently Active List\n");
-    char input[10];
-    char prompt[100];
-    sprintf(prompt, "Enter the number of the list to switch to (1-%d): ", stuManager.studentListCount);
-    appFormField field = { prompt, input, 10, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = stuManager.studentListCount}} };
-    appGetValidatedInput(&field, 1);
-    
-    int choice = atoi(input) - 1; // Convert to 0-based index
-    
-    if (choice < 0 || choice >= stuManager.studentListCount) {
-        printf("Invalid choice! Please enter a number between 1 and %d.\n", stuManager.studentListCount);
-        waitForKeypress(NULL);
-        return -1;
-    }
-    
-    if (choice == stuManager.activeStudentList) {
-        printf("List '%s' is already active!\n", stuManager.studentListNames[choice]);
-        waitForKeypress(NULL);
-        return 0;
-    }
-    
-    stuManager.activeStudentList = choice;
-    int listSize = stuManager.studentLists[choice] ? stuManager.studentLists[choice]->size : 0;
-    
-    printf("Successfully switched to student list: %s\n", stuManager.studentListNames[choice]);
-    printf("This list contains %d students.\n", listSize);
-    waitForKeypress(NULL);
+    opts[listCount] = (MenuOption){ .key = 27, .text = "Back", .description = "Return to previous menu", .isDisabled = false };
+
+    Menu switchMenu = {1, "Switch Student List", opts, listCount + 1};
+    char sel = runMenuWithInterface(&switchMenu);
+    free(opts);
+
+    if (sel == 27) return 0;
+    int index = sel - '1';
+    if (index < 0 || index >= listCount) return 0;
+    if (index == stuManager.activeStudentList) return 0;
+    stuManager.activeStudentList = index;
     return 0;
 }
 
