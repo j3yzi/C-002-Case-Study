@@ -1096,7 +1096,7 @@ ensuring that every architectural decision was informed by established software 
 ## 🙏 Acknowledgments
 
 <div align="center">
-  <h3>✨ Special Thanks ✨</h3>
+  <h3>✨ Special Thanks ✨</h3
   
   <p>We extend our heartfelt gratitude to:</p>
   
