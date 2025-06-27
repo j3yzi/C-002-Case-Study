@@ -25,6 +25,8 @@ int sortStudentsByGrade(list* studentList, const int descending);
 // Multi-list management functions
 int listEmployeeDataFiles(void);
 int listStudentDataFiles(void);
+int getEmployeeDataFileNames(char fileNames[][256], int maxFiles);
+int getStudentDataFileNames(char fileNames[][256], int maxFiles);
 int saveListWithCustomName(list* dataList, const char* listName, const char* dataType);
 list* loadListWithName(const char* filename, const char* dataType, ListType listType);
 

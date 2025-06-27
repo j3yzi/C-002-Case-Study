@@ -60,15 +60,20 @@ static char runMenuWithInterface(Menu* menu) {
     bool running = true;
     time_t lastTimeUpdate = 0;
     
+    // Variables for console size tracking
+    int lastConsoleWidth = 0, lastConsoleHeight = 0;
+    int currentConsoleWidth = 0, currentConsoleHeight = 0;
+    DWORD lastSizeCheck = GetTickCount();
+    const DWORD SIZE_CHECK_INTERVAL = 100; // Check every 100ms
+    
     // Find first non-disabled option
     while (selected < menu->optionCount && menu->options[selected].isDisabled) {
         selected++;
     }
     if (selected >= menu->optionCount) selected = 0;
     
-    // Get the console size
-    int consoleWidth, consoleHeight;
-    getConsoleSize(&consoleWidth, &consoleHeight);
+    // Get initial console size
+    getConsoleSize(&lastConsoleWidth, &lastConsoleHeight);
     
     // Use constant width from interface.c
     int totalMenuNameWidth = 60; // MENU_HEADER_WIDTH from interface.c
@@ -83,16 +88,33 @@ static char runMenuWithInterface(Menu* menu) {
     displayMenu(menu, selected);
     
     while (running) {
+        // Check if it's time to check console size
+        DWORD currentTick = GetTickCount();
+        if (currentTick - lastSizeCheck >= SIZE_CHECK_INTERVAL) {
+            getConsoleSize(&currentConsoleWidth, &currentConsoleHeight);
+            
+            // If console size changed, force full redraw
+            if (currentConsoleWidth != lastConsoleWidth || currentConsoleHeight != lastConsoleHeight) {
+                lastConsoleWidth = currentConsoleWidth;
+                lastConsoleHeight = currentConsoleHeight;
+                winTermClearScreen();
+                displayMenu(menu, selected);
+                prevSelected = selected; // Update prevSelected to avoid double-drawing selection
+            }
+            
+            lastSizeCheck = currentTick;
+        }
+        
         // Only update what changed
         if (selected != prevSelected) {
-            updateMenuSelection(menu, prevSelected, selected, consoleWidth, totalMenuNameWidth, paddingX, paddingY);
+            updateMenuSelection(menu, prevSelected, selected, lastConsoleWidth, totalMenuNameWidth, paddingX, paddingY);
             prevSelected = selected;
         }
         
         // Update time every second
         time_t currentTime = time(NULL);
         if (currentTime > lastTimeUpdate) {
-            updateInfoBoxTimeDate(consoleWidth, totalMenuNameWidth, totalOptionBoxWidth, paddingX, paddingY);
+            updateInfoBoxTimeDate(lastConsoleWidth, totalMenuNameWidth, totalOptionBoxWidth, paddingX, paddingY);
             lastTimeUpdate = currentTime;
         }
         
@@ -777,11 +799,6 @@ int handleSaveEmployeeList(void) {
     
     printf("Saving list: %s\n", empManager.employeeListNames[empManager.activeEmployeeList]);
     
-    // Show existing data files
-    printf("\nExisting employee data files:\n");
-    listEmployeeDataFiles();
-    printf("\n");
-    
     char filename[100];
     appFormField field = { "Enter filename (will be saved as 'employee_LISTNAME.dat'): ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} };
     appGetValidatedInput(&field, 1);
@@ -803,52 +820,195 @@ int handleSaveEmployeeList(void) {
 
 int handleLoadEmployeeList(void) {
     winTermClearScreen();
+    
+    // Get available employee files
+    char fileNames[20][256]; // Support up to 20 files
+    int fileCount = getEmployeeDataFileNames(fileNames, 20);
+    
+    if (fileCount == 0) {
+        printf("%s", UI_HEADER);
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                         NO FILES FOUND                           ║\n");
+        printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+        printf("║                                                                   ║\n");
+        printf("║  No employee data files were found in the data directory.         ║\n");
+        printf("║  Save some employee lists first before trying to load them.       ║\n");
+        printf("║                                                                   ║\n");
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("%s", TXT_RESET);
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Ensure minimum menu height for consistent interface
+    const int MIN_MENU_OPTIONS = 10; // Minimum options to match standard interface height
+    int totalMenuOptions = (fileCount + 1 < MIN_MENU_OPTIONS) ? MIN_MENU_OPTIONS : fileCount + 1;
+    
+    // Create dynamic menu options based on available files
+    MenuOption* options = (MenuOption*)malloc(totalMenuOptions * sizeof(MenuOption));
+    if (!options) {
+        printf("Memory allocation failed!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Add file options to menu
+    for (int i = 0; i < fileCount; i++) {
+        options[i].key = '1' + i; // Keys 1, 2, 3, etc.
+        
+        // Create option text from filename (remove .dat extension)
+        char displayName[256];
+        strncpy(displayName, fileNames[i], 255);
+        displayName[255] = '\0';
+        
+        // Remove .dat extension for display
+        char* dotPos = strstr(displayName, ".dat");
+        if (dotPos) {
+            *dotPos = '\0';
+        }
+        
+        // Allocate memory for text and description
+        options[i].text = (char*)malloc(strlen(displayName) + 1);
+        options[i].description = (char*)malloc(strlen(fileNames[i]) + 50);
+        
+        if (options[i].text && options[i].description) {
+            strcpy((char*)options[i].text, displayName);
+            sprintf((char*)options[i].description, "Load employee data from %s", fileNames[i]);
+        }
+        
+        options[i].isDisabled = false;
+        options[i].isSelected = false;
+        // Initialize color fields with correct names
+        options[i].highlightTextColor = 9;
+        options[i].highlightBgColor = 0;
+        options[i].textColor = 7;
+        options[i].bgColor = 0;
+        options[i].disabledTextColor = 8;
+        options[i].disabledBgColor = 0;
+        options[i].onSelect = NULL;
+    }
+    
+    // Add placeholder options if needed to maintain consistent height
+    for (int i = fileCount; i < totalMenuOptions - 1; i++) {
+        options[i].key = '\0'; // No key for placeholder
+        options[i].text = (char*)malloc(2);
+        options[i].description = (char*)malloc(30);
+        
+        if (options[i].text && options[i].description) {
+            strcpy((char*)options[i].text, "");
+            strcpy((char*)options[i].description, "");
+        }
+        
+        options[i].isDisabled = true; // Disable placeholder options
+        options[i].isSelected = false;
+        options[i].highlightTextColor = 8;
+        options[i].highlightBgColor = 0;
+        options[i].textColor = 8;
+        options[i].bgColor = 0;
+        options[i].disabledTextColor = 8;
+        options[i].disabledBgColor = 0;
+        options[i].onSelect = NULL;
+    }
+    
+    // Add "Cancel" option (always at the end)
+    int cancelIndex = totalMenuOptions - 1;
+    options[cancelIndex].key = 'C';
+    options[cancelIndex].text = (char*)malloc(20);
+    options[cancelIndex].description = (char*)malloc(50);
+    if (options[cancelIndex].text && options[cancelIndex].description) {
+        strcpy((char*)options[cancelIndex].text, "Cancel");
+        strcpy((char*)options[cancelIndex].description, "Return to Employee Management menu");
+    }
+    options[cancelIndex].isDisabled = false;
+    options[cancelIndex].isSelected = false;
+    options[cancelIndex].highlightTextColor = 9;
+    options[cancelIndex].highlightBgColor = 0;
+    options[cancelIndex].textColor = 7;
+    options[cancelIndex].bgColor = 0;
+    options[cancelIndex].disabledTextColor = 8;
+    options[cancelIndex].disabledBgColor = 0;
+    options[cancelIndex].onSelect = NULL;
+    
+    // Create the file selection menu
+    Menu fileMenu = {1, "📂 Load Employee List - Select File", options, totalMenuOptions};
+    
+    char choice = runMenuWithInterface(&fileMenu);
+    
+    char selectedFileName[256] = "";
+    int selectedIndex = -1;
+    
+    // Find which file was selected
+    if (choice >= '1' && choice <= '9') {
+        selectedIndex = choice - '1';
+        if (selectedIndex < fileCount) {
+            strcpy(selectedFileName, fileNames[selectedIndex]);
+        }
+    } else if (choice == 'C' || choice == 'c') {
+        // User cancelled
+        // Free allocated memory
+        for (int i = 0; i < totalMenuOptions; i++) {
+            free((char*)options[i].text);
+            free((char*)options[i].description);
+        }
+        free(options);
+        return 0;
+    }
+    
+    // Free allocated memory
+    for (int i = 0; i < totalMenuOptions; i++) {
+        free((char*)options[i].text);
+        free((char*)options[i].description);
+    }
+    free(options);
+    
+    if (selectedFileName[0] == '\0') {
+        printf("Invalid selection!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Now get the list name using the beautiful interface
+    winTermClearScreen();
     printf("%s", UI_HEADER);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
     
-    // Calculate visible text length for centering
-    char headerText4[] = "Load Employee List";
-    int boxWidth4 = 69; // Total width including borders
-    int borderSpace4 = 2; // Space for "║" on each side
-    int availableSpace4 = boxWidth4 - borderSpace4;
-    int headerLen4 = strlen(headerText4);
-    int leftPadding4 = (availableSpace4 - headerLen4) / 2;
-    int rightPadding4 = availableSpace4 - headerLen4 - leftPadding4;
+    char headerText[] = "Load Employee List - Enter Name";
+    int boxWidth = 69;
+    int borderSpace = 2;
+    int availableSpace = boxWidth - borderSpace;
+    int headerLen = strlen(headerText);
+    int leftPadding = (availableSpace - headerLen) / 2;
+    int rightPadding = availableSpace - headerLen - leftPadding;
     
     printf("║");
-    for (int i = 0; i < leftPadding4; i++) printf(" ");
-    printf("%s%s%s", TXT_BOLD, headerText4, TXT_RESET UI_HEADER);
-    for (int i = 0; i < rightPadding4; i++) printf(" ");
+    for (int i = 0; i < leftPadding; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding; i++) printf(" ");
     printf("║\n");
     
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     printf("%s\n", TXT_RESET);
     
-    // List available employee data files
-    printf("%s📁 Available Employee Data Files:%s\n", UI_INFO, TXT_RESET);
-    printf("─────────────────────────────────────\n");
-    listEmployeeDataFiles();
-    printf("─────────────────────────────────────\n\n");
+    printf("%s📁 Selected file: %s%s%s\n\n", UI_INFO, UI_HIGHLIGHT, selectedFileName, TXT_RESET);
     
-    char filename[100];
     char listName[50];
-    appFormField fields[] = {
-        { "📂 Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
-        { "📝 Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
-    };
-    appGetValidatedInput(fields, 2);
+    appFormField field = { "📝 Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appGetValidatedInput(&field, 1);
     
     // Load the data
-    list* newList = loadListWithName(filename, "employee", SINGLY);
+    list* newList = loadListWithName(selectedFileName, "employee", SINGLY);
     if (!newList) {
-        printf("%s❌ Failed to load employee data from file '%s'!%s\n", UI_ERROR, filename, TXT_RESET);
+        printf("%s❌ Failed to load employee data from file '%s'!%s\n", UI_ERROR, selectedFileName, TXT_RESET);
         printf("%sPlease make sure the file exists and is in the correct format.%s\n", UI_WARNING, TXT_RESET);
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
-    // Add to manager
+    // Check if we can add another list
     if (empManager.employeeListCount >= 10) {
         printf("%s⚠️  Maximum number of employee lists reached!%s\n", UI_WARNING, TXT_RESET);
         destroyList(&newList, freeEmployee);
@@ -857,6 +1017,7 @@ int handleLoadEmployeeList(void) {
         return -1;
     }
     
+    // Add to manager
     empManager.employeeLists[empManager.employeeListCount] = newList;
     strncpy(empManager.employeeListNames[empManager.employeeListCount], listName, 49);
     empManager.employeeListNames[empManager.employeeListCount][49] = '\0';
@@ -864,7 +1025,7 @@ int handleLoadEmployeeList(void) {
     empManager.employeeListCount++;
     
     printf("%s✅ Employee list '%s' loaded successfully!%s\n", UI_SUCCESS, listName, TXT_RESET);
-    printf("%s📊 Loaded %d employee records.%s\n", UI_INFO, newList->size, TXT_RESET);
+    printf("%s📊 Loaded %d employee records from %s.%s\n", UI_INFO, newList->size, selectedFileName, TXT_RESET);
     printf("%sThis list is now active.%s\n", UI_INFO, TXT_RESET);
     printf("Press any key to continue...");
     _getch();
@@ -1084,11 +1245,6 @@ int handleSaveStudentList(void) {
     
     printf("Saving list: %s\n", stuManager.studentListNames[stuManager.activeStudentList]);
     
-    // Show existing data files
-    printf("\nExisting student data files:\n");
-    listStudentDataFiles();
-    printf("\n");
-    
     char filename[100];
     appFormField field = { "Enter filename (will be saved as 'student_LISTNAME.dat'): ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} };
     appGetValidatedInput(&field, 1);
@@ -1110,52 +1266,195 @@ int handleSaveStudentList(void) {
 
 int handleLoadStudentList(void) {
     winTermClearScreen();
+    
+    // Get available student files
+    char fileNames[20][256]; // Support up to 20 files
+    int fileCount = getStudentDataFileNames(fileNames, 20);
+    
+    if (fileCount == 0) {
+        printf("%s", UI_HEADER);
+        printf("╔═══════════════════════════════════════════════════════════════════╗\n");
+        printf("║                         NO FILES FOUND                           ║\n");
+        printf("╠═══════════════════════════════════════════════════════════════════╣\n");
+        printf("║                                                                   ║\n");
+        printf("║  No student data files were found in the data directory.          ║\n");
+        printf("║  Save some student lists first before trying to load them.        ║\n");
+        printf("║                                                                   ║\n");
+        printf("╚═══════════════════════════════════════════════════════════════════╝\n");
+        printf("%s", TXT_RESET);
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Ensure minimum menu height for consistent interface
+    const int MIN_MENU_OPTIONS = 10; // Minimum options to match standard interface height
+    int totalMenuOptions = (fileCount + 1 < MIN_MENU_OPTIONS) ? MIN_MENU_OPTIONS : fileCount + 1;
+    
+    // Create dynamic menu options based on available files
+    MenuOption* options = (MenuOption*)malloc(totalMenuOptions * sizeof(MenuOption));
+    if (!options) {
+        printf("Memory allocation failed!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Add file options to menu
+    for (int i = 0; i < fileCount; i++) {
+        options[i].key = '1' + i; // Keys 1, 2, 3, etc.
+        
+        // Create option text from filename (remove .dat extension)
+        char displayName[256];
+        strncpy(displayName, fileNames[i], 255);
+        displayName[255] = '\0';
+        
+        // Remove .dat extension for display
+        char* dotPos = strstr(displayName, ".dat");
+        if (dotPos) {
+            *dotPos = '\0';
+        }
+        
+        // Allocate memory for text and description
+        options[i].text = (char*)malloc(strlen(displayName) + 1);
+        options[i].description = (char*)malloc(strlen(fileNames[i]) + 50);
+        
+        if (options[i].text && options[i].description) {
+            strcpy((char*)options[i].text, displayName);
+            sprintf((char*)options[i].description, "Load student data from %s", fileNames[i]);
+        }
+        
+        options[i].isDisabled = false;
+        options[i].isSelected = false;
+        // Initialize color fields with correct names
+        options[i].highlightTextColor = 9;
+        options[i].highlightBgColor = 0;
+        options[i].textColor = 7;
+        options[i].bgColor = 0;
+        options[i].disabledTextColor = 8;
+        options[i].disabledBgColor = 0;
+        options[i].onSelect = NULL;
+    }
+    
+    // Add placeholder options if needed to maintain consistent height
+    for (int i = fileCount; i < totalMenuOptions - 1; i++) {
+        options[i].key = '\0'; // No key for placeholder
+        options[i].text = (char*)malloc(2);
+        options[i].description = (char*)malloc(30);
+        
+        if (options[i].text && options[i].description) {
+            strcpy((char*)options[i].text, "");
+            strcpy((char*)options[i].description, "");
+        }
+        
+        options[i].isDisabled = true; // Disable placeholder options
+        options[i].isSelected = false;
+        options[i].highlightTextColor = 8;
+        options[i].highlightBgColor = 0;
+        options[i].textColor = 8;
+        options[i].bgColor = 0;
+        options[i].disabledTextColor = 8;
+        options[i].disabledBgColor = 0;
+        options[i].onSelect = NULL;
+    }
+    
+    // Add "Cancel" option (always at the end)
+    int cancelIndex = totalMenuOptions - 1;
+    options[cancelIndex].key = 'C';
+    options[cancelIndex].text = (char*)malloc(20);
+    options[cancelIndex].description = (char*)malloc(50);
+    if (options[cancelIndex].text && options[cancelIndex].description) {
+        strcpy((char*)options[cancelIndex].text, "Cancel");
+        strcpy((char*)options[cancelIndex].description, "Return to Student Management menu");
+    }
+    options[cancelIndex].isDisabled = false;
+    options[cancelIndex].isSelected = false;
+    options[cancelIndex].highlightTextColor = 9;
+    options[cancelIndex].highlightBgColor = 0;
+    options[cancelIndex].textColor = 7;
+    options[cancelIndex].bgColor = 0;
+    options[cancelIndex].disabledTextColor = 8;
+    options[cancelIndex].disabledBgColor = 0;
+    options[cancelIndex].onSelect = NULL;
+    
+    // Create the file selection menu
+    Menu fileMenu = {1, "📂 Load Student List - Select File", options, totalMenuOptions};
+    
+    char choice = runMenuWithInterface(&fileMenu);
+    
+    char selectedFileName[256] = "";
+    int selectedIndex = -1;
+    
+    // Find which file was selected
+    if (choice >= '1' && choice <= '9') {
+        selectedIndex = choice - '1';
+        if (selectedIndex < fileCount) {
+            strcpy(selectedFileName, fileNames[selectedIndex]);
+        }
+    } else if (choice == 'C' || choice == 'c') {
+        // User cancelled
+        // Free allocated memory
+        for (int i = 0; i < totalMenuOptions; i++) {
+            free((char*)options[i].text);
+            free((char*)options[i].description);
+        }
+        free(options);
+        return 0;
+    }
+    
+    // Free allocated memory
+    for (int i = 0; i < totalMenuOptions; i++) {
+        free((char*)options[i].text);
+        free((char*)options[i].description);
+    }
+    free(options);
+    
+    if (selectedFileName[0] == '\0') {
+        printf("Invalid selection!\n");
+        printf("Press any key to continue...");
+        _getch();
+        return -1;
+    }
+    
+    // Now get the list name using the beautiful interface
+    winTermClearScreen();
     printf("%s", UI_HEADER);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
     
-    // Calculate visible text length for centering
-    char headerText7[] = "Load Student List";
-    int boxWidth7 = 69; // Total width including borders
-    int borderSpace7 = 2; // Space for "║" on each side
-    int availableSpace7 = boxWidth7 - borderSpace7;
-    int headerLen7 = strlen(headerText7);
-    int leftPadding7 = (availableSpace7 - headerLen7) / 2;
-    int rightPadding7 = availableSpace7 - headerLen7 - leftPadding7;
+    char headerText[] = "Load Student List - Enter Name";
+    int boxWidth = 69;
+    int borderSpace = 2;
+    int availableSpace = boxWidth - borderSpace;
+    int headerLen = strlen(headerText);
+    int leftPadding = (availableSpace - headerLen) / 2;
+    int rightPadding = availableSpace - headerLen - leftPadding;
     
     printf("║");
-    for (int i = 0; i < leftPadding7; i++) printf(" ");
-    printf("%s%s%s", TXT_BOLD, headerText7, TXT_RESET UI_HEADER);
-    for (int i = 0; i < rightPadding7; i++) printf(" ");
+    for (int i = 0; i < leftPadding; i++) printf(" ");
+    printf("%s%s%s", TXT_BOLD, headerText, TXT_RESET UI_HEADER);
+    for (int i = 0; i < rightPadding; i++) printf(" ");
     printf("║\n");
     
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     printf("%s\n", TXT_RESET);
     
-    // List available student data files
-    printf("%s📁 Available Student Data Files:%s\n", UI_INFO, TXT_RESET);
-    printf("─────────────────────────────────────\n");
-    listStudentDataFiles();
-    printf("─────────────────────────────────────\n\n");
+    printf("%s📁 Selected file: %s%s%s\n\n", UI_INFO, UI_HIGHLIGHT, selectedFileName, TXT_RESET);
     
-    char filename[100];
     char listName[50];
-    appFormField fields[] = {
-        { "📂 Enter filename to load: ", filename, 100, IV_MAX_LEN, {.rangeInt = {.min = 0, .max = 99}} },
-        { "📝 Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} }
-    };
-    appGetValidatedInput(fields, 2);
+    appFormField field = { "📝 Enter name for this loaded list: ", listName, 50, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = 49}} };
+    appGetValidatedInput(&field, 1);
     
     // Load the data
-    list* newList = loadListWithName(filename, "student", SINGLY);
+    list* newList = loadListWithName(selectedFileName, "student", SINGLY);
     if (!newList) {
-        printf("%s❌ Failed to load student data from file '%s'!%s\n", UI_ERROR, filename, TXT_RESET);
+        printf("%s❌ Failed to load student data from file '%s'!%s\n", UI_ERROR, selectedFileName, TXT_RESET);
         printf("%sPlease make sure the file exists and is in the correct format.%s\n", UI_WARNING, TXT_RESET);
         printf("Press any key to continue...");
         _getch();
         return -1;
     }
     
-    // Add to manager
+    // Check if we can add another list
     if (stuManager.studentListCount >= 10) {
         printf("%s⚠️  Maximum number of student lists reached!%s\n", UI_WARNING, TXT_RESET);
         destroyList(&newList, freeStudent);
@@ -1164,6 +1463,7 @@ int handleLoadStudentList(void) {
         return -1;
     }
     
+    // Add to manager
     stuManager.studentLists[stuManager.studentListCount] = newList;
     strncpy(stuManager.studentListNames[stuManager.studentListCount], listName, 49);
     stuManager.studentListNames[stuManager.studentListCount][49] = '\0';
@@ -1171,7 +1471,7 @@ int handleLoadStudentList(void) {
     stuManager.studentListCount++;
     
     printf("%s✅ Student list '%s' loaded successfully!%s\n", UI_SUCCESS, listName, TXT_RESET);
-    printf("%s📊 Loaded %d student records.%s\n", UI_INFO, newList->size, TXT_RESET);
+    printf("%s📊 Loaded %d student records from %s.%s\n", UI_INFO, newList->size, selectedFileName, TXT_RESET);
     printf("%sThis list is now active.%s\n", UI_INFO, TXT_RESET);
     printf("Press any key to continue...");
     _getch();

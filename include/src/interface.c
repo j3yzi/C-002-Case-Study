@@ -253,17 +253,28 @@ void displayMenuHeader(const Menu* menu, int consoleWidth, int totalMenuNameWidt
     printf("║");
     
     int menuNameLength = strlen(menu->name);
-    // Calculate padding to center the menu name
-    int namePadding = (totalMenuNameWidth - 2 - menuNameLength) / 2;
+    int availableSpace = totalMenuNameWidth - 2; // Space between borders
     
-    for (int i = 0; i < namePadding; i++) {
+    // Ensure menu name doesn't exceed available space
+    if (menuNameLength > availableSpace) {
+        menuNameLength = availableSpace;
+    }
+    
+    // Calculate padding to center the menu name
+    int leftPadding = (availableSpace - menuNameLength) / 2;
+    int rightPadding = availableSpace - menuNameLength - leftPadding;
+    
+    // Add left padding
+    for (int i = 0; i < leftPadding; i++) {
         printf(" ");
     }
     
-    printf("%s", menu->name);
+    // Print menu name (truncated if necessary)
+    for (int i = 0; i < menuNameLength; i++) {
+        printf("%c", menu->name[i]);
+    }
     
-    // Add extra padding if needed for odd-length names
-    int rightPadding = totalMenuNameWidth - 2 - menuNameLength - namePadding;
+    // Add right padding to fill exactly to the border
     for (int i = 0; i < rightPadding; i++) {
         printf(" ");
     }
@@ -686,8 +697,18 @@ void updateEmployeeMenuStates(Menu* menu) {
     // Apply generic state rules
     updateMenuOptionStates(menu, hasActiveList, hasEmployees, hasMultipleLists);
     
-    // Employee-specific overrides can be added here
-    // For example, payroll reports might have special requirements
+    // Employee-specific overrides
+    for (int i = 0; i < menu->optionCount; i++) {
+        // Employee Table View (key 'T') - requires active list
+        if (menu->options[i].key == 'T' || menu->options[i].key == 't') {
+            menu->options[i].isDisabled = !hasActiveList;
+        }
+        // Payroll reports might have special requirements
+        else if (menu->options[i].key == '8') {
+            // Payroll report needs active list with employees
+            menu->options[i].isDisabled = !hasEmployees;
+        }
+    }
 }
 
 /**

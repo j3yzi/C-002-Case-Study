@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "data.h"
 #include "../../include/models/employee.h"
 #include "../../include/models/student.h"
@@ -501,6 +504,39 @@ int listEmployeeDataFiles(void) {
     return 1;
 }
 
+int getEmployeeDataFileNames(char fileNames[][256], int maxFiles) {
+    if (!fileNames || maxFiles <= 0) {
+        return 0;
+    }
+    
+    createDataDirectory();
+    
+    // Construct the search path
+    char searchPath[512];
+    snprintf(searchPath, sizeof(searchPath), "data\\*employee*.dat");
+    
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile(searchPath, &findFileData);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return 0; // No files found
+    }
+    
+    int fileCount = 0;
+    
+    do {
+        // Skip directories and ensure we don't exceed maxFiles
+        if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileCount < maxFiles) {
+            strncpy(fileNames[fileCount], findFileData.cFileName, 255);
+            fileNames[fileCount][255] = '\0'; // Ensure null termination
+            fileCount++;
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0 && fileCount < maxFiles);
+    
+    FindClose(hFind);
+    return fileCount;
+}
+
 int listStudentDataFiles(void) {
     printf("=== Available Student Data Files ===\n");
     int result = appListFiles("data", "*student*.dat");
@@ -509,6 +545,39 @@ int listStudentDataFiles(void) {
         return 0;
     }
     return 1;
+}
+
+int getStudentDataFileNames(char fileNames[][256], int maxFiles) {
+    if (!fileNames || maxFiles <= 0) {
+        return 0;
+    }
+    
+    createDataDirectory();
+    
+    // Construct the search path
+    char searchPath[512];
+    snprintf(searchPath, sizeof(searchPath), "data\\*student*.dat");
+    
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile(searchPath, &findFileData);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return 0; // No files found
+    }
+    
+    int fileCount = 0;
+    
+    do {
+        // Skip directories and ensure we don't exceed maxFiles
+        if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileCount < maxFiles) {
+            strncpy(fileNames[fileCount], findFileData.cFileName, 255);
+            fileNames[fileCount][255] = '\0'; // Ensure null termination
+            fileCount++;
+        }
+    } while (FindNextFile(hFind, &findFileData) != 0 && fileCount < maxFiles);
+    
+    FindClose(hFind);
+    return fileCount;
 }
 
 int saveListWithCustomName(list* dataList, const char* listName, const char* dataType) {

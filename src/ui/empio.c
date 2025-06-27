@@ -876,15 +876,8 @@ void handleDisplayEmployeeTable() {
     }
     
     list* employeeList = empManager.employeeLists[empManager.activeEmployeeList];
-    
-    printf("Loading Employee Table View...\n");
-    printf("Press any key to continue...");
-    _getch();
-    
+
     // Run the interactive table view
     runEmployeeTableView(employeeList);
     
-    printf("\nTable view closed.\n");
-    printf("Press any key to continue...");
-    _getch();
 } 
