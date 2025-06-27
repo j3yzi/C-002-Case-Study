@@ -42,6 +42,7 @@ typedef enum {
 } YearLevel;
 
 typedef enum {
+    acadDeansLister, // New academic standing for Dean's List (≥ 90 final grade)
     acadRegular,
     acadProbation
 } AcademicStanding;

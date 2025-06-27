@@ -276,6 +276,15 @@ void calculateFinalGrade(Student* student) {
     } else {
         strcpy(student->academic.remarks, "Failed");
     }
+
+    // Determine academic standing
+    if (student->academic.finalGrade >= 90.0f) {
+        student->standing = acadDeansLister;
+    } else if (student->academic.finalGrade >= getPassingGrade()) {
+        student->standing = acadRegular;
+    } else {
+        student->standing = acadProbation;
+    }
 }
 
 /**
@@ -378,7 +387,7 @@ void displayStudentDetails(const Student* student) {
     printf("Final Exam Grade: %.2f\n", student->academic.finalExamGrade);
     printf("Final Grade: %.2f\n", student->academic.finalGrade);
     printf("Remarks: %s\n", student->academic.remarks);
-    printf("Academic Standing: %s\n", (student->standing == acadRegular) ? "Regular" : "Probation");
+    printf("Academic Standing: %s\n", (student->standing == acadDeansLister) ? "Dean's Lister" : (student->standing == acadRegular) ? "Regular" : "Probation");
 }
 
 /**

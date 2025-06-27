@@ -526,7 +526,7 @@ int runEmployeeManagement(void) {
                 handleSwitchEmployeeList();
                 break;
             case '3':
-                handleAddEmployee();
+                handleAddEmployeeMenu();
                 break;
             case '4': {
                 extern int handleEditEmployee(list* employeeList);
@@ -1995,5 +1995,58 @@ int handleResetConfiguration(const char* configPath) {
     }
     
     waitForKeypress("\nPress any key to continue...");
+    return 0;
+} 
+
+int handleAddEmployeeMenu(void) {
+    // Ensure there is an active employee list in the manager
+    int hasActiveList = (empManager.activeEmployeeList >= 0 && empManager.employeeLists[empManager.activeEmployeeList]);
+    if (!checkActiveList(hasActiveList, 0, "No active employee list!")) {
+        return -1;
+    }
+
+    char choice;
+    Menu addEmpMenu = {1, "Add Employees", (MenuOption[]){
+        {'1', "Add an Employee", "Add a single employee to the active list", false, false, 9,0,7,0,8,0,NULL},
+        {'2', "Add 5 Employees", "Add five employees in succession", false, false, 9,0,7,0,8,0,NULL},
+        {'3', "Add N Employees", "Specify a custom number of employees to add", false, false, 9,0,7,0,8,0,NULL},
+        {'B', "Back", "Return to Employee Management menu", false, false, 9,0,7,0,8,0,NULL}
+    }, 4};
+
+    do {
+        choice = runMenuWithInterface(&addEmpMenu);
+        switch(choice) {
+            case '1':
+                handleAddEmployee();
+                break;
+            case '2': {
+                for (int i = 0; i < 5; i++) {
+                    if (handleAddEmployee() != 0) {
+                        // If user cancels, stop the loop
+                        break;
+                    }
+                }
+                break;
+            }
+            case '3': {
+                char numBuf[6] = "";
+                appFormField fld = { "Enter number of employees to add (1-100): ", numBuf, sizeof(numBuf), IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 100}} };
+                appGetValidatedInput(&fld, 1);
+                int n = atoi(numBuf);
+                for (int i = 0; i < n; i++) {
+                    if (handleAddEmployee() != 0) {
+                        // Stop if user cancels
+                        break;
+                    }
+                }
+                break;
+            }
+            case 'B':
+            case 'b':
+                return 0;
+            default:
+                break;
+        }
+    } while (1);
     return 0;
 } 

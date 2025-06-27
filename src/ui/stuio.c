@@ -175,9 +175,6 @@ int getStudentDataFromUser(Student* newStudent) {
     // Calculate final grade and set remarks
     calculateFinalGrade(newStudent);
 
-    // Set default academic standing
-    newStudent->standing = acadRegular;
-
     printf("\n%s", UI_INFO);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
     printf("║              %s📚 Student Information Summary 📚%s                    ║\n", TXT_BOLD, TXT_RESET UI_INFO);
