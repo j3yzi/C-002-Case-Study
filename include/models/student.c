@@ -382,60 +382,155 @@ void displayStudentDetails(const Student* student) {
 }
 
 /**
- * @brief Displays all students in tabular format.
+ * @brief Displays all students in a professional academic records format.
  * @param studentList Pointer to the student list.
  */
 void displayAllStudents(const list* studentList) {
-    if (!studentList || !studentList->head || studentList->size == 0) {
-        printf("No students to display.\n");
+    if (!studentList) {
+        printf("No student list available.\n");
         return;
     }
     
-    printf("%-12s | %-25s | %-8s | %-4s | %-11s | %-7s\n",
-           "Student No.", "Full Name", "Program", "Year", "Final Grade", "Remarks");
-    printf("------------------------------------------------------------------------------\n");
+    if (!studentList->head || studentList->size == 0) {
+        printf("No students to display. The list is empty.\n");
+        return;
+    }
+
+    // Get console dimensions for centering
+    extern void getConsoleSize(int* width, int* height);
+    int consoleWidth, consoleHeight;
+    getConsoleSize(&consoleWidth, &consoleHeight);
     
+    // Calculate the width of our academic records report
+    int reportWidth = 105; // Total width of our formatted table
+    int margin = (consoleWidth - reportWidth) / 2;
+    if (margin < 0) margin = 0;
+
+    // Clear screen and display professional header (centered)
+    printf("\n");
+    
+    // Center the university name
+    const char* univName = "POLYTECHNIC UNIVERSITY OF THE PHILIPPINES - QUEZON CITY";
+    int univNameLen = strlen(univName);
+    int univMargin = (consoleWidth - univNameLen) / 2;
+    if (univMargin < 0) univMargin = 0;
+    printf("%*s%s\n", univMargin, "", univName);
+    
+    // Center the academic year subtitle
+    const char* academicYear = "Academic Records - AY 2024-2025";
+    int academicYearLen = strlen(academicYear);
+    int academicMargin = (consoleWidth - academicYearLen) / 2;
+    if (academicMargin < 0) academicMargin = 0;
+    printf("%*s%s\n", academicMargin, "", academicYear);
+    
+    printf("\n");
+
+    // Table header with proper formatting (centered)
+    printf("%*s%-12s  %-25s  %-8s  %-4s  %-11s  %-7s\n", 
+           margin, "",
+           "Student No.", "Full Name", "Course", "Year", "Final Grade", "Remarks");
+    
+    // Separator line (centered)
+    printf("%*s", margin, "");
+    printf("─────────────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+
     node* current = studentList->head;
     int count = 0;
+    float totalGrades = 0.0f;
+    int passedCount = 0;
+    int failedCount = 0;
     
+    // For non-circular lists
     if (studentList->type == SINGLY || studentList->type == DOUBLY) {
-        // Non-circular lists
         while (current != NULL && count < studentList->size) {
             Student* student = (Student*)current->data;
             if (student) {
-                printf("%-12s | %-25s | %-8s | %-4d | %11.2f | %-7s\n",
+                printf("%*s%-12s  %-25s  %-8s  %-4d  %11.2f  %-7s\n", 
+                       margin, "",
                        student->personal.studentNumber,
                        student->personal.name.fullName,
                        student->personal.programCode,
                        student->personal.yearLevel,
                        student->academic.finalGrade,
                        student->academic.remarks);
+                
+                // Add to statistics
+                totalGrades += student->academic.finalGrade;
+                if (strcmp(student->academic.remarks, "Passed") == 0) {
+                    passedCount++;
+                } else {
+                    failedCount++;
+                }
                 count++;
             }
             current = current->next;
         }
-    } else {
-        // Circular lists
+    } 
+    // For circular lists
+    else {
         if (current != NULL) {
             do {
                 Student* student = (Student*)current->data;
                 if (student) {
-                    printf("%-12s | %-25s | %-8s | %-4d | %11.2f | %-7s\n",
+                    printf("%*s%-12s  %-25s  %-8s  %-4d  %11.2f  %-7s\n", 
+                           margin, "",
                            student->personal.studentNumber,
                            student->personal.name.fullName,
                            student->personal.programCode,
                            student->personal.yearLevel,
                            student->academic.finalGrade,
                            student->academic.remarks);
+                    
+                    // Add to statistics
+                    totalGrades += student->academic.finalGrade;
+                    if (strcmp(student->academic.remarks, "Passed") == 0) {
+                        passedCount++;
+                    } else {
+                        failedCount++;
+                    }
                     count++;
                 }
                 current = current->next;
-            } while (current != studentList->head && count < studentList->size);
+                
+                // Safety check to prevent infinite loops
+                if (count >= studentList->size) {
+                    break;
+                }
+            } while (current != NULL && current != studentList->head);
         }
     }
+
+    // Footer separator (centered)
+    printf("%*s", margin, "");
+    printf("─────────────────────────────────────────────────────────────────────────────────────────────────────────────\n");
     
-    printf("------------------------------------------------------------------------------\n");
-    printf("Total students: %d\n", count);
+    // Display statistics if we have students (centered)
+    if (count > 0) {
+        float averageGrade = totalGrades / count;
+        printf("%*s%-50s  %11.2f\n", 
+               margin, "",
+               "AVERAGE GRADE:", 
+               averageGrade);
+        printf("%*s", margin, "");
+        printf("─────────────────────────────────────────────────────────────────────────────────────────────────────────────\n");
+    }
+    
+    // Center the summary statistics
+    char summaryText[100];
+    snprintf(summaryText, sizeof(summaryText), "Total students: %d | Passed: %d | Failed: %d", count, passedCount, failedCount);
+    int summaryLen = strlen(summaryText);
+    int summaryMargin = (consoleWidth - summaryLen) / 2;
+    if (summaryMargin < 0) summaryMargin = 0;
+    printf("%*s%s\n", summaryMargin, "", summaryText);
+    
+    if (count == 0) {
+        char noteText[100];
+        snprintf(noteText, sizeof(noteText), "Note: List has %d entries but no valid student data found.", studentList->size);
+        int noteLen = strlen(noteText);
+        int noteMargin = (consoleWidth - noteLen) / 2;
+        if (noteMargin < 0) noteMargin = 0;
+        printf("%*s%s\n", noteMargin, "", noteText);
+    }
 }
 
 /**
