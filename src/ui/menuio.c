@@ -1059,7 +1059,7 @@ int handleLoadEmployeeList(void) {
     options[cancelIndex].onSelect = NULL;
     
     // Create the file selection menu
-    Menu fileMenu = {1, "📂 Load Employee List - Select File  ", options, totalMenuOptions};
+    Menu fileMenu = {1, "📂 Load Employee List - Select File    ", options, totalMenuOptions};
     
     char choice = runMenuWithInterface(&fileMenu);
     
@@ -1510,7 +1510,7 @@ int handleLoadStudentList(void) {
     options[cancelIndex].onSelect = NULL;
     
     // Create the file selection menu
-    Menu fileMenu = {1, "📂 Load Student List - Select File  ", options, totalMenuOptions};
+    Menu fileMenu = {1, "📂 Load Student List - Select File    ", options, totalMenuOptions};
     
     char choice = runMenuWithInterface(&fileMenu);
     
@@ -1627,7 +1627,8 @@ int handleSwitchEmployeeList(void) {
 
     // Build dynamic menu options
     int listCount = empManager.employeeListCount;
-    MenuOption* opts = malloc(sizeof(MenuOption) * (listCount + 1));
+    int displayCount = (listCount < 5) ? 5 : listCount; // ensure min height of 5 options
+    MenuOption* opts = malloc(sizeof(MenuOption) * (displayCount + 1));
     if (!opts) return -1;
 
     for (int i = 0; i < listCount; ++i) {
@@ -1639,9 +1640,16 @@ int handleSwitchEmployeeList(void) {
         opts[i].description = desc;
         opts[i].isDisabled = (i == empManager.activeEmployeeList);
     }
-    opts[listCount] = (MenuOption){ .key = 27, .text = "Back", .description = "Return to previous menu", .isDisabled = false };
+    // pad remaining placeholders
+    for (int i = listCount; i < displayCount; ++i) {
+        opts[i].key = '\0';
+        opts[i].text = "";
+        opts[i].description = "";
+        opts[i].isDisabled = true;
+    }
+    opts[displayCount] = (MenuOption){ .key = 27, .text = "Back", .description = "Return", .isDisabled = false };
 
-    Menu switchMenu = {1, "Switch Employee List", opts, listCount + 1};
+    Menu switchMenu = {1, "Switch Employee List", opts, displayCount + 1};
 
     char sel = runMenuWithInterface(&switchMenu);
 
@@ -1672,7 +1680,8 @@ int handleSwitchStudentList(void) {
     }
 
     int listCount = stuManager.studentListCount;
-    MenuOption* opts = malloc(sizeof(MenuOption) * (listCount + 1));
+    int displayCount = (listCount < 5) ? 5 : listCount;
+    MenuOption* opts = malloc(sizeof(MenuOption) * (displayCount + 1));
     if (!opts) return -1;
 
     for (int i = 0; i < listCount; ++i) {
@@ -1684,9 +1693,15 @@ int handleSwitchStudentList(void) {
         opts[i].description = desc;
         opts[i].isDisabled = (i == stuManager.activeStudentList);
     }
-    opts[listCount] = (MenuOption){ .key = 27, .text = "Back", .description = "Return to previous menu", .isDisabled = false };
+    for (int i = listCount; i < displayCount; ++i) {
+        opts[i].key = '\0';
+        opts[i].text = "";
+        opts[i].description = "";
+        opts[i].isDisabled = true;
+    }
+    opts[displayCount] = (MenuOption){ .key = 27, .text = "Back", .description = "Return", .isDisabled = false };
 
-    Menu switchMenu = {1, "Switch Student List", opts, listCount + 1};
+    Menu switchMenu = {1, "Switch Student List", opts, displayCount + 1};
     char sel = runMenuWithInterface(&switchMenu);
     free(opts);
 
