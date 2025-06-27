@@ -382,21 +382,46 @@ int handleEditCourse(void) {
         return -1;
     }
     
-    // Display all courses for reference
-    displayAllCourses(&courseMgr.catalog);
+    int shouldContinue = 1;
+    Course* course = NULL;
     
-    // Get course code to edit
-    char courseCode[courseCodeLen];
-    appFormField field = { "\nEnter course code to edit: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
-    appGetValidatedInput(&field, 1);
-    
-    // Find the course
-    Course* course = findCourseByCode(&courseMgr.catalog, courseCode);
-    if (!course) {
-        printf("Course with code '%s' not found!\n", courseCode);
-        waitForKeypress(NULL);
-        return -1;
-    }
+    do {
+        // Display all courses for reference
+        winTermClearScreen();
+        printf("=== Edit Course ===\n\n");
+        displayAllCourses(&courseMgr.catalog);
+        
+        // Get course code to edit
+        char courseCode[courseCodeLen];
+        appFormField field = { "\nEnter course code to edit: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
+        appGetValidatedInput(&field, 1);
+        
+        // Find the course
+        course = findCourseByCode(&courseMgr.catalog, courseCode);
+        if (!course) {
+            printf("\n❌ Course with code '%s' not found!\n", courseCode);
+            printf("\nWhat would you like to do?\n");
+            printf("1. Try again with a different course code\n");
+            printf("2. View all courses again\n");
+            printf("3. Back to Course Menu\n");
+            printf("\nSelect an option (1-3): ");
+            
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            switch (choice) {
+                case '1':
+                    continue; // Loop to try again
+                case '2':
+                    continue; // Loop back to show courses and try again
+                case '3':
+                default:
+                    return -1; // Exit to course menu
+            }
+        } else {
+            shouldContinue = 0; // Found course, exit loop
+        }
+    } while (shouldContinue);
     
     // Display current course details
     printf("\nCurrent course details:\n");
@@ -414,7 +439,7 @@ int handleEditCourse(void) {
     }
     
     // Update the course
-    if (updateCourse(&courseMgr.catalog, courseCode, &updatedCourse) != 0) {
+    if (updateCourse(&courseMgr.catalog, course->code, &updatedCourse) != 0) {
         printf("Failed to update course! Course code may already exist.\n");
         waitForKeypress(NULL);
         return -1;
@@ -506,19 +531,46 @@ int handleSearchCourses(void) {
     
     if (choice == 1) {
         // Search by course code
-        char courseCode[courseCodeLen];
-        appFormField field = { "Enter course code to search: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
-        appGetValidatedInput(&field, 1);
+        int shouldContinue = 1;
         
-        Course* course = findCourseByCode(&courseMgr.catalog, courseCode);
-        if (!course) {
-            printf("Course with code '%s' not found!\n", courseCode);
-            waitForKeypress(NULL);
-            return -1;
-        }
-        
-        printf("\nSearch Results:\n");
-        displayCourseDetails(course);
+        do {
+            char courseCode[courseCodeLen];
+            appFormField field = { "Enter course code to search: ", courseCode, courseCodeLen, IV_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 1}} };
+            appGetValidatedInput(&field, 1);
+            
+            Course* course = findCourseByCode(&courseMgr.catalog, courseCode);
+            if (!course) {
+                printf("\n❌ Course with code '%s' not found!\n", courseCode);
+                printf("\nWhat would you like to do?\n");
+                printf("1. Try again with a different course code\n");
+                printf("2. View all courses\n");
+                printf("3. Back to Search Menu\n");
+                printf("\nSelect an option (1-3): ");
+                
+                char choice = _getch();
+                printf("%c\n", choice);
+                
+                switch (choice) {
+                    case '1':
+                        continue; // Loop to try again
+                    case '2':
+                        winTermClearScreen();
+                        printf("=== All Courses ===\n\n");
+                        displayAllCourses(&courseMgr.catalog);
+                        printf("\nPress any key to continue...");
+                        _getch();
+                        continue; // Loop back to search prompt
+                    case '3':
+                    default:
+                        shouldContinue = 0; // Exit to search menu
+                        break;
+                }
+            } else {
+                printf("\nSearch Results:\n");
+                displayCourseDetails(course);
+                shouldContinue = 0; // Found course, exit loop
+            }
+        } while (shouldContinue);
     }
     else if (choice == 2) {
         // Search by course name

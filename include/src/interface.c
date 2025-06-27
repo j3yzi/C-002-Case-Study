@@ -126,7 +126,15 @@ void updateMenuSelection(const Menu* menu, int prevSelected, int newSelected, in
         for (int j = 0; j < paddingX; j++) {
             printf(" ");
         }
-        printf("%s", menu->options[prevSelected].text);
+        
+        if (menu->options[prevSelected].isDisabled) {
+            // Display disabled option in grey/dim color
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY);
+            printf("%s", menu->options[prevSelected].text);
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        } else {
+            printf("%s", menu->options[prevSelected].text);
+        }
         
         // Calculate remaining space in the box
         int remainingSpace = totalOptionBoxWidth - 2 - paddingX - optionTextLength;
@@ -144,14 +152,28 @@ void updateMenuSelection(const Menu* menu, int prevSelected, int newSelected, in
         for (int j = 0; j < paddingX; j++) {
             printf(" ");
         }
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-        printf("→ %s", menu->options[newSelected].text);
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         
-        // Calculate remaining space in the box
-        int remainingSpace = totalOptionBoxWidth - 2 - paddingX - optionTextLength - 2;
-        for (int j = 0; j < remainingSpace; j++) {
-            printf(" ");
+        if (menu->options[newSelected].isDisabled) {
+            // Display disabled selected option in grey/dim with arrow
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY);
+            printf("→ %s", menu->options[newSelected].text);
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            
+            // Calculate remaining space in the box
+            int remainingSpace = totalOptionBoxWidth - 2 - paddingX - optionTextLength - 2;
+            for (int j = 0; j < remainingSpace; j++) {
+                printf(" ");
+            }
+        } else {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
+            printf("→ %s", menu->options[newSelected].text);
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            
+            // Calculate remaining space in the box
+            int remainingSpace = totalOptionBoxWidth - 2 - paddingX - optionTextLength - 2;
+            for (int j = 0; j < remainingSpace; j++) {
+                printf(" ");
+            }
         }
         printf("║");
         
@@ -283,7 +305,26 @@ void displayMenuOptions(const Menu* menu, int consoleWidth, int totalMenuNameWid
             printf(" ");
         }
         
-        if (i == selected) {
+        if (menu->options[i].isDisabled) {
+            // Display disabled option in grey/dim color
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY);
+            if (i == selected) {
+                printf("→ %s", menu->options[i].text);
+                // Calculate remaining space in the box
+                int remainingSpace = totalOptionBoxWidth - 2 - paddingX - optionTextLength - 2;
+                for (int j = 0; j < remainingSpace; j++) {
+                    printf(" ");
+                }
+            } else {
+                printf("%s", menu->options[i].text);
+                // Calculate remaining space in the box
+                int remainingSpace = totalOptionBoxWidth - 2 - paddingX - optionTextLength;
+                for (int j = 0; j < remainingSpace; j++) {
+                    printf(" ");
+                }
+            }
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        } else if (i == selected) {
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
             printf("→ %s", menu->options[i].text);
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -294,7 +335,7 @@ void displayMenuOptions(const Menu* menu, int consoleWidth, int totalMenuNameWid
                 printf(" ");
             }
         } else {
-            // Display text without arrow
+            // Display normal text without arrow
             printf("%s", menu->options[i].text);
             
             // Calculate remaining space in the box

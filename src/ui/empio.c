@@ -172,32 +172,94 @@ int handleSearchEmployee(const list* employeeList) {
     
     switch (choice) {
         case '1': {
-            char empNumber[employeeNumberLen];
-            printf("=== Search by Employee Number ===\n");
-            if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) == 0) {
-                Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
-                if (emp) {
-                    printf("\n=== Employee Found ===\n");
-                    displayEmployeeDetails(emp);
+            int shouldContinue = 1;
+            
+            do {
+                winTermClearScreen();
+                char empNumber[employeeNumberLen];
+                printf("=== Search by Employee Number ===\n");
+                if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) == 0) {
+                    Employee* emp = searchEmployeeByNumber(employeeList, empNumber);
+                    if (emp) {
+                        printf("\n=== Employee Found ===\n");
+                        displayEmployeeDetails(emp);
+                        shouldContinue = 0;
+                    } else {
+                        printf("\n❌ Employee with number '%s' not found.\n", empNumber);
+                        printf("\nWhat would you like to do?\n");
+                        printf("1. Try again with a different number\n");
+                        printf("2. View all employees\n");
+                        printf("3. Back to Search Menu\n");
+                        printf("\nSelect an option (1-3): ");
+                        
+                        char choice = _getch();
+                        printf("%c\n", choice);
+                        
+                        switch (choice) {
+                            case '1':
+                                continue; // Loop to try again
+                            case '2':
+                                winTermClearScreen();
+                                printf("=== All Employees ===\n\n");
+                                displayAllEmployees(employeeList);
+                                printf("\nPress any key to continue...");
+                                _getch();
+                                continue; // Loop back to search prompt
+                            case '3':
+                            default:
+                                shouldContinue = 0; // Exit to search menu
+                                break;
+                        }
+                    }
                 } else {
-                    printf("\nEmployee with number '%s' not found.\n", empNumber);
+                    shouldContinue = 0;
                 }
-            }
+            } while (shouldContinue);
             break;
         }
         case '2': {
-            char fullName[employeeNameLen];
-            printf("=== Search by Name ===\n");
-            appFormField field = { "Enter Full Name: ", fullName, employeeNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeNameLen - 1}} };
-            appGetValidatedInput(&field, 1);
+            int shouldContinue = 1;
             
-            Employee* emp = searchEmployeeByName(employeeList, fullName);
-            if (emp) {
-                printf("\n=== Employee Found ===\n");
-                displayEmployeeDetails(emp);
-            } else {
-                printf("\nEmployee with name '%s' not found.\n", fullName);
-            }
+            do {
+                winTermClearScreen();
+                char fullName[employeeNameLen];
+                printf("=== Search by Name ===\n");
+                appFormField field = { "Enter Full Name: ", fullName, employeeNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = employeeNameLen - 1}} };
+                appGetValidatedInput(&field, 1);
+                
+                Employee* emp = searchEmployeeByName(employeeList, fullName);
+                if (emp) {
+                    printf("\n=== Employee Found ===\n");
+                    displayEmployeeDetails(emp);
+                    shouldContinue = 0;
+                } else {
+                    printf("\n❌ Employee with name '%s' not found.\n", fullName);
+                    printf("\nWhat would you like to do?\n");
+                    printf("1. Try again with a different name\n");
+                    printf("2. View all employees\n");
+                    printf("3. Back to Search Menu\n");
+                    printf("\nSelect an option (1-3): ");
+                    
+                    char choice = _getch();
+                    printf("%c\n", choice);
+                    
+                    switch (choice) {
+                        case '1':
+                            continue; // Loop to try again
+                        case '2':
+                            winTermClearScreen();
+                            printf("=== All Employees ===\n\n");
+                            displayAllEmployees(employeeList);
+                            printf("\nPress any key to continue...");
+                            _getch();
+                            continue; // Loop back to search prompt
+                        case '3':
+                        default:
+                            shouldContinue = 0; // Exit to search menu
+                            break;
+                    }
+                }
+            } while (shouldContinue);
             break;
         }
         case '3':
@@ -233,30 +295,51 @@ int handleEditEmployee(list* employeeList) {
         return -1;
     }
     
+    int shouldContinue = 1;
+    Employee* existingEmp = NULL;
+    
+    do {
+        winTermClearScreen();
+        printf("=== Edit Employee ===\n\n");
+        printf("Current employees in the list:\n");
+        printf("═══════════════════════════════════════════════════════════════════\n");
+        displayAllEmployees(employeeList);
+        printf("═══════════════════════════════════════════════════════════════════\n\n");
+        
+        char empNumber[employeeNumberLen];
+        printf("Which employee would you like to edit?\n");
+        if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) != 0) {
+            return -1;
+        }
+        
+        existingEmp = searchEmployeeByNumber(employeeList, empNumber);
+        if (!existingEmp) {
+            printf("\n❌ Employee with number '%s' not found.\n", empNumber);
+            printf("\nWhat would you like to do?\n");
+            printf("1. Try again with a different employee number\n");
+            printf("2. View all employees again\n");
+            printf("3. Back to Employee Menu\n");
+            printf("\nSelect an option (1-3): ");
+            
+            char choice = _getch();
+            printf("%c\n", choice);
+            
+            switch (choice) {
+                case '1':
+                    continue; // Loop to try again
+                case '2':
+                    continue; // Loop back to show employees and try again
+                case '3':
+                default:
+                    return -1; // Exit to employee menu
+            }
+        } else {
+            shouldContinue = 0; // Found employee, exit loop
+        }
+    } while (shouldContinue);
+    
     winTermClearScreen();
-    printf("=== Edit Employee ===\n\n");
-    printf("Current employees in the list:\n");
-    printf("═══════════════════════════════════════════════════════════════════\n");
-    displayAllEmployees(employeeList);
-    printf("═══════════════════════════════════════════════════════════════════\n\n");
-    
-    char empNumber[employeeNumberLen];
-    printf("Which employee would you like to edit?\n");
-    if (getEmployeeNumberFromUser(empNumber, employeeNumberLen) != 0) {
-        return -1;
-    }
-    
-    Employee* existingEmp = searchEmployeeByNumber(employeeList, empNumber);
-    if (!existingEmp) {
-        printf("\n❌ Employee with number '%s' not found.\n", empNumber);
-        printf("Please check the employee number and try again.\n");
-        printf("Press any key to continue...");
-        _getch();
-        return -1;
-    }
-    
-    winTermClearScreen();
-    printf("=== Edit Employee: %s ===\n\n", empNumber);
+    printf("=== Edit Employee: %s ===\n\n", existingEmp->personal.employeeNumber);
     printf("Current Employee Information:\n");
     printf("═══════════════════════════════════════════════════════════════════\n");
     displayEmployeeDetails(existingEmp);
@@ -272,7 +355,7 @@ int handleEditEmployee(list* employeeList) {
         if (updateEmployeeData(existingEmp, &newData) == 0) {
             winTermClearScreen();
             printf("=== Employee Update Successful ===\n\n");
-            printf("✅ Employee '%s' has been updated successfully!\n\n", empNumber);
+            printf("✅ Employee '%s' has been updated successfully!\n\n", existingEmp->personal.employeeNumber);
             printf("Updated Employee Information:\n");
             printf("═══════════════════════════════════════════════════════════════════\n");
             displayEmployeeDetails(existingEmp);
@@ -313,8 +396,8 @@ int handleDeleteEmployee(list* employeeList) {
     }
 
     // Loop variables
-    bool shouldContinue = true;
-    bool operationSuccess = false;
+    int shouldContinue = 1;
+    int operationSuccess = 0;
     
     do {
         winTermClearScreen();
@@ -342,7 +425,7 @@ int handleDeleteEmployee(list* employeeList) {
                 if (removeEmployeeFromList(employeeList, empNumber) == 0) {
                     printf("✅ Employee '%s' deleted successfully!\n", empNumber);
                     printf("Employee count is now: %d\n", employeeList->size);
-                    operationSuccess = true;
+                    operationSuccess = 1;
                 } else {
                     printf("❌ Failed to delete employee from the system.\n");
                     printf("The employee may have already been removed.\n");
@@ -354,7 +437,7 @@ int handleDeleteEmployee(list* employeeList) {
             
             printf("\nPress any key to continue...");
             _getch();
-            shouldContinue = false; // Exit loop
+            shouldContinue = 0; // Exit loop
         } else {
             printf("\n❌ Employee with number '%s' was not found.\n", empNumber);
             printf("\nWhat would you like to do?\n");
@@ -368,7 +451,7 @@ int handleDeleteEmployee(list* employeeList) {
             
             switch (choice) {
                 case '1':
-                    shouldContinue = true; // Continue the loop
+                    shouldContinue = 1; // Continue the loop
                     break;
                 case '2':
                     winTermClearScreen();
@@ -376,11 +459,11 @@ int handleDeleteEmployee(list* employeeList) {
                     displayAllEmployees(employeeList);
                     printf("\nPress any key to continue...");
                     _getch();
-                    shouldContinue = true; // Continue the loop
+                    shouldContinue = 1; // Continue the loop
                     break;
                 case '3':
                 default:
-                    shouldContinue = false; // Exit the loop
+                    shouldContinue = 0; // Exit the loop
                     break;
             }
         }
