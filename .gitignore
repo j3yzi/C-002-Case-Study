@@ -19,3 +19,4 @@ bin/
 # Ignore output files
 *.out
 /.vscode
+.vscode/settings.json
