@@ -85,7 +85,7 @@ int getStudentDataFromUser(Student* newStudent) {
         winTermClearScreen();
         printf("%s", UI_HEADER);
         printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-        printf("║                  %sEnter Student Name%s                    ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+        printf("║                  %sEnter Student Name%s                               ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
         printf("╚═══════════════════════════════════════════════════════════════════╝\n");
         printf("%s\n", TXT_RESET);
         
@@ -108,7 +108,7 @@ int getStudentDataFromUser(Student* newStudent) {
     winTermClearScreen();
     printf("%s", UI_HEADER);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-    printf("║                %sEnter Student Details%s                 ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+    printf("║                %sEnter Student Details%s                              ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     printf("%s\n", TXT_RESET);
     
@@ -125,7 +125,7 @@ int getStudentDataFromUser(Student* newStudent) {
     printf("%s📚 Available Academic Programs:%s\n", UI_INFO, TXT_RESET);
     printf("┌─────────────────────────────────────────────────────────────────┐\n");
     for (int i = 0; i < g_programCount; i++) {
-        printf("│ %s%-6s%s = %s%-51s%s │\n", 
+        printf("│ %s%-6s%s = %s%-51s%s    │\n", 
                UI_HIGHLIGHT, g_programs[i].code, TXT_RESET,
                UI_SUBHEADER, g_programs[i].name, TXT_RESET);
     }
@@ -156,7 +156,7 @@ int getStudentDataFromUser(Student* newStudent) {
     winTermClearScreen();
     printf("%s", UI_HEADER);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-    printf("║                %sEnter Academic Grades%s                  ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+    printf("║                %sEnter Academic Grades%s                              ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     printf("%s\n", TXT_RESET);
     
@@ -180,7 +180,7 @@ int getStudentDataFromUser(Student* newStudent) {
 
     printf("\n%s", UI_INFO);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-    printf("║              %s📚 Student Information Summary 📚%s               ║\n", TXT_BOLD, TXT_RESET UI_INFO);
+    printf("║              %s📚 Student Information Summary 📚%s                    ║\n", TXT_BOLD, TXT_RESET UI_INFO);
     printf("╠═══════════════════════════════════════════════════════════════════╣\n");
     
     // Define box width (should match the border width)
@@ -268,7 +268,7 @@ int getStudentDataFromUser(Student* newStudent) {
     printf(" ║\n");
     
     printf("╠═══════════════════════════════════════════════════════════════════╣\n");
-    printf("║                      %s📝 Academic Grades 📝%s                      ║\n", TXT_BOLD, TXT_RESET UI_INFO);
+    printf("║                      %s📝 Academic Grades 📝%s                        ║\n", TXT_BOLD, TXT_RESET UI_INFO);
     printf("╠═══════════════════════════════════════════════════════════════════╣\n");
     
     // Prelim Grade row

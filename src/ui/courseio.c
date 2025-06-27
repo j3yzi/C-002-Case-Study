@@ -92,7 +92,6 @@ void initCourseCatalogManager(void) {
  */
 void cleanupCourseCatalogManager(void) {
     destroyCourseCatalog(&courseMgr.catalog);
-    printf("Course Catalog Manager cleaned up!\n");
 }
 
 /**

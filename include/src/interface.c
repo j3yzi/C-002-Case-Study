@@ -207,7 +207,7 @@ void updateInfoBoxTimeDate(int consoleWidth, int totalMenuNameWidth, int totalOp
     strftime(timeString, sizeof(timeString), "%H:%M:%S", timeInfo);
     
     // Format date string
-    char dateString[10];
+    char dateString[11];
     strftime(dateString, sizeof(dateString), "%d-%m-%Y", timeInfo);
     
     // Update time display
@@ -462,7 +462,7 @@ void displayInfoBox(const Menu* menu, int consoleWidth, int totalMenuNameWidth, 
     // system date
     time_t now2 = time(NULL);
     struct tm *timeInfo2 = localtime(&now2);
-    char dateString[10];
+    char dateString[11];
     strftime(dateString, sizeof(dateString), "%d-%m-%Y", timeInfo2);    
 
     setCursor(infoStartX, paddingY + 4);
@@ -699,9 +699,9 @@ void updateEmployeeMenuStates(Menu* menu) {
     
     // Employee-specific overrides
     for (int i = 0; i < menu->optionCount; i++) {
-        // Employee Table View (key 'T') - requires active list
+        // Employee Table View (key 'T') - requires active list WITH employees
         if (menu->options[i].key == 'T' || menu->options[i].key == 't') {
-            menu->options[i].isDisabled = !hasActiveList;
+            menu->options[i].isDisabled = !(hasActiveList && hasEmployees);
         }
         // Payroll reports might have special requirements
         else if (menu->options[i].key == '8') {
@@ -845,9 +845,19 @@ void displayStudentTableHeader(int consoleWidth, int tableWidth, int smlBoxWidth
     // Column positions
     int num = 5, id = 18, name = 36, prog = 46, yr = 53, grd = 67, rm = 77;
     
-    // Page info - show actual items on current page out of total
-    printf("%*sPage %d of %d", tblMargin, "", pagination->currentPage, pagination->totalPages);
-    printf("%*s%d out of %d Students\n", tableWidth - 11 - 22, "", actualItemsOnPage, pagination->totalItems);
+    // Build dynamic page info string so that width calculation remains accurate regardless of digit count
+    char pageInfo[32];
+    char countInfo[48];
+    int spacing;
+    snprintf(pageInfo, sizeof(pageInfo), "Page %d of %d", pagination->currentPage, pagination->totalPages);
+    int firstRec = (pagination->startIndex) + 1;
+    int lastRec = pagination->endIndex + 1;
+    if (lastRec > pagination->totalItems) lastRec = pagination->totalItems;
+    snprintf(countInfo, sizeof(countInfo), "%d-%d of %d Students", firstRec, lastRec, pagination->totalItems);
+    spacing = tableWidth - (int)strlen(pageInfo) - (int)strlen(countInfo);
+    if (spacing < 0) spacing = 0;
+    printf("%*s%s", tblMargin, "", pageInfo);
+    printf("%*s%s\n", spacing, "", countInfo);
     
     // Draw top border
     printf("%*s╔", tblMargin, "");
@@ -1221,9 +1231,22 @@ void displayEmployeeTableHeader(int consoleWidth, int tableWidth, int smlBoxWidt
     int sep4 = sep3 + 1 + statusWidth + 2;          // After STATUS column
     int sep5 = sep4 + 1 + salaryWidth + 4;          // After BASIC SALARY column
     
-    // Page info - show actual items on current page out of total
-    printf("%*sPage %d of %d", tblMargin, "", pagination->currentPage, pagination->totalPages);
-    printf("%*s%d out of %d Employees\n", tableWidth - 11 - 24, "", actualItemsOnPage, pagination->totalItems);
+    // Build dynamic page info and count strings for employees
+    char pageInfo[32];
+    char countInfo[48];
+    int spacing;
+
+    snprintf(pageInfo, sizeof(pageInfo), "Page %d of %d", pagination->currentPage, pagination->totalPages);
+    int firstRec = (pagination->startIndex) + 1;
+    int lastRec = pagination->endIndex + 1;
+    if (lastRec > pagination->totalItems) lastRec = pagination->totalItems;
+    snprintf(countInfo, sizeof(countInfo), "%d-%d of %d Employees", firstRec, lastRec, pagination->totalItems);
+    spacing = tableWidth - (int)strlen(pageInfo) - (int)strlen(countInfo);
+    if (spacing < 0) spacing = 0;
+    
+    // Print page info followed by calculated spacing and count info, then new line
+    printf("%*s%s", tblMargin, "", pageInfo);
+    printf("%*s%s\n", spacing, "", countInfo);
     
     // Draw top border
     printf("%*s╔", tblMargin, "");

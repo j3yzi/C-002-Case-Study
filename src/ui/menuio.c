@@ -238,7 +238,6 @@ void initMultiListManager(void) {
     stuManager.studentListCount = 0;
     stuManager.activeStudentList = -1;
     
-    printf("PUP Information Management System initialized!\n");
 }
 
 /**
@@ -258,8 +257,6 @@ void cleanupMultiListManager(void) {
             destroyList(&stuManager.studentLists[i], freeStudent);
         }
     }
-    
-    printf("PUP Information Management System cleaned up!\n");
 }
 
 /**
@@ -958,7 +955,7 @@ int handleLoadEmployeeList(void) {
     if (fileCount == 0) {
         printf("%s", UI_HEADER);
         printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-        printf("║                         NO FILES FOUND                           ║\n");
+        printf("║                         NO FILES FOUND                            ║\n");
         printf("╠═══════════════════════════════════════════════════════════════════╣\n");
         printf("║                                                                   ║\n");
         printf("║  No employee data files were found in the data directory.         ║\n");
@@ -1508,7 +1505,7 @@ int handleLoadStudentList(void) {
     options[cancelIndex].onSelect = NULL;
     
     // Create the file selection menu
-    Menu fileMenu = {1, "📂 Load Student List - Select File", options, totalMenuOptions};
+    Menu fileMenu = {1, "📂 Load Student List - Select File  ", options, totalMenuOptions};
     
     char choice = runMenuWithInterface(&fileMenu);
     

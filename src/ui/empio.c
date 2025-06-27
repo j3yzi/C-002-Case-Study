@@ -83,7 +83,7 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
         winTermClearScreen();
         printf("%s", UI_HEADER);
         printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-        printf("║                  %sEnter Employee Name%s                   ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+        printf("║                  %sEnter Employee Name%s                              ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
         printf("╚═══════════════════════════════════════════════════════════════════╝\n");
         printf("%s\n", TXT_RESET);
         
@@ -107,7 +107,7 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
     winTermClearScreen();
     printf("%s", UI_HEADER);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-    printf("║               %sEnter Employment Details%s                ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
+    printf("║               %sEnter Employment Details%s                            ║\n", TXT_BOLD, TXT_RESET UI_HEADER);
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     printf("%s\n", TXT_RESET);
     
@@ -129,7 +129,7 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
 
     printf("\n%s", UI_INFO);
     printf("╔═══════════════════════════════════════════════════════════════════╗\n");
-    printf("║              %s💼 Employee Information Summary 💼%s              ║\n", TXT_BOLD, TXT_RESET UI_INFO);
+    printf("║              %s💼 Employee Information Summary 💼%s                   ║\n", TXT_BOLD, TXT_RESET UI_INFO);
     printf("╠═══════════════════════════════════════════════════════════════════╣\n");
     
     // Define box width (should match the border width)
@@ -187,7 +187,7 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
     
     printf("║ %s%s%s %s", UI_HIGHLIGHT, hoursLabel, TXT_RESET, hoursText);
     for (int i = 0; i < hoursPadding; i++) printf(" ");
-    printf(" ║\n");
+    printf("║\n");
     
     // Basic Rate row
     char rateLabel[] = "💰 Basic Rate:";

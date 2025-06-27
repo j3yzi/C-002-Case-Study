@@ -70,7 +70,6 @@ int main(void)
     
     cleanupMultiListManager(); // Clean up all resources before exit
     cleanupCourseCatalogManager(); // Clean up course catalog resources
-    waitForKeypress("Press any key to exit...");
     
     return result;
 } 
