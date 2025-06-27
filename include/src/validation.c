@@ -130,6 +130,14 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
             }
             return true; 
 
+        case IV_EXACT_LEN:
+            if (strlen(input) != (size_t)params.rangeInt.max) {
+                printf("%s   [Error] %s must be exactly %ld characters. Current length: %zu%s\n", 
+                       UI_ERROR, fieldName, params.rangeInt.max, strlen(input), TXT_RESET);
+                return false;
+            }
+            return true;
+
         case IV_CHOICES:
             for (int i = 0; i < params.choices.count; i++) {
                 if (strcmp(input, params.choices.choices[i]) == 0) {

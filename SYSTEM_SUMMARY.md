@@ -1,5 +1,54 @@
 # 🏛️ PUP Information Management System - Features & Mechanics Summary
 
+## ✨ Quick Feature Matrix
+
+| 📦 Module | 🚀 Core Features | ⚙️ Key Logic Mechanics |
+|-----------|-----------------|-------------------------|
+| 👨‍💼 **Employee** | • Create / Edit / Delete Employees  <br>• Multi-list support  <br>• Payroll report generation | • `calculatePayroll()` pipeline  <br>• Hours-worked validation (0-744)  <br>• Overtime @ **+50 %** beyond 160 h  <br>• Basic-pay & deduction caps |
+| 🎓 **Student** | • Create / Edit / Delete Students  <br>• GPA & standing auto-calc  <br>• Grade-sorted list & reports | • `calculateFinalGrade()` average  <br>• Pass/Fail vs configurable threshold  <br>• Exact-length student number (10) |
+| 📚 **Course** | • CRUD course catalog  <br>• Active / inactive flag  <br>• Save & load catalogs | • Course-type enum (Core/Major/GE)  <br>• Unit range guard (1-6 units) |
+| 🗂️ **Multi-List** | • Up to 10 lists per entity  <br>• Named lists & quick switch | • Global `empManager` / `stuManager` structs track active list & counts |
+| 📈 **Reports** | • Payroll txt report  <br>• Student grade report | • Timestamped filenames  <br>• Stats summarised per list |
+| 🛠️ **Config** | • Regular hours (40-744)  <br>• Overtime rate (0.1-2.0)  <br>• Passing grade | • INI parsing in `apctxt.c`  <br>• Persist on exit |
+
+### 🗂️ Detailed Module & Sub-Module Capabilities
+
+| 🌟 Top-Level Module | 🧩 Sub-Module | 🛠️ What It Does | 📄 Key Source Files |
+|--------------------|-------------|-----------------|-----------------------|
+| 👨‍💼 Employee | **List Manager** | Create / switch / delete up to 10 employee lists | `menuio.c`, `interface.c` |
+| | **Payroll Engine** | Compute Basic, Overtime, Deductions, Net Pay with safety caps | `payroll.c` |
+| | **Report Generator** | Produce TXT payroll reports with timestamped filenames | `data.c` `payroll.c` |
+| | **Search & Edit UI** | Interactive search by ID/Name; edit & delete operations | `empio.c` |
+| 🎓 Student | **List Manager** | Same multi-list system as employees (10 lists) | `menuio.c`, `interface.c` |
+| | **Grade Calculator** | Average Prelim / Midterm / Final → Final Grade; standing update | `student.c` |
+| | **Report Generator** | Generate grade distribution & summary reports | `data.c` |
+| | **Program Registry** | Holds program codes & names; validates against user input | `apctxt.c`, `student.h` |
+| 📚 Course | **Catalog Manager** | Add / edit / delete courses; toggle active status | `courseio.c` |
+| | **Search Engine** | Search by Code or Name (partial match) | `courseio.c` |
+| | **Catalog Persistence** | Save/load `.cat` files for course catalogs | `data.c` |
+| 🛠 Infrastructure | **Validation Core** | All input validation types inc. `IV_EXACT_LEN` | `validation.c` `apctxt.h` |
+| | **Menu Framework** | Re-usable menu render / navigation system | `menuio.c`, `interface.c` |
+| | **Linked-List Library** | Generic singly/doubly list implementations | `list.h` `list.c` |
+| | **Config Loader** | INI parsing + auto-persist on exit | `apctxt.c` |
+
+*Use this table to quickly locate the code responsible for a given feature or rule.*
+
+---
+
+## 🔍 Logic Cheat-Sheet
+
+| 🔑 Item | 🧩 Where Implemented | 📝 Rule |
+|---------|---------------------|---------|
+| **Exact-length IDs** | `validation.c` → `IV_EXACT_LEN` | Employee & Student numbers must be **exactly 10** chars. |
+| **Hours Worked** | `empio.c` input → `IV_RANGE_INT` | Accept **0–744**; overtime triggers after **160 h**. |
+| **Basic Pay Cap** | `payroll.c` → `calculateBasicPay()` | Capped at **₱ 999 999.00** with warning. |
+| **Deduction Cap** | `payroll.c` → `calculateDeductions()` | Capped at **₱ 99 999.99** with warning. |
+| **Grade Pass Mark** | `apctxt.h` config (`g_config.passingGrade`) | Default **75**; affects student standing. |
+
+> 📌 *For the in-depth architectural narrative, keep reading the sections below.*
+
+---
+
 ## 📋 System Overview
 
 The **PUP Information Management System** is a unified C-based application that consolidates three separate management systems into a single, comprehensive solution. This system manages employees, students, and courses through a centralized platform, demonstrating excellent software engineering principles and architectural consolidation.
@@ -815,4 +864,25 @@ This system demonstrates the power of thoughtful software consolidation and serv
 
 ---
 
-*This document provides a comprehensive overview of the PUP Information Management System's features, mechanics, and technical implementation. For specific implementation details, refer to the source code and inline documentation.* 
+*This document provides a comprehensive overview of the PUP Information Management System's features, mechanics, and technical implementation. For specific implementation details, refer to the source code and inline documentation.*
+
+## 🔄 Recent Updates (June 2025)
+
+The latest development sprint introduced several important business-rule refinements and infrastructure tweaks that you should be aware of before digging into the code:
+
+1. **Employee & Student Number Validation**  
+   • Added new validation type `IV_EXACT_LEN` (see *apctxt.h*) to require *exactly* 10 characters for both employee and student numbers.  
+   • All related input prompts were updated (`empio.c`, `stuio.c`).
+2. **Hours-Worked Constraints**  
+   • Hours worked are now accepted in the range **0 – 744** (maximum possible hours in a 31-day month).  
+   • Regular-hours configuration range was widened to 40 – 744 and reflected in the Configuration UI.
+3. **Payroll Safety Caps**  
+   • Basic pay is capped at **₱ 999 999.00**.  
+   • Deductions are capped at **₱ 99 999.99**.  
+   • Warnings are printed whenever a calculation exceeds these thresholds (`payroll.c`).
+4. **Deduction Calculation Simplification**  
+   • Manual entry of deductions has been removed; deductions are now computed automatically from lack-of-hours.
+5. **Documentation & Guides**  
+   • This summary, the C Keywords guide, and a new *Program Flow* document were updated to explain the new behaviour.
+
+--- 

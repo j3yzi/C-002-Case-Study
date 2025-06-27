@@ -291,6 +291,7 @@ typedef enum {
     IV_ALPHA_ONLY,
     IV_ALPHA_ONLY_MAX_LEN,
     IV_OPTIONAL_ALPHA_ONLY_MAX_LEN,
+    IV_EXACT_LEN,
 } IValidationType;
 ```
 
@@ -927,3 +928,29 @@ Each keyword builds upon the previous ones and together they enable the sophisti
 ---
 
 *This guide covers the C keywords most relevant to understanding and contributing to the PUP Information Management System. Mastering these concepts will significantly improve your ability to write clean, efficient, and maintainable C code.* 
+
+#### **New Validation Type – `IV_EXACT_LEN`**
+
+`IV_EXACT_LEN` was added to the `IValidationType` enum in **apctxt.h** to enforce **exact-length** input (not just max-length).  It takes the same `rangeInt.max` field as the other length validators but treats it as a required length rather than an upper bound.
+
+```c
+// Example: require exactly 10 digits for an Employee Number
+appFormField field = {
+    "🆔 Enter Employee Number (10 digits): ",
+    employeeNumberBuf,
+    employeeNumberLen,
+    IV_EXACT_LEN,
+    {.rangeInt = {.max = 10}}  // 10 chars required
+};
+```
+
+Behind the scenes the validator now contains:
+```c
+case IV_EXACT_LEN:
+    if (strlen(input) != (size_t)params.rangeInt.max) {
+        // ... print error ...
+    }
+```
+The new type is already used throughout `src/ui/empio.c` and `src/ui/stuio.c`.
+
+--- 

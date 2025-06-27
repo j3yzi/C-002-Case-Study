@@ -1364,7 +1364,7 @@ int handleUpdatePayrollSettings(void) {
     // Prepare prompts with current values
     char regularHoursPrompt[100];
     char overtimeRatePrompt[100];
-    sprintf(regularHoursPrompt, "Regular Hours (40-240, current: %.1f): ", g_config.regularHours);
+    sprintf(regularHoursPrompt, "Regular Hours (40-744, current: %.1f): ", g_config.regularHours);
     sprintf(overtimeRatePrompt, "Overtime Rate (0.1-2.0, current: %.1f): ", g_config.overtimeRate);
     
     // Setup form fields with validation
@@ -1381,7 +1381,7 @@ int handleUpdatePayrollSettings(void) {
         float newRegularHours = (float)atof(regularHoursStr);
         
         // Additional validation
-        if (newRegularHours >= 40.0f && newRegularHours <= 240.0f) {
+        if (newRegularHours >= 40.0f && newRegularHours <= 744.0f) {
             g_config.regularHours = newRegularHours;
             configChanged = true;
             printf("Regular Hours updated to %.1f\n", g_config.regularHours);

@@ -111,16 +111,16 @@ int getEmployeeDataFromUser(Employee* newEmployee) {
     printf("╚═══════════════════════════════════════════════════════════════════╝\n");
     printf("%s\n", TXT_RESET);
     
-    char statusInput[3], hoursBuffer[4], basicRateBuffer[10], deductionsBuffer[10];
+    char genderInput[3];
+    char statusInput[3], hoursBuffer[4], basicRateBuffer[10];
     
     appFormField employmentFields[] = {
-        { "🆔 Enter Employee Number (10 digits): ", newEmployee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} },
+        { "🆔 Enter Employee Number (exactly 10 digits): ", newEmployee->personal.employeeNumber, employeeNumberLen, IV_EXACT_LEN, {.rangeInt = {.max = 10}} },
         { "💼 Enter Employment Status (R for Regular, C for Casual): ", statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} },
-        { "⏰ Enter Hours Worked (1-240): ", hoursBuffer, 4, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 240}} },
-        { "💰 Enter Basic Rate (per hour): ", basicRateBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.01, .max = 9999.99}} },
-        { "📉 Enter Deductions: ", deductionsBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 9999.99}} }
+        { "⏰ Enter Hours Worked (0-744): ", hoursBuffer, 4, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 744}} },
+        { "💰 Enter Basic Rate (per hour): ", basicRateBuffer, 10, IV_RANGE_FLT, {.rangeFloat = {.min = 0.01, .max = 999.99}} }
     };
-    appGetValidatedInput(employmentFields, 5);
+    appGetValidatedInput(employmentFields, 4);
 
     // Convert string inputs to appropriate data types
     newEmployee->employment.status = (statusInput[0] == 'R' || statusInput[0] == 'r') ? statusRegular : statusCasual;
@@ -678,7 +678,7 @@ int editEmployeeDataFromUser(Employee* employee) {
             
             char numberPrompt[64];
             sprintf(numberPrompt, "Enter Employee Number [%s]: ", employee->personal.employeeNumber);
-            appFormField field = { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} };
+            appFormField field = { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_EXACT_LEN, {.rangeInt = {.max = 10}} };
             appGetValidatedInput(&field, 1);
             break;
         }
@@ -732,11 +732,11 @@ int editEmployeeDataFromUser(Employee* employee) {
             char hoursBuffer[10];
             char hoursPrompt[64];
             
-            sprintf(hoursPrompt, "Enter Hours Worked (0-400) [%d]: ", 
+            sprintf(hoursPrompt, "Enter Hours Worked (0-744) [%d]: ", 
                    employee->employment.hoursWorked);
             sprintf(hoursBuffer, "%d", employee->employment.hoursWorked);
             
-            appFormField field = { hoursPrompt, hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} };
+            appFormField field = { hoursPrompt, hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 744}} };
             appGetValidatedInput(&field, 1);
             employee->employment.hoursWorked = atoi(hoursBuffer);
             break;
@@ -765,7 +765,7 @@ int editEmployeeDataFromUser(Employee* employee) {
                    employee->employment.basicRate);
             sprintf(rateBuffer, "%.2f", employee->employment.basicRate);
             
-            appFormField field = { ratePrompt, rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} };
+            appFormField field = { ratePrompt, rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 999.99}} };
             appGetValidatedInput(&field, 1);
             employee->employment.basicRate = (float)atof(rateBuffer);
             break;
@@ -814,7 +814,7 @@ int editEmployeeDataFromUser(Employee* employee) {
             sprintf(numberPrompt, "Enter Employee Number [%s]: ", employee->personal.employeeNumber);
             sprintf(statusPrompt, "Enter Status (R/C) [%c]: ", 
                    employee->employment.status == statusRegular ? 'R' : 'C');
-            sprintf(hoursPrompt, "Enter Hours Worked (0-400) [%d]: ", 
+            sprintf(hoursPrompt, "Enter Hours Worked (0-744) [%d]: ", 
                    employee->employment.hoursWorked);
             sprintf(ratePrompt, "Enter Basic Rate (minimum 0.00) [%.2f]: ", 
                    employee->employment.basicRate);
@@ -826,10 +826,10 @@ int editEmployeeDataFromUser(Employee* employee) {
             statusInput[1] = '\0';
             
             appFormField employmentFields[] = {
-                { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_MAX_LEN, {.rangeInt = {.max = employeeNumberLen - 1}} },
+                { numberPrompt, employee->personal.employeeNumber, employeeNumberLen, IV_EXACT_LEN, {.rangeInt = {.max = 10}} },
                 { statusPrompt, statusInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"R", "C", "r", "c"}, .count = 4}} },
-                { hoursPrompt, hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 400}} },
-                { ratePrompt, rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 10000.0}} }
+                { hoursPrompt, hoursBuffer, 10, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 744}} },
+                { ratePrompt, rateBuffer, 20, IV_RANGE_FLT, {.rangeFloat = {.min = 0.0, .max = 999.99}} }
             };
             appGetValidatedInput(employmentFields, 4);
             

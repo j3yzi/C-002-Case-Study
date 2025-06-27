@@ -98,7 +98,7 @@ int getStudentDataFromUser(Student* newStudent) {
         
         isNameValid = composeStudentName(&newStudent->personal.name);
         if (!isNameValid) {
-            printf("\n%s[Error] Name is too long to format properly.%s\n", UI_ERROR, TXT_RESET);
+            printf("\n%s[Error] Name is too long to format properly.%s\n", UI_WARNING, TXT_RESET);
             printf("%sFirst and last names must each be less than %d characters to fit in the %d character full name format.%s\n", 
                    UI_WARNING, studentNameLen - 5, studentNameLen, TXT_RESET);
             waitForKeypress(NULL);
@@ -138,7 +138,7 @@ int getStudentDataFromUser(Student* newStudent) {
     }
     
     appFormField detailFields[] = {
-        { "🆔 Enter Student Number (10 digits): ", newStudent->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} },
+        { "🆔 Enter Student Number (exactly 10 digits): ", newStudent->personal.studentNumber, studentNumberLen, IV_EXACT_LEN, {.rangeInt = {.max = 10}} },
         { "👤 Enter Gender (M/F): ", genderInput, 3, IV_CHOICES, {.choices = {.choices = (const char*[]){"M", "F", "m", "f"}, .count = 4}} },
         { "📚 Enter Program Code: ", programInput, programCodeLen, IV_CHOICES, {.choices = {.choices = programChoices, .count = g_programCount}} },
         { "📊 Enter Year Level (1-4): ", yearBuffer, 2, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 4}} },
@@ -700,7 +700,7 @@ int editStudentDataFromUser(Student* student) {
             
             char numberPrompt[64];
             sprintf(numberPrompt, "Enter Student Number [%s]: ", student->personal.studentNumber);
-            appFormField field = { numberPrompt, student->personal.studentNumber, studentNumberLen, IV_MAX_LEN, {.rangeInt = {.max = studentNumberLen - 1}} };
+            appFormField field = { numberPrompt, student->personal.studentNumber, studentNumberLen, IV_EXACT_LEN, {.rangeInt = {.max = 10}} };
             appGetValidatedInput(&field, 1);
             break;
         }
