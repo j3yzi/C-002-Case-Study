@@ -13,22 +13,16 @@
   <img src="https://img.shields.io/badge/Status-Optimized-success.svg?style=for-the-badge&logo=github" alt="Status Optimized">  
 </div>
 
-<h2 style="text-align:center;">📑 Table of Contents</h2>
+## 📑 Table of Contents
 
-<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 50px;">
-  <a href="#about" style="padding: 10px 20px; background-color: #007bff; color: white; font-weight: bold; border-radius: 8px; font-size: 14x; text-decoration: none; display: inline-block; text-align: center; line-height: 1; height: 20px;">ABOUT</a>
-
-  <a href="#getting-started" style="padding: 10px 20px; background-color: #8bc34a; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">GETTING STARTED</a>
-
-  <a href="#features" style="padding: 10px 20px; background-color: #9c27b0; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">FEATURES</a>
-
-  <a href="#consolidation" style="padding: 10px 20px; background-color: #ff9800; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">CONSOLIDATION</a>
-
-  <a href="#architecture" style="padding: 10px 20px; background-color: #f44336; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">ARCHITECTURE</a>
-
-  <a href="#team" style="padding: 10px 20px; background-color: #ffc107; color: white; font-weight: bold; border-radius: 8px; font-size: 14px; text-decoration: none; display: inline-block; text-align: center;">TEAM</a>
-</div>
-
+<p align="center">
+  <a href="#about"><strong>🟦 ABOUT</strong></a> &nbsp;|&nbsp;
+  <a href="#getting-started"><strong>🟩 GETTING STARTED</strong></a> &nbsp;|&nbsp;
+  <a href="#features"><strong>🟪 FEATURES</strong></a> &nbsp;|&nbsp;
+  <a href="#consolidation"><strong>🟧 CONSOLIDATION</strong></a> &nbsp;|&nbsp;
+  <a href="#architecture"><strong>🟥 ARCHITECTURE</strong></a> &nbsp;|&nbsp;
+  <a href="#team"><strong>🟨 TEAM</strong></a>
+</p>
 <br>
 
 <h2 id="about" style="text-align:center;">📖 About The Project </h2>
@@ -136,43 +130,48 @@ Management System</strong> that demonstrates the power of thoughtful code consol
   </p>
 </div>
 
-<div id="features"></div>
 ## ✨ Features
+<div id="features"></div>
 
-<div class="features-section">
-  <div class="feature-card employee">
-    <h4>👔 Employee Management</h4>
-    <ul>
-      <li>Complete employee records</li>
-      <li>Payroll processing</li>
-      <li>Status tracking (Regular/Casual)</li>
-      <li>Overtime calculations</li>
-      <li>Comprehensive reporting</li>
-    </ul>
-  </div>
+<h2>✨ Features Overview</h2>
 
-  <div class="feature-card student">
-    <h4>🎓 Student Management</h4>
-    <ul>
-      <li>Student academic records</li>
-      <li>Grade tracking & calculation</li>
-      <li>Academic standing assessment</li>
-      <li>Performance reporting</li>
-      <li>Sorting by various criteria</li>
-    </ul>
-  </div>
+<table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr>
+      <th>👔 Employee Management</th>
+      <th>🎓 Student Management</th>
+      <th>🛠️ System Features</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>• Complete employee records</td>
+      <td>• Student academic records</td>
+      <td>• Multi-list management</td>
+    </tr>
+    <tr>
+      <td>• Payroll processing</td>
+      <td>• Grade tracking & calculation</td>
+      <td>• Data persistence</td>
+    </tr>
+    <tr>
+      <td>• Status tracking (Regular/Casual)</td>
+      <td>• Academic standing assessment</td>
+      <td>• Search capabilities</td>
+    </tr>
+    <tr>
+      <td>• Overtime calculations</td>
+      <td>• Performance reporting</td>
+      <td>• Unified interface</td>
+    </tr>
+    <tr>
+      <td>• Comprehensive reporting</td>
+      <td>• Sorting by various criteria</td>
+      <td>• System-wide statistics</td>
+    </tr>
+  </tbody>
+</table>
 
-  <div class="feature-card system">
-    <h4>🛠️ System Features</h4>
-    <ul>
-      <li>Multi-list management</li>
-      <li>Data persistence</li>
-      <li>Search capabilities</li>
-      <li>Unified interface</li>
-      <li>System-wide statistics</li>
-    </ul>
-  </div>
-</div>
 
 <details>
   <summary>🔍 View Detailed Feature Comparison</summary>
@@ -333,66 +332,50 @@ All features from the original case studies have been preserved with 100% functi
   </table>
 </div>
 <br>
-<div align="center">
+
+<div style="text-align: center;">
   <h3>✅ After Consolidation: Unified PUP Information Management System</h3>
 </div>
 
-<div align="center">
-  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
-    <tr style="background-color: #f0f0f0;">
-      <th width="20%">Component</th>
-      <th width="20%">Purpose</th>
-      <th width="15%">Files</th>
-      <th width="15%">Lines of Code</th>
-      <th width="30%">Key Improvements</th>
+<table style="width: 100%; max-width: 900px; margin: 30px auto; border-collapse: collapse; font-family: sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+  <thead>
+    <tr style="background-color: #f0f0f0; color: white;">
+      <th style="padding: 12px;">🧩 Component</th>
+      <th style="padding: 12px;">🎯 Purpose</th>
+      <th style="padding: 12px;">📁 Files</th>
+      <th style="padding: 12px;">📏 Lines of Code</th>
+      <th style="padding: 12px;">🚀 Key Improvements</th>
     </tr>
-    <tr>
-      <td align="center">
-        <div style="background-color: #6f42c1; color: white; padding: 5px; border-radius: 5px; margin-bottom: 5px;">Unified System</div>
-        <b>PUP Information Management</b>
+  </thead>
+  <tbody>
+    <tr style="background-color: #f8f9fa;">
+      <td style="text-align: center; padding: 15px;">
+        <div style="background-color: #6f42c1; color: white; padding: 6px 10px; border-radius: 6px;">Unified System</div>
+        <div style="margin-top: 6px;"><strong>PUP IMS</strong></div>
       </td>
-      <td align="center">
+      <td style="text-align: center; padding: 15px;">
         <div style="font-size: 24px;">🏛️</div>
-        Complete Management Solution
+        <div>Complete Management Solution</div>
       </td>
-      <td align="center">
-        <div style="background-color: #d4edda; padding: 5px; border-radius: 5px;">8 core files</div>
+      <td style="text-align: center; padding: 15px;">
+        <span style="background-color: #d4edda; padding: 6px 10px; border-radius: 6px;">8 core files</span>
       </td>
-      <td align="center">
-        <div style="background-color: #d4edda; padding: 5px; border-radius: 5px;">~1,800 lines</div>
+      <td style="text-align: center; padding: 15px;">
+        <span style="background-color: #d4edda; padding: 6px 10px; border-radius: 6px;">~1,800 lines</span>
       </td>
-      <td>
-        <ul>
+      <td style="padding: 15px;">
+        <ul style="margin: 0; padding-left: 20px;">
           <li>✅ Zero duplication</li>
           <li>✅ Enhanced functionality</li>
           <li>✅ Streamlined architecture</li>
         </ul>
       </td>
     </tr>
-    <tr style="background-color: #d4edda;">
-      <td align="center" colspan="5">
-        <div style="display: flex; justify-content: space-around; align-items: center; padding: 10px;">
-          <div>
-            <div style="font-size: 24px;">📉</div>
-            <b>80% Reduction</b>
-            <div>in Files</div>
-          </div>
-          <div>
-            <div style="font-size: 24px;">📉</div>
-            <b>63% Reduction</b>
-            <div>in Code</div>
-          </div>
-          <div>
-            <div style="font-size: 24px;">🏆</div>
-            <b>Superior Performance</b>
-            <div>& Maintainability</div>
-          </div>
-        </div>
-      </td>
     </tr>
-  </table>
-</div>
+  </tbody>
+</table>
 <br>
+
 <div align="center">
   <h2 id="architecture">🏗️ Technical Architecture</h2>
   <img src="https://img.shields.io/badge/Architecture-Three--Layer-blue?style=for-the-badge" alt="Three-Layer Architecture"/>
@@ -614,26 +597,30 @@ list* loadListWithName(const char* filename, const char* dataType, ListType list
 </div>
 
 <details>
-  <summary><span style="font-size: 20px; font-weight:700; color: #000;">📂 File Organization</span></summary>
-  <div style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
-  <pre><code>
-    src/
-    ├── main.c                    # Entry point
-    ├── ui/
-    │   ├── menuio.c/h           # Main menu system
-    │   ├── empio.c/h            # Employee I/O operations
-    │   └── stuio.c/h            # Student I/O operations
-    └── modules/
-      ├── payroll.c/h          # Payroll calculations
-      └── data.c/h             # Data persistence & reports
-  </code></pre>
-  </div>
+ <summary><span style="font-size: 20px; font-weight:700; color: #000;">📂 File Organization</span></summary>
+<pre><code>
+📁 PUP Information Management System/
+├── 📄 main.c                    # Single entry point (combines all 3 main.c files)
+├── 📁 ui/
+│   ├── 📄 menuio.h             # Unified menu interface
+│   ├── 📄 menuio.c             # Consolidated menu implementation
+│   ├── 📄 empio.h/.c           # Employee I/O operations
+│   └── 📄 stuio.h/.c           # Student I/O operations
+├── 📁 modules/
+│   ├── 📄 payroll.h/.c         # Shared payroll calculations
+│   └── 📄 data.h/.c            # Unified data management
+├── 📁 bin/                     # Single executable output
+├── 📁 data/                    # Shared data directory
+├── 📄 compile.bat              # Single compilation script
+└── 📄 README.md                # This documentation
+</code></pre>
 </details>
+
 
 <details>
   <summary><span style="font-size: 20px; font-weight:700; color: #000;">🎮 User Interface Preview</span></summary>
-  <div style="width: 750px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
-  <pre><code>
+
+<pre><code>
 ╔═════════════════════════════════════════╗╔════════════════════════════════╗
 ║                   MENU                  ║║              KEYS              ║
 ╠═════════════════════════════════════════╣╠════════════════════════════════╣
@@ -648,7 +635,9 @@ list* loadListWithName(const char* filename, const char* dataType, ListType list
 ║                                         ║╚════════════════════════════════╝
 ╚═════════════════════════════════════════╝
 </code></pre>
+
 </details>
+
 
 <details>
   <summary><span style="font-size: 20px; font-weight:700; color: #000;">📛 Name Composition System</span></summary>
@@ -720,11 +709,20 @@ ensuring that every architectural decision was informed by established software 
   
   #### Agile Development Approach
   <p>After researching various methodologies (Waterfall, V-Shaped, DevOps), we chose <strong>Agile</strong> for our project because:</p>
-  <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 15%;">
-    <li>It's designed for projects where requirements might evolve</li>
-    <li>It enables continuous feedback and adaptation</li>
-    <li>It supports effective collaboration across the three case studies</li>
-  </ul>
+<table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <tr>
+    <td style="padding: 10px; vertical-align: top;">✔️</td>
+    <td style="padding: 10px;">It's designed for projects where requirements might evolve</td>
+  </tr>
+  <tr style="background-color: #f9f9f9;">
+    <td style="padding: 10px; vertical-align: top;">✔️</td>
+    <td style="padding: 10px;">It enables continuous feedback and adaptation</td>
+  </tr>
+  <tr>
+    <td style="padding: 10px; vertical-align: top;">✔️</td>
+    <td style="padding: 10px;">It supports effective collaboration across the three case studies</td>
+  </tr>
+</table>
   
   <p>This approach allowed us to adapt quickly, collaborate effectively, and make iterative progress throughout the consolidation process.</p>
 </details>
@@ -778,12 +776,33 @@ ensuring that every architectural decision was informed by established software 
   </table>
   
   <h4>Safety and Robustness</h4>
-  <ul style="width: 700px; list-style-position: inside;text-align: left; margin-left: 2%;">
-    <li><strong>Safe Input Handling:</strong> Replaced <code>scanf()</code> with <code>fgets()</code> + <code>sscanf()</code> pattern to prevent buffer overflows</li>
-    <li><strong>Memory Management:</strong> Strict <code>malloc()</code>/<code>free()</code> discipline with custom free functions</li>
-    <li><strong>Const Correctness:</strong> Using const for function parameters that should not be modified</li>
-    <li><strong>Minimal Global Variables:</strong> Avoided global variables to prevent unpredictable side effects</li>
-  </ul>
+  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th style="padding: 12px; text-align: left;">📌 Code Quality Practice</th>
+      <th style="padding: 12px; text-align: left;">📝 Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px;"><strong>Safe Input Handling</strong></td>
+      <td style="padding: 10px;">Replaced <code>scanf()</code> with <code>fgets()</code> + <code>sscanf()</code> to prevent buffer overflows</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="padding: 10px;"><strong>Memory Management</strong></td>
+      <td style="padding: 10px;">Strict use of <code>malloc()</code> and <code>free()</code>, including custom free functions for cleanup</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px;"><strong>Const Correctness</strong></td>
+      <td style="padding: 10px;">Used <code>const</code> on function parameters that should not be modified</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="padding: 10px;"><strong>Minimal Global Variables</strong></td>
+      <td style="padding: 10px;">Avoided global variables to reduce side effects and improve modularity</td>
+    </tr>
+  </tbody>
+</table>
+
 </details>
 
 <details>
@@ -791,11 +810,31 @@ ensuring that every architectural decision was informed by established software 
   
   <h4>Generic Linked List Implementation</h4>
   <p>The core of our system is a generic, reusable linked list module that can handle any data type through void pointers:</p>
-  <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 15%;">
-    <li>Type-agnostic design supporting Employees, Students, and other entities</li>
-    <li>Memory management with custom free functions</li>
-    <li>Core operations: add, remove, search, traverse, destroy</li>
-  </ul>
+  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th style="padding: 12px; text-align: left;">🔧 Key Features</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+        Type-agnostic design supporting Employees, Students, and other entities
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+        Memory management with custom free functions
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 10px;">
+        Core operations: add, remove, search, traverse, destroy
+      </td>
+    </tr>
+  </tbody>
+</table>
+
   
   <h4>Sorting Algorithm Research</h4>
   <p>For sorting operations, we compared multiple algorithms:</p>
@@ -835,24 +874,71 @@ ensuring that every architectural decision was informed by established software 
   
   <h4>Employee & Student Number Formatting</h4>
   <p>We researched common formats for ID numbers to ensure our data models were realistic:</p>
-  <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 5%;">
-    <li>Common Pattern: Year of Entry + Sequential Number</li>
-    <li>Our Format: YY-SSS-NNNNN (e.g., 25-ENG-00456)</li>
-  </ul>
+  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th style="text-align: left; padding: 10px;">Format Detail</th>
+      <th style="text-align: left; padding: 10px;">Description / Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px;">Common Pattern</td>
+      <td style="padding: 10px;">Year of Entry + Sequential Number</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px;">Our Format</td>
+      <td style="padding: 10px;"><code>YY-SSS-NNNNN</code> (e.g., <code>25-ENG-00456</code>)</td>
+    </tr>
+  </tbody>
+</table>
   
   <h4>Business Logic Clarification</h4>
-  <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 5%;">
-    <li><strong>Overtime Pay:</strong> Interpreted "0.5 more than basic rate" as basicRate * 1.5</li>
-    <li><strong>Academic Standing:</strong> Implemented rules for "Dean's Lister" (grades > 90), "Regular" (75-90), and "Probation" (< 75)</li>
-  </ul>
+  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th style="padding: 10px; text-align: left; width: 30%;">Feature</th>
+      <th style="padding: 10px; text-align: left;">Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px;"><strong>Overtime Pay</strong></td>
+      <td style="padding: 10px;">Interpreted "0.5 more than basic rate" as <code>basicRate * 1.5</code></td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="padding: 10px;"><strong>Academic Standing</strong></td>
+      <td style="padding: 10px;">
+        Implemented rules for:<br>
+        – <strong>Dean's Lister</strong> (grades > 90)<br>
+        – <strong>Regular</strong> (75–90)<br>
+        – <strong>Probation</strong> (&lt; 75)
+      </td>
   
   <h4>Case Study Requirements Fulfillment</h4>
   <p>We meticulously tracked and implemented all requirements from the three case studies:</p>
-  <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 5%;">
-    <li>Employee Payroll (CS001): Records, status codes, calculations, reporting</li>
-    <li>Linked List Operations (CS002): Menu-driven interface, CRUD operations</li>
-    <li>Student Academics (CS003): Grade tracking, academic standing, reporting</li>
-  </ul>
+  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th style="padding: 10px; text-align: left;">Case Study</th>
+      <th style="padding: 10px; text-align: left;">Focus Areas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px;">Employee Payroll (CS001)</td>
+      <td style="padding: 10px;">Records, status codes, calculations, reporting</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="padding: 10px;">Linked List Operations (CS002)</td>
+      <td style="padding: 10px;">Menu-driven interface, CRUD operations</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px;">Student Academics (CS003)</td>
+      <td style="padding: 10px;">Grade tracking, academic standing, reporting</td>
+    </tr>
+  </tbody>
+</table>
 </details>
   
 <p>Our research-driven approach enabled us to create a system that is not just consolidated, but truly optimized.</p>
@@ -861,38 +947,44 @@ ensuring that every architectural decision was informed by established software 
 <div style="text-align: center;">
   <h3>📈 Future Enhancement Possibilities</h3>
 
-  <div>
-    <h3 style="color: #000;">1️⃣ Functional Enhancements</h3>
-    <ul style="width: 700px; list-style-position: inside; text-align: left;  margin-left: 35%;">
-      <li>Advanced Reporting: Statistical analysis and charts</li>
-      <li>Data Import/Export: CSV, Excel format support</li>
-      <li>User Authentication: Multi-user access control</li>
-      <li>Audit Logging: Track all system changes</li>
-      <li>Backup/Restore: Automated data backup</li>
-    </ul>
-  </div>
+  <h3 style="text-align: center;">🔧 Enhancement Summary</h3>
 
-  <div>
-    <h3 style="color: #000;">2️⃣ Technical Improvements</h3>
-    <ul style="width: 700px; list-style-position: inside; text-align: left;  margin-left: 35%;">
-      <li>Performance Optimizations</li>
-      <li>Database Integration: Move from file-based to DB</li>
-      <li>Indexing: Improve search performance</li>
-      <li>Caching: Cache frequently accessed data</li>
-      <li>Multi-threading: Parallel processing</li>
-    </ul>
-  </div>
-
-  <div>
-    <h3 style="color: #000;">3️⃣ User Interface Enhancements</h3>
-    <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 35%;">
-      <li>Graphical Interface: Move from console to GUI</li>
-      <li>Web Interface: Browser-based access</li>
-      <li>Mobile Support: Responsive design</li>
-      <li>Accessibility: Support assistive tech</li>
-    </ul>
-  </div>
-</div>
+<table style="width: 800px; border-collapse: collapse; margin-top: 30px; justify-content: center; margin-left: 22%;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th style="padding: 12px; border: 1px solid #ccc;">1️⃣ Functional Enhancements</th>
+      <th style="padding: 12px; border: 1px solid #ccc;">2️⃣ Technical Improvements</th>
+      <th style="padding: 12px; border: 1px solid #ccc;">3️⃣ User Interface Enhancements</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ccc;">Advanced Reporting: Statistical analysis and charts</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Performance Optimizations</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Graphical Interface: Move from console to GUI</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ccc;">Data Import/Export: CSV, Excel format support</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Database Integration: Move from file-based to DB</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Web Interface: Browser-based access</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ccc;">User Authentication: Multi-user access control</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Indexing: Improve search performance</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Mobile Support: Responsive design</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ccc;">Audit Logging: Track all system changes</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Caching: Cache frequently accessed data</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Accessibility: Support assistive tech</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #ccc;">Backup/Restore: Automated data backup</td>
+      <td style="padding: 10px; border: 1px solid #ccc;">Multi-threading: Parallel processing</td>
+      <td style="padding: 10px; border: 1px solid #ccc;"></td>
+    </tr>
+  </tbody>
+</table>
 
 ## 👥 Meet The Team
 
@@ -902,62 +994,64 @@ ensuring that every architectural decision was informed by established software 
   <h3>BSIT 1-2 S.Y. 2024-2025 Group 1</h3>
   <p>Polytechnic University of the Philippines</p>
   
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px;">
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/j3yzi.png" width="100" height="100" style="border-radius: 50%;" alt="j3yzi"/>
-      <p><strong>j3yzi</strong></p>
-      <p>Project Manager</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/Mxrcymarcmarc.png" width="100" height="100" style="border-radius: 50%;" alt="Mxrcymarcmarc"/>
-      <p><strong>Mxrcymarcmarc</strong></p>
-      <p>Backend Developer</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/vince-wh0.png" width="100" height="100" style="border-radius: 50%;" alt="vince-wh0"/>
-      <p><strong>vince-wh0</strong></p>
-      <p>Quality Analyst</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/Mhean21.png" width="100" height="100" style="border-radius: 50%;" alt="Mhean21"/>
-      <p><strong>Mhean21</strong></p>
-      <p>Quality Analyst</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/Cursed-10.png" width="100" height="100" style="border-radius: 50%;" alt="Cursed-10"/>
-      <p><strong>Cursed-10</strong></p>
-      <p>UI Designer</p>
-    </div>
-  </div>
-  
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px;">
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/CyberFlowHex.png" width="100" height="100" style="border-radius: 50%;" alt="CyberFlowHex"/>
-      <p><strong>CyberFlowHex</strong></p>
-      <p>Lead Backend</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/meiaooo.png" width="100" height="100" style="border-radius: 50%;" alt="meiaooo"/>
-      <p><strong>meiaooo</strong></p>
-      <p>Frontend Developer</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/adiayouu.png" width="100" height="100" style="border-radius: 50%;" alt="adiayouu"/>
-      <p><strong>adiayouu</strong></p>
-      <p>System Analyst</p>
-    </div>
-    <div style="text-align: center; width: 150px;">
-      <img src="https://github.com/Aitsh28.png" width="100" height="100" style="border-radius: 50%;" alt="Aitsh28"/>
-      <p><strong>Aitsh28</strong></p>
-      <p>Technical Writer</p>
-    </div>
-    <div style="text-align: center; width: 150px; font-size: 15px;">
-      <img src="https://github.com/PneumaRejuvenator.png" width="100" height="100" style="border-radius: 50%;" alt="PneumaRejuvenator"/>
-      <p><strong>PneumaRejuvenator</strong></p>
-      <p>Backend Developer</p>
-    </div>
-  </div>
-</div>
+  <h3 align="center">👥 Project Team</h3>
+
+<table style="width: MAX WIDTH; border-collapse: collapse; margin-top: 30px; justify-content: center; margin-left: 22%;">
+  <tr>
+    <td>
+      <img src="https://github.com/j3yzi.png" width="100" style="border-radius: 50%;" alt="j3yzi"/><br/>
+      <strong>j3yzi</strong><br/>
+      Project Manager
+    </td>
+    <td>
+      <img src="https://github.com/Mxrcymarcmarc.png" width="100" style="border-radius: 50%;" alt="Mxrcymarcmarc"/><br/>
+      <strong>Mxrcymarcmarc</strong><br/>
+      Backend Developer
+    </td>
+    <td>
+      <img src="https://github.com/vince-wh0.png" width="100" style="border-radius: 50%;" alt="vince-wh0"/><br/>
+      <strong>vince-wh0</strong><br/>
+      Quality Analyst
+    </td>
+    <td>
+      <img src="https://github.com/Mhean21.png" width="100" style="border-radius: 50%;" alt="Mhean21"/><br/>
+      <strong>Mhean21</strong><br/>
+      Quality Analyst
+    </td>
+    <td>
+      <img src="https://github.com/Cursed-10.png" width="100" style="border-radius: 50%;" alt="Cursed-10"/><br/>
+      <strong>Cursed-10</strong><br/>
+      UI Designer
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/CyberFlowHex.png" width="100" style="border-radius: 50%;" alt="CyberFlowHex"/><br/>
+      <strong>CyberFlowHex</strong><br/>
+      Lead Backend
+    </td>
+    <td>
+      <img src="https://github.com/meiaooo.png" width="100" style="border-radius: 50%;" alt="meiaooo"/><br/>
+      <strong>meiaooo</strong><br/>
+      Frontend Developer
+    </td>
+    <td>
+      <img src="https://github.com/adiayouu.png" width="100" style="border-radius: 50%;" alt="adiayouu"/><br/>
+      <strong>adiayouu</strong><br/>
+      System Analyst
+    </td>
+    <td>
+      <img src="https://github.com/Aitsh28.png" width="100" style="border-radius: 50%;" alt="Aitsh28"/><br/>
+      <strong>Aitsh28</strong><br/>
+      Technical Writer
+    </td>
+    <td>
+      <img src="https://github.com/PneumaRejuvenator.png" width="100" style="border-radius: 50%;" alt="PneumaRejuvenator"/><br/>
+      <strong>PneumaRejuvenator</strong><br/>
+      Backend Developer
+    </td>
+  </tr>
+</table>
 
 ## 🏁 Conclusion
 
@@ -968,12 +1062,27 @@ ensuring that every architectural decision was informed by established software 
     The <strong>PUP Information Management System</strong> represents a successful consolidation of three separate applications into a unified, efficient, and maintainable solution. Through careful architectural planning and the implementation of software engineering best practices, the system achieves:
   </p>
 
-  <ul style="width: 700px; list-style-position: inside; text-align: left; margin-left: 20%;">
-    <li> <strong>Significant code reduction</strong> while preserving all functionality</li>
-    <li> <strong>Enhanced user experience</strong> through unified interface design</li>
-    <li> <strong>Improved maintainability</strong> via modular architecture</li>
-    <li> <strong>Scalable foundation</strong> for future enhancements</li>
-  </ul>
+  <table style="width: 700px; border-collapse: collapse; margin-top: 30px; justify-content: center;">
+  <thead>
+    <tr style="background-color: #f2f2f2;">
+      <th style="padding: 12px; text-align: left;">📌 Key Highlights</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px;"><strong>Significant code reduction</strong> while preserving all functionality</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="padding: 10px;"><strong>Enhanced user experience</strong> through unified interface design</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px;"><strong>Improved maintainability</strong> via modular architecture</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="padding: 10px;"><strong>Scalable foundation</strong> for future enhancements</td>
+    </tr>
+  </tbody>
+</table>
 
   <p style="font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;">
     This system demonstrates the power of thoughtful software consolidation and serves as an excellent example of production-quality <code>C</code> programming—emphasizing proper separation of concerns, memory management, and user interface design.
