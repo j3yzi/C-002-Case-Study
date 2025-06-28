@@ -83,6 +83,7 @@ typedef enum {
     IV_ALPHA_ONLY,
     IV_ALPHA_ONLY_MAX_LEN,
     IV_OPTIONAL_ALPHA_ONLY_MAX_LEN,
+    IV_ALNUM_ONLY_MAX_LEN,
     IV_EXACT_LEN
 } IValidationType;
 
