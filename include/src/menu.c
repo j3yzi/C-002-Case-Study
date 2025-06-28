@@ -1,19 +1,94 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <conio.h>
-#include <windows.h>
-#include "../headers/apctxt.h"
-#include "../headers/apclrs.h"
+/**
+ * @file menu.c
+ * @brief Advanced Menu System Implementation
+ * 
+ * This file implements a sophisticated menu system for the PUP Information
+ * Management System. It provides a rich, interactive menu interface with
+ * features including:
+ * - Box-drawing character based menus with professional appearance
+ * - Real-time navigation with arrow keys and keyboard shortcuts
+ * - Dynamic menu option states (enabled/disabled based on context)
+ * - Side panels showing navigation help and descriptions
+ * - Error message display system
+ * - Menu selection highlighting and visual feedback
+ * 
+ * The menu system uses Windows console APIs for enhanced display capabilities
+ * and supports UTF-8 encoding for proper box-drawing character rendering.
+ * 
+ * @author C002 - Group 1
+ * @version 1.0
+ * @date 2024
+ */
 
-// Forward declarations for static internal functions
+// Standard C library includes
+#include <stdio.h>      // For input/output operations
+#include <stdlib.h>     // For memory allocation and general utilities
+#include <string.h>     // For string manipulation functions
+#include <stdbool.h>    // For boolean data type support
+#include <conio.h>      // For console I/O functions like _getch()
+#include <windows.h>    // For Windows console API functions
+
+// Application-specific includes
+#include "../headers/apctxt.h"  // Application context and configuration
+#include "../headers/apclrs.h"  // Color definitions and display constants
+
+/**
+ * @name Internal Function Declarations
+ * @brief Forward declarations for static internal functions
+ * 
+ * These functions are used internally by the menu system and are not
+ * exposed in the public interface. They handle specific aspects of
+ * menu rendering and interaction.
+ * @{
+ */
+
+/**
+ * @brief Displays a single menu option at a specific screen location
+ * @param menu Pointer to the menu containing the option
+ * @param optionIndex Index of the option to display
+ * @param x X coordinate for display (currently unused)
+ * @param y Y coordinate for display
+ */
 static void appDisplayMenuOption(const Menu* menu, int optionIndex, int x, int y);
+
+/**
+ * @brief Updates the visual selection highlighting for menu options
+ * @param menu Pointer to the menu to update
+ * @param oldSelection Index of the previously selected option
+ * @param newSelection Index of the newly selected option
+ */
 static void appUpdateMenuSelection(Menu* menu, int oldSelection, int newSelection);
+
+/**
+ * @brief Displays an error message in the menu's error area
+ * @param message Error message text to display
+ * @param errorY Y coordinate where the error should be displayed
+ */
 static void appDisplayErrorMessage(const char* message, int errorY);
+
+/**
+ * @brief Clears the error message from the menu's error area
+ * @param errorY Y coordinate of the error message area
+ */
 static void appClearErrorMessage(int errorY);
+
+/**
+ * @brief Calculates the number of header lines in a menu
+ * @param menu Pointer to the menu to analyze
+ * @return Number of header lines in the menu display
+ */
 static int calculateMenuHeaderLines(const Menu* menu);
+
+/**
+ * @brief Gets content for the right side information panel
+ * @param relativeRow Row number relative to the menu start
+ * @param buffer Buffer to store the content
+ * @param bufferSize Size of the content buffer
+ * @param box2w Width of the side panel box
+ */
 static void getRightSideContent(int relativeRow, char* buffer, int bufferSize, int box2w);
+
+/** @} */ // End of Internal Function Declarations
 
 /**
  * @brief Sets the text and background colors for the console.

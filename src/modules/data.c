@@ -1,25 +1,72 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#include "data.h"
-#include "../../include/models/employee.h"
-#include "../../include/models/student.h"
-#include "../../include/headers/list.h"
-#include "../../include/headers/apctxt.h"
+/**
+ * @file data.c
+ * @brief Data Management and File I/O Operations
+ * 
+ * This file implements comprehensive data management functionality for the
+ * PUP Information Management System. It provides functions for:
+ * - File I/O operations for employee and student data
+ * - Report generation (payroll and academic reports)
+ * - Data persistence and loading
+ * - Directory management for data storage
+ * - Sorting and data manipulation operations
+ * 
+ * The module handles both binary data files for efficient storage and
+ * text reports for human-readable output. All file operations include
+ * proper error handling and data validation.
+ * 
+ * @author C002 - Group 1
+ * @version 1.0
+ * @date 2024
+ */
 
-// Function to create data directory if it doesn't exist
+// Standard C library includes
+#include <stdio.h>      // For file operations and I/O
+#include <stdlib.h>     // For memory allocation and general utilities
+#include <string.h>     // For string manipulation functions
+#include <time.h>       // For timestamp generation
+#ifdef _WIN32
+#include <windows.h>    // For Windows-specific file operations
+#endif
+
+// Application-specific includes
+#include "data.h"                               // Data module header
+#include "../../include/models/employee.h"     // Employee data structures
+#include "../../include/models/student.h"      // Student data structures
+#include "../../include/headers/list.h"        // Generic linked list implementation
+#include "../../include/headers/apctxt.h"      // Application context and utilities
+
+/**
+ * @name Directory Management Functions
+ * @brief Internal functions for managing data and output directories
+ * @{
+ */
+
+/**
+ * @brief Creates the data directory if it doesn't exist
+ * 
+ * Ensures that the "data" directory exists for storing data files.
+ * This directory is used for persistent storage of employee and student records.
+ * 
+ * @return 0 on success, non-zero on error
+ */
 static int createDataDirectory(void) {
     return appCreateDirectory("data");
 }
 
-// Function to create output directory if it doesn't exist
+/**
+ * @brief Creates the output directory if it doesn't exist
+ * 
+ * Ensures that the "output" directory exists for storing generated reports.
+ * This directory is used for payroll reports, academic reports, and other
+ * generated documents.
+ * 
+ * @return 0 on success, non-zero on error
+ */
 static int createOutputDirectory(void) {
     return appCreateDirectory("output");
 }
+
+/** @} */ // End of Directory Management Functions
 
 // Function to list all .dat files in the data directory
 int listDataFiles(void) {

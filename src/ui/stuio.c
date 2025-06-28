@@ -376,7 +376,7 @@ int handleSearchStudent(const list* studentList) {
     
     Menu searchMenu = {1, "Search Student", (MenuOption[]){
         {'1', "Search by Student Number", "Find student using their ID number", false, false, 9, 0, 7, 0, 8, 0, NULL},
-        {'2', "Search by Last Name", "Find student by last name", false, false, 9, 0, 7, 0, 8, 0, NULL},
+        {'2', "Search by Last Name", "Find student by last name", true, false, 9, 0, 7, 0, 8, 0, NULL},
         {'3', "Display All Students", "Show complete list of all students", false, false, 9, 0, 7, 0, 8, 0, NULL},
         {'4', "Back to Main Menu", "Return to the student management menu", false, false, 9, 0, 7, 0, 8, 0, NULL}
     }, 4};
