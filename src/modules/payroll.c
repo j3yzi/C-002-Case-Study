@@ -32,11 +32,8 @@ void calculateBasicPay(Employee* employee) {
     if (!employee) return;
     
     float configRegularHours = getRegularHours();
-    if (employee->employment.hoursWorked >= configRegularHours) {
-        employee->payroll.basicPay = employee->employment.basicRate * configRegularHours;
-    } else {
-        employee->payroll.basicPay = employee->employment.hoursWorked * employee->employment.basicRate;
-    }
+    employee->payroll.basicPay = employee->employment.basicRate * configRegularHours;
+   
     
     // Ensure basic pay doesn't exceed maximum limit
     if (employee->payroll.basicPay > 999999.0f) {

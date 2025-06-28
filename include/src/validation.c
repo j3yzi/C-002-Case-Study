@@ -241,6 +241,26 @@ bool isValid(const char* input, IValidationType type, IValidationParams params, 
                 }
                 return true;
             }
+        case IV_ALNUM_ONLY_MAX_LEN:
+            {
+                // First check length
+                if (strlen(input) > (size_t)params.maxLengthChars.maxLength) {
+                    printf("%s   [Error] %s cannot exceed %d characters. Current length: %zu%s\n", 
+                           UI_ERROR, fieldName, params.maxLengthChars.maxLength, strlen(input), TXT_RESET);
+                    return false;
+                }
+
+                // Then check alphanumeric characters only (letters, digits) and spaces
+                for (int i = 0; input[i] != '\0'; i++) {
+                    char c = input[i];
+                    if (!( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == ' ')) {
+                        printf("%s   [Error] %s can only contain letters, numbers and spaces. Invalid character: '%c'%s\n", 
+                               UI_ERROR, fieldName, c, TXT_RESET);
+                        return false;
+                    }
+                }
+                return true;
+            }
               case IV_OPTIONAL_ALPHA_ONLY_MAX_LEN:
             {
                 // Empty input was already checked at the beginning of the function

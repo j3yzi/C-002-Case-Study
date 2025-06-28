@@ -377,7 +377,7 @@ int getCourseDataFromUser(Course* course, bool isNew) {
     
     // Create form fields
     appFormField fields[] = {
-        { "Course Code (e.g., IT101): ", codeStr, courseCodeLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 2}} },
+        { "Course Code (e.g., IT101): ", codeStr, courseCodeLen, IV_ALNUM_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = courseCodeLen - 2}} },
         { "Course Name: ", nameStr, courseNameLen, IV_ALPHA_ONLY_MAX_LEN, {.maxLengthChars = {.maxLength = courseNameLen - 2}} },
         { "Course Units (1-6): ", unitsStr, 10, IV_RANGE_INT, {.rangeInt = {.min = 1, .max = 6}} },
         { "Course Type (0=Core, 1=Major, 2=Elective, 3=General Ed): ", typeStr, 2, IV_RANGE_INT, {.rangeInt = {.min = 0, .max = 3}} },

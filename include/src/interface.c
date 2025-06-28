@@ -1,21 +1,60 @@
-#include <stdio.h>
-#include <conio.h>
+/**
+ * @file interface.c
+ * @brief User Interface Management and Display Functions
+ * 
+ * This file implements the user interface system for the PUP Information
+ * Management System. It provides functions for displaying menus, tables,
+ * pagination, console management, and user interaction. The interface
+ * supports Windows console features including colors, cursor positioning,
+ * and box-drawing characters for professional-looking displays.
+ * 
+ * Key Features:
+ * - Menu system with navigation and selection
+ * - Paginated table displays for employee and student data
+ * - Console management (cursor, colors, screen clearing)
+ * - State management for menu options
+ * - Real-time date/time display
+ * - User input handling and validation
+ * 
+ * @author C002 - Group 1
+ * @version 1.0
+ * @date 2024
+ */
+
+// Standard C library includes
+#include <stdio.h>      // For input/output operations
+#include <conio.h>      // For console I/O functions like _getch()
 #ifdef _WIN32
-#include <windows.h>
+#include <windows.h>    // For Windows console API functions
 #endif
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include "../headers/interface.h"
-#include "../headers/apctxt.h"
-#include "../headers/state.h"
+#include <string.h>     // For string manipulation functions
+#include <time.h>       // For date/time operations
+#include <stdlib.h>     // For memory allocation and general utilities
+#include <ctype.h>      // For character type checking functions
 
-// Constants
-#define MENU_HEADER_WIDTH 60  // Constant width for menu headers
+// Application-specific includes
+#include "../headers/interface.h"  // Interface function declarations
+#include "../headers/apctxt.h"     // Application context and configuration
+#include "../headers/state.h"      // Application state management
 
-static HANDLE hConsole;
-static CONSOLE_SCREEN_BUFFER_INFO originalConsoleInfo;
+/**
+ * @name Display Configuration Constants
+ * @brief Constants for controlling display layout and formatting
+ * @{
+ */
+#define MENU_HEADER_WIDTH 60  // Standard width for menu headers across the application
+
+/** @} */ // End of Display Configuration Constants
+
+/**
+ * @name Console Management Variables
+ * @brief Static variables for managing Windows console state
+ * @{
+ */
+static HANDLE hConsole;                           // Handle to the console output
+static CONSOLE_SCREEN_BUFFER_INFO originalConsoleInfo; // Original console state for restoration
+
+/** @} */ // End of Console Management Variables
 
 // Initialize console settings
 void initConsole() {
@@ -547,10 +586,6 @@ bool appYesNoPrompt(const char* prompt) {
     bool isYesSelected = true;
     int key;
     
-    // Display the prompt with simple formatting
-    printf("%s (Y/N): ", prompt);
-    fflush(stdout); // Ensure the prompt is displayed
-    
     // Display initial options
     while (1) {
         // Display options with current selection
@@ -640,9 +675,6 @@ bool checkActiveList(int isActiveList, int listSize, const char* errorMessage) {
  */
 void updateMenuOptionStates(Menu* menu, int hasActiveList, int hasItems, int hasMultipleLists) {
     if (!menu || !menu->options || menu->optionCount == 0) return;
-    
-    // This is a generic template - specific implementations should override this
-    // based on their menu structure
     
     for (int i = 0; i < menu->optionCount; i++) {
         // Default behavior: enable all options
